@@ -1,0 +1,5 @@
+
+User-agent:*
+Disallow:
+
+Sitemap: https://jin-shaohui.gitee.io/sitemap.xml

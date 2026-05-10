@@ -2,12 +2,22 @@
 
 ## v0.4.0（2026-05-10）
 
-### BaseTable 多模式 UI 一致性
+### 组件模块
 
-- **el-table-v2 支持 border**：Virtual 模式（ElTableV2）补全外边框和列间竖线边框，与其他四种模式保持一致
-- **五种模式列宽统一**：修复 `layoutColumnWidths` 中对显式 `width` 列强制最小宽度的问题，现在直接使用原值，与 Element 模式的 `el-table` 列宽计算对齐
-- **Selection checkbox 样式统一**：Canvas / Canvas-Tile / Skia 三种模式的 checkbox 从灰色方框改为与 Element Plus ElCheckbox 一致的视觉——未选时灰色圆角边框、选中时蓝色背景白色勾、半选时蓝色背景白色横杠
-- **Selection checkbox hover 交互**：新增 `useCanvasCheckboxHover` 组合式，Canvas 系三种模式悬停 checkbox 时边框变蓝 + 鼠标变为手型指针，与 Element 模式行为一致
+#### 组件调整
+- **BaseTable**：Virtual 模式补全 border 边框；统一五种模式列宽计算对齐 Element Plus；Canvas 系三种模式 checkbox 样式对齐 Element Plus；新增 `useCanvasCheckboxHover` 组合式支持 hover 交互
+
+#### 新增组件
+- **ChangelogPanel**：读取 CHANGELOG.md 解析为时间线面板，集成在顶部栏右侧，支持版本折叠展开、点击外部关闭、三端适配、移动端滚动穿透锁定
+
+### 配置模块
+
+#### 新增配置
+- **Cursor 规则**：新增 `.cursor/rules/project-conventions.mdc`，统一语言、代码风格、三端适配、CHANGELOG 维护等项目约定
+
+### 工程化
+
+- **CHANGELOG.md**：基于 git 提交记录生成版本变更文件，按天归组，连续日期合并为同一版本
 
 ---
 

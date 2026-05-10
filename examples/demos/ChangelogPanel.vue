@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, onBeforeUnmount } from "vue";
+import { computed, ref, watch, onMounted, onBeforeUnmount } from "vue";
 import changelogRaw from "../../CHANGELOG.md?raw";
 
 interface ChangeItem {
@@ -7,48 +7,85 @@ interface ChangeItem {
   text: string;
 }
 
+interface ChangeGroup {
+  type: string;
+  items: ChangeItem[];
+}
+
+interface ChangeModule {
+  name: string;
+  groups: ChangeGroup[];
+}
+
 interface VersionBlock {
   version: string;
   date: string;
-  section: string;
-  items: ChangeItem[];
+  modules: ChangeModule[];
 }
 
 function parseChangelog(raw: string): VersionBlock[] {
   const blocks: VersionBlock[] = [];
   const lines = raw.split("\n");
-  let current: VersionBlock | null = null;
+  let ver: VersionBlock | null = null;
+  let mod: ChangeModule | null = null;
+  let grp: ChangeGroup | null = null;
 
   for (const line of lines) {
-    const versionMatch = line.match(/^## (v[\d.]+)(?:[（(](.+?)[）)])?/);
-    if (versionMatch) {
-      current = { version: versionMatch[1], date: versionMatch[2] ?? "", section: "", items: [] };
-      blocks.push(current);
+    const vMatch = line.match(/^## (v[\d.]+)(?:[（(](.+?)[）)])?/);
+    if (vMatch) {
+      ver = { version: vMatch[1], date: vMatch[2] ?? "", modules: [] };
+      blocks.push(ver);
+      mod = null;
+      grp = null;
       continue;
     }
-    if (!current) continue;
+    if (!ver) continue;
 
-    const sectionMatch = line.match(/^### (.+)/);
-    if (sectionMatch) {
-      current.section = sectionMatch[1];
+    const h3 = line.match(/^### (.+)/);
+    if (h3) {
+      mod = { name: h3[1], groups: [] };
+      ver.modules.push(mod);
+      grp = null;
+      continue;
+    }
+
+    const h4 = line.match(/^#### (.+)/);
+    if (h4 && mod) {
+      grp = { type: h4[1], items: [] };
+      mod.groups.push(grp);
       continue;
     }
 
     const itemMatch = line.match(/^- \*\*(.+?)\*\*[：:](.+)/);
     if (itemMatch) {
-      current.items.push({ label: itemMatch[1], text: itemMatch[2].trim() });
+      const item = { label: itemMatch[1], text: itemMatch[2].trim() };
+      if (grp) {
+        grp.items.push(item);
+      } else if (mod) {
+        if (!mod.groups.length) mod.groups.push({ type: "", items: [] });
+        mod.groups[mod.groups.length - 1].items.push(item);
+      }
       continue;
     }
 
     const plainItem = line.match(/^- (.+)/);
     if (plainItem && !plainItem[1].startsWith("*")) {
-      current.items.push({ label: "", text: plainItem[1].trim() });
+      const item = { label: "", text: plainItem[1].trim() };
+      if (grp) grp.items.push(item);
+      else if (mod) {
+        if (!mod.groups.length) mod.groups.push({ type: "", items: [] });
+        mod.groups[mod.groups.length - 1].items.push(item);
+      }
+      continue;
     }
 
     const subItem = line.match(/^\s+- (.+)/);
-    if (subItem && current.items.length > 0) {
-      const last = current.items[current.items.length - 1];
-      last.text += `\n  · ${subItem[1]}`;
+    if (subItem) {
+      const target = grp ?? mod?.groups[mod.groups.length - 1];
+      if (target && target.items.length > 0) {
+        const last = target.items[target.items.length - 1];
+        last.text += `；${subItem[1].trim()}`;
+      }
     }
   }
 
@@ -74,42 +111,65 @@ function onClickOutside(e: MouseEvent) {
   }
 }
 
+const isMobile = () => window.innerWidth <= 768;
+
+function lockScroll(lock: boolean) {
+  if (isMobile()) {
+    document.body.style.overflow = lock ? "hidden" : "";
+  }
+}
+
+watch(visible, (v) => lockScroll(v));
+
 onMounted(() => document.addEventListener("mousedown", onClickOutside));
-onBeforeUnmount(() => document.removeEventListener("mousedown", onClickOutside));
+onBeforeUnmount(() => {
+  document.removeEventListener("mousedown", onClickOutside);
+  lockScroll(false);
+});
 </script>
 
 <template>
-  <div ref="rootRef" class="changelog">
-    <button class="changelog__trigger" @click="toggle">
-      <span class="changelog__trigger-dot" />
+  <div ref="rootRef" class="cl">
+    <button class="cl__trigger" @click="toggle">
+      <span class="cl__trigger-dot" />
       <span>变更记录</span>
-      <span class="changelog__trigger-ver">{{ versions[0]?.version }}</span>
-      <span class="changelog__trigger-arrow" :class="{ 'is-open': visible }" />
+      <span class="cl__trigger-ver">{{ versions[0]?.version }}</span>
+      <span class="cl__trigger-arrow" :class="{ 'is-open': visible }" />
     </button>
 
-    <Transition name="changelog-slide">
-      <div v-show="visible" class="changelog__panel">
-        <div class="changelog__timeline">
+    <Transition name="cl-backdrop">
+      <div v-show="visible" class="cl__backdrop" @click="visible = false" />
+    </Transition>
+    <Transition name="cl-slide">
+      <div v-show="visible" class="cl__panel">
+        <div class="cl__list">
           <div
             v-for="(v, idx) in versions"
             :key="v.version"
-            class="changelog__block"
-            :class="{ 'is-expanded': expandedIdx === idx }"
+            class="cl__ver"
           >
-            <div class="changelog__block-header" @click="toggleVersion(idx)">
-              <span class="changelog__dot" :class="{ 'is-latest': idx === 0 }" />
-              <span class="changelog__version">{{ v.version }}</span>
-              <span class="changelog__date">{{ v.date }}</span>
-              <span class="changelog__section">{{ v.section }}</span>
-              <span class="changelog__expand-icon" :class="{ 'is-open': expandedIdx === idx }" />
+            <div class="cl__ver-head" @click="toggleVersion(idx)">
+              <span class="cl__dot" :class="{ 'is-latest': idx === 0 }" />
+              <span class="cl__ver-tag">{{ v.version }}</span>
+              <span class="cl__ver-date">{{ v.date }}</span>
+              <span class="cl__arrow" :class="{ 'is-open': expandedIdx === idx }" />
             </div>
-            <Transition name="changelog-expand">
-              <ul v-show="expandedIdx === idx" class="changelog__items">
-                <li v-for="(item, i) in v.items" :key="i" class="changelog__item">
-                  <code v-if="item.label" class="changelog__label">{{ item.label }}</code>
-                  <span class="changelog__text">{{ item.text }}</span>
-                </li>
-              </ul>
+
+            <Transition name="cl-expand">
+              <div v-show="expandedIdx === idx" class="cl__body">
+                <div v-for="mod in v.modules" :key="mod.name" class="cl__mod">
+                  <div class="cl__mod-name">{{ mod.name }}</div>
+                  <template v-for="g in mod.groups" :key="g.type">
+                    <div v-if="g.type" class="cl__grp-type">{{ g.type }}</div>
+                    <div class="cl__items">
+                      <p v-for="(item, i) in g.items" :key="i" class="cl__item">
+                        <code v-if="item.label" class="cl__tag">{{ item.label }}</code>
+                        <span>{{ item.text }}</span>
+                      </p>
+                    </div>
+                  </template>
+                </div>
+              </div>
             </Transition>
           </div>
         </div>
@@ -121,11 +181,12 @@ onBeforeUnmount(() => document.removeEventListener("mousedown", onClickOutside))
 <style scoped lang="scss">
 @use "./variables" as *;
 
-.changelog {
+.cl {
   position: relative;
 }
 
-.changelog__trigger {
+// --- 触发按钮 ---
+.cl__trigger {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -146,14 +207,14 @@ onBeforeUnmount(() => document.removeEventListener("mousedown", onClickOutside))
   }
 }
 
-.changelog__trigger-dot {
+.cl__trigger-dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
   background: $doc-color-primary;
 }
 
-.changelog__trigger-ver {
+.cl__trigger-ver {
   font-family: $doc-font-mono;
   font-size: $doc-fs-xs;
   color: $doc-color-primary;
@@ -162,7 +223,7 @@ onBeforeUnmount(() => document.removeEventListener("mousedown", onClickOutside))
   border-radius: $doc-radius-sm;
 }
 
-.changelog__trigger-arrow {
+.cl__trigger-arrow {
   display: inline-block;
   width: 0;
   height: 0;
@@ -177,18 +238,19 @@ onBeforeUnmount(() => document.removeEventListener("mousedown", onClickOutside))
   }
 }
 
-.changelog__panel {
+// --- 面板 ---
+.cl__panel {
   position: absolute;
   top: calc(100% + 10px);
   right: 0;
   z-index: 200;
-  width: 520px;
-  padding: 20px 24px;
+  width: 480px;
+  padding: 16px 20px;
   background: $doc-bg-card;
   border: 1px solid $doc-border-color;
   border-radius: $doc-radius-lg;
   box-shadow: 0 6px 24px rgb(0 0 0 / 10%);
-  max-height: min(480px, calc(100vh - 80px));
+  max-height: min(460px, calc(100vh - 80px));
   overflow-y: auto;
 
   &::-webkit-scrollbar {
@@ -201,14 +263,15 @@ onBeforeUnmount(() => document.removeEventListener("mousedown", onClickOutside))
   }
 }
 
-.changelog__timeline {
+// --- 时间线 ---
+.cl__list {
   position: relative;
-  padding-left: 18px;
+  padding-left: 16px;
 
   &::before {
     content: "";
     position: absolute;
-    left: 4px;
+    left: 3px;
     top: 10px;
     bottom: 10px;
     width: 1px;
@@ -216,34 +279,34 @@ onBeforeUnmount(() => document.removeEventListener("mousedown", onClickOutside))
   }
 }
 
-.changelog__block {
+.cl__ver {
   position: relative;
-  margin-bottom: $doc-sp-lg;
+  margin-bottom: 12px;
 
   &:last-child {
     margin-bottom: 0;
   }
 }
 
-.changelog__block-header {
+.cl__ver-head {
   display: flex;
   align-items: center;
-  gap: $doc-sp-sm;
+  gap: 8px;
   cursor: pointer;
-  padding: 4px 0;
+  padding: 2px 0;
   user-select: none;
 
-  &:hover .changelog__version {
+  &:hover .cl__ver-tag {
     color: $doc-color-primary;
   }
 }
 
-.changelog__dot {
+.cl__dot {
   position: absolute;
-  left: -18px;
-  top: 10px;
-  width: 9px;
-  height: 9px;
+  left: -16px;
+  top: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: $doc-border-color;
   border: 2px solid $doc-bg-card;
@@ -255,35 +318,30 @@ onBeforeUnmount(() => document.removeEventListener("mousedown", onClickOutside))
   }
 }
 
-.changelog__version {
+.cl__ver-tag {
   font-family: $doc-font-mono;
-  font-size: $doc-fs-base;
+  font-size: $doc-fs-sm;
   font-weight: 600;
   color: $doc-text-heading;
   transition: color 0.2s;
 }
 
-.changelog__date {
-  font-size: $doc-fs-xs;
+.cl__ver-date {
+  font-size: 11px;
   color: $doc-text-secondary;
   background: $doc-bg-muted;
-  padding: 1px 8px;
+  padding: 0 6px;
   border-radius: $doc-radius-sm;
 }
 
-.changelog__section {
-  font-size: $doc-fs-sm;
-  color: $doc-text-regular;
-  margin-left: auto;
-}
-
-.changelog__expand-icon {
+.cl__arrow {
   display: inline-block;
   width: 0;
   height: 0;
-  border-left: 4px solid transparent;
-  border-right: 4px solid transparent;
-  border-top: 5px solid $doc-text-secondary;
+  margin-left: auto;
+  border-left: 3.5px solid transparent;
+  border-right: 3.5px solid transparent;
+  border-top: 4px solid $doc-text-secondary;
   transition: transform 0.25s;
 
   &.is-open {
@@ -291,69 +349,143 @@ onBeforeUnmount(() => document.removeEventListener("mousedown", onClickOutside))
   }
 }
 
-.changelog__items {
-  list-style: none;
-  margin: $doc-sp-sm 0 0;
-  padding: 0;
+// --- 内容区 ---
+.cl__body {
+  padding-top: 6px;
 }
 
-.changelog__item {
-  display: flex;
-  align-items: baseline;
-  gap: $doc-sp-sm;
-  padding: 4px 0;
-  font-size: $doc-fs-sm;
-  line-height: 1.6;
-  color: $doc-text-regular;
+.cl__mod {
+  margin-bottom: 8px;
 
-  &::before {
-    content: "";
-    flex-shrink: 0;
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: $doc-border-color;
-    margin-top: 8px;
+  &:last-child {
+    margin-bottom: 0;
   }
 }
 
-.changelog__label {
-  flex-shrink: 0;
-  font-family: $doc-font-mono;
+.cl__mod-name {
   font-size: $doc-fs-xs;
-  color: $doc-color-primary;
-  background: rgba($doc-color-primary, 0.06);
-  padding: 1px 6px;
-  border-radius: $doc-radius-sm;
-  white-space: nowrap;
+  font-weight: 600;
+  color: $doc-text-heading;
+  padding: 2px 0;
+  margin-bottom: 2px;
 }
 
-.changelog__text {
-  white-space: pre-line;
+.cl__grp-type {
+  font-size: 11px;
+  color: $doc-text-secondary;
+  padding-left: 4px;
+  margin: 4px 0 2px;
+
+  &::before {
+    content: "› ";
+    color: $doc-border-color;
+  }
+}
+
+.cl__items {
+  padding-left: 4px;
+}
+
+.cl__item {
+  margin: 0;
+  padding: 1px 0;
+  font-size: $doc-fs-xs;
+  line-height: 1.7;
+  color: $doc-text-regular;
+}
+
+.cl__tag {
+  display: inline;
+  font-family: $doc-font-mono;
+  font-size: 11px;
+  color: $doc-color-primary;
+  background: rgba($doc-color-primary, 0.06);
+  padding: 0 5px;
+  border-radius: 2px;
+  margin-right: 4px;
+}
+
+// --- 遮罩 ---
+.cl__backdrop {
+  display: none;
+}
+
+// --- 平板端 ---
+@media (max-width: $doc-bp-tablet) {
+  .cl__panel {
+    width: 400px;
+  }
+}
+
+// --- 手机端 ---
+@media (max-width: $doc-bp-mobile) {
+  .cl {
+    position: static;
+  }
+
+  .cl__trigger {
+    padding: 6px 10px;
+    gap: 4px;
+
+    > span:nth-child(2) {
+      display: none;
+    }
+  }
+
+  .cl__panel {
+    position: fixed;
+    top: 57px;
+    left: 0;
+    right: 0;
+    width: auto;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    max-height: calc(100vh - 57px);
+    padding: 16px;
+  }
+
+  .cl__backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    top: 57px;
+    z-index: 199;
+    background: rgb(0 0 0 / 30%);
+  }
 }
 
 // --- Transitions ---
-
-.changelog-slide-enter-active,
-.changelog-slide-leave-active {
+.cl-slide-enter-active,
+.cl-slide-leave-active {
   transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-.changelog-slide-enter-from,
-.changelog-slide-leave-to {
+.cl-slide-enter-from,
+.cl-slide-leave-to {
   opacity: 0;
   transform: translateY(-8px);
 }
 
-.changelog-expand-enter-active,
-.changelog-expand-leave-active {
+.cl-expand-enter-active,
+.cl-expand-leave-active {
   transition: all 0.25s ease;
   overflow: hidden;
 }
 
-.changelog-expand-enter-from,
-.changelog-expand-leave-to {
+.cl-expand-enter-from,
+.cl-expand-leave-to {
   opacity: 0;
   max-height: 0;
+}
+
+.cl-backdrop-enter-active,
+.cl-backdrop-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.cl-backdrop-enter-from,
+.cl-backdrop-leave-to {
+  opacity: 0;
 }
 </style>

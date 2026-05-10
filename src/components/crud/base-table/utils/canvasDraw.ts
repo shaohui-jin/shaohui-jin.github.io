@@ -27,6 +27,10 @@ export interface DrawTable2DOptions {
   rowKey: string;
   /** 已选行的 keyString 集合 */
   selectedKeys: Set<string>;
+  /** Hover 状态的 selection 列索引，-1 表示无 hover */
+  hoverSelCol?: number;
+  /** Hover 状态的行索引，-2=无, -1=header, >=0=body 行 */
+  hoverSelRow?: number;
 }
 
 const t = tableSurfaceTokens;
@@ -38,23 +42,39 @@ function drawCheckbox2D(
   centerY: number,
   checked: boolean,
   indeterminate: boolean,
+  hover: boolean = false,
 ) {
   const x = centerX - CB / 2;
   const y = centerY - CB / 2;
+  const r = 2;
   ctx.save();
-  ctx.strokeStyle = t.borderColor;
-  ctx.fillStyle = t.textPrimary;
-  ctx.lineWidth = 1;
-  ctx.strokeRect(x, y, CB, CB);
-  if (indeterminate) {
-    ctx.fillRect(x + 3, y + CB / 2 - 1, CB - 6, 2);
-  } else if (checked) {
+  if (checked || indeterminate) {
+    ctx.fillStyle = t.checkboxCheckedBg;
+    fillRoundRect(ctx, x, y, CB, CB, r);
+    if (indeterminate) {
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(x + 3, y + CB / 2 - 1, CB - 6, 2);
+    } else {
+      ctx.beginPath();
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 1.5;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.moveTo(x + 3, y + CB / 2);
+      ctx.lineTo(x + CB / 2 - 0.5, y + CB - 4);
+      ctx.lineTo(x + CB - 3, y + 3);
+      ctx.stroke();
+    }
+  } else {
+    ctx.strokeStyle = hover ? t.checkboxCheckedBg : t.checkboxBorder;
+    ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.strokeStyle = t.textPrimary;
-    ctx.lineWidth = 1.5;
-    ctx.moveTo(x + 3, y + CB / 2);
-    ctx.lineTo(x + CB / 2 - 0.5, y + CB - 4);
-    ctx.lineTo(x + CB - 3, y + 3);
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + CB, y, x + CB, y + CB, r);
+    ctx.arcTo(x + CB, y + CB, x, y + CB, r);
+    ctx.arcTo(x, y + CB, x, y, r);
+    ctx.arcTo(x, y, x + CB, y, r);
+    ctx.closePath();
     ctx.stroke();
   }
   ctx.restore();
@@ -212,7 +232,8 @@ export function drawTable2D(o: DrawTable2DOptions): void {
       if (cellLeft + cw > 0 && cellLeft < w) {
         ctx.strokeRect(cellLeft, 0, cw, headerHeight);
         if (col.type === "selection") {
-          drawCheckbox2D(ctx, cellLeft + cw / 2, headerHeight / 2, headerAll, headerIndeterminate);
+          const hoverH = i === o.hoverSelCol && o.hoverSelRow === -1;
+          drawCheckbox2D(ctx, cellLeft + cw / 2, headerHeight / 2, headerAll, headerIndeterminate, hoverH);
         } else {
           const ht = headerText(col);
           if (ht) {
@@ -279,7 +300,8 @@ export function drawTable2D(o: DrawTable2DOptions): void {
 
         if (col.type === "selection") {
           const checked = selectedKeys.has(keyString(rowKeyValue(row, rowKey)));
-          drawCheckbox2D(ctx, cellLeft + cw / 2, y + rowHeight / 2, checked, false);
+          const hoverB = c === o.hoverSelCol && r === o.hoverSelRow;
+          drawCheckbox2D(ctx, cellLeft + cw / 2, y + rowHeight / 2, checked, false, hoverB);
         } else if (col.type === "switch") {
           const active = (col.activeValue as string | number | boolean) ?? true;
           drawSwitch2D(

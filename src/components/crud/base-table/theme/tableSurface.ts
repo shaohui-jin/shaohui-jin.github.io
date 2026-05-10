@@ -41,6 +41,10 @@ export const tableSurfaceTokens = {
   rowBase: "#ffffff",
   /** 行 hover（与 EP 常用浅灰接近） */
   rowHoverBg: "#f5f7fa",
+  /** Checkbox 未选边框（与 EP --el-border-color 一致） */
+  checkboxBorder: "#dcdfe6",
+  /** Checkbox 选中/半选填充（与 EP --el-color-primary 一致） */
+  checkboxCheckedBg: "#409eff",
   fontFamily: 'system-ui, -apple-system, "Segoe UI", sans-serif',
   /** 表头字重（与 Table-V2 / 覆盖后的 ElTable 一致） */
   headerFontWeight: 600,

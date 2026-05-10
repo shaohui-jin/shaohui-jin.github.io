@@ -10,6 +10,7 @@ import { useBaseTableSelection } from "../utils/useBaseTableSelection";
 import { isClickOnSlotText, isClickOnSwitch, useCanvasSlotPopup } from "../utils/useCanvasSlotPopup";
 import { useCanvasTooltip, canvas2DMeasureTextWidth } from "../utils/useCanvasTooltip";
 import { useCanvasScrollbar } from "../utils/useCanvasScrollbar";
+import { useCanvasCheckboxHover } from "../utils/useCanvasCheckboxHover";
 import TableSlotPopup from "./TableSlotPopup.vue";
 
 defineOptions({ name: "BaseTableCanvas" });
@@ -50,13 +51,14 @@ const tableDataRef = toRef(props, "tableData");
 const selection = useBaseTableSelection(props.rowKey, tableDataRef);
 
 const { slotTriggerRef, slotPopup, openSlotPopup, closeSlotPopup } = useCanvasSlotPopup(containerRef);
+const { hoverSelCol, hoverSelRow, updateHover, clearHover } = useCanvasCheckboxHover();
 
 const {
   tooltipAnchorRef,
   tooltipVisible,
   tooltipContent,
-  onContainerMousemove,
-  onContainerMouseleave,
+  onContainerMousemove: _tooltipMousemove,
+  onContainerMouseleave: _tooltipMouseleave,
   hideTooltip,
 } = useCanvasTooltip(containerRef, {
   columns: () => props.columns,
@@ -68,6 +70,18 @@ const {
   scrollY: () => scrollY.value,
   measureTextWidth: canvas2DMeasureTextWidth,
 });
+
+function onContainerMousemove(e: MouseEvent) {
+  _tooltipMousemove(e);
+  if (updateHover(e, containerRef.value, canvasRef.value, props.columns, colWidths.value, props.headerHeight, props.rowHeight, props.tableData.length, scrollX.value, scrollY.value)) {
+    schedulePaint();
+  }
+}
+
+function onContainerMouseleave() {
+  _tooltipMouseleave();
+  if (clearHover(canvasRef.value)) schedulePaint();
+}
 
 const {
   scrollbarVisible,
@@ -132,6 +146,8 @@ function paint() {
     emptyText: props.emptyText,
     rowKey: props.rowKey,
     selectedKeys: selection.selectedKeys.value,
+    hoverSelCol: hoverSelCol.value,
+    hoverSelRow: hoverSelRow.value,
   });
 }
 
@@ -147,6 +163,7 @@ function schedulePaint() {
 function onWheel(e: WheelEvent) {
   e.preventDefault();
   hideTooltip();
+  clearHover(canvasRef.value);
   showScrollbar();
   if (e.shiftKey) {
     scrollX.value += e.deltaY;

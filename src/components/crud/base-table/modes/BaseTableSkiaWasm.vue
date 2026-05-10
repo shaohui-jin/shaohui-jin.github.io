@@ -13,6 +13,7 @@ import { useBaseTableSelection } from "../utils/useBaseTableSelection";
 import { isClickOnSlotText, isClickOnSwitch, useCanvasSlotPopup } from "../utils/useCanvasSlotPopup";
 import { useCanvasTooltip } from "../utils/useCanvasTooltip";
 import { useCanvasScrollbar } from "../utils/useCanvasScrollbar";
+import { useCanvasCheckboxHover } from "../utils/useCanvasCheckboxHover";
 import TableSlotPopup from "./TableSlotPopup.vue";
 
 defineOptions({ name: "BaseTableSkiaWasm" });
@@ -47,6 +48,7 @@ const selection = useBaseTableSelection(props.rowKey, tableDataRef);
 const containerRef = ref<HTMLDivElement | null>(null);
 
 const { slotTriggerRef, slotPopup, openSlotPopup, closeSlotPopup } = useCanvasSlotPopup(containerRef);
+const { hoverSelCol, hoverSelRow, updateHover, clearHover } = useCanvasCheckboxHover();
 
 function skiaEstimateTextWidth(text: string): number {
   const narrowW = t.fontSizeCell * 0.55;
@@ -62,8 +64,8 @@ const {
   tooltipAnchorRef,
   tooltipVisible,
   tooltipContent,
-  onContainerMousemove,
-  onContainerMouseleave,
+  onContainerMousemove: _tooltipMousemove,
+  onContainerMouseleave: _tooltipMouseleave,
   hideTooltip,
 } = useCanvasTooltip(containerRef, {
   columns: () => props.columns,
@@ -75,6 +77,18 @@ const {
   scrollY: () => scrollY.value,
   measureTextWidth: skiaEstimateTextWidth,
 });
+
+function onContainerMousemove(e: MouseEvent) {
+  _tooltipMousemove(e);
+  if (updateHover(e, containerRef.value, canvasRef.value, props.columns, colWidths(), props.headerHeight, props.rowHeight, props.tableData.length, scrollX.value, scrollY.value)) {
+    schedulePaint();
+  }
+}
+
+function onContainerMouseleave() {
+  _tooltipMouseleave();
+  if (clearHover(canvasRef.value)) schedulePaint();
+}
 
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 const loadError = ref("");
@@ -164,7 +178,7 @@ function selectionAllState(
   };
 }
 
-/** 与 canvasDraw `drawCheckbox2D` 对齐（14px 框 + 勾选/半选） */
+/** 与 EP ElCheckbox 视觉对齐：蓝底白勾/白杠 + 圆角 + hover 边框变蓝 */
 function drawSkiaCheckbox(
   skCanvas: Canvas,
   centerX: number,
@@ -174,23 +188,36 @@ function drawSkiaCheckbox(
   strokePaint: Paint,
   fillPaint: Paint,
   checkStroke: Paint,
+  hover: boolean = false,
 ) {
   const CB = 14 * dpr;
+  const r = 2 * dpr;
   const x = centerX - CB / 2;
   const y = centerY - CB / 2;
-  skCanvas.drawRect(ck!.LTRBRect(x, y, x + CB, y + CB), strokePaint);
-  if (indeterminate) {
-    fillPaint.setColor(skColor(hexToRgb(t.textPrimary)));
-    const barH = 2 * dpr;
-    const barW = CB - 6 * dpr;
-    skCanvas.drawRect(
-      ck!.LTRBRect(x + 3 * dpr, y + CB / 2 - barH / 2, x + 3 * dpr + barW, y + CB / 2 + barH / 2),
-      fillPaint,
-    );
-  } else if (checked) {
-    checkStroke.setStrokeWidth(1.5 * dpr);
-    skCanvas.drawLine(x + 3 * dpr, y + CB / 2, x + CB / 2 - 0.5 * dpr, y + CB - 4 * dpr, checkStroke);
-    skCanvas.drawLine(x + CB / 2 - 0.5 * dpr, y + CB - 4 * dpr, x + CB - 3 * dpr, y + 3 * dpr, checkStroke);
+  const checkedRgb = hexToRgb(t.checkboxCheckedBg);
+  const rrect = ck!.RRectXY(ck!.LTRBRect(x, y, x + CB, y + CB), r, r);
+
+  if (checked || indeterminate) {
+    fillPaint.setColor(skColor(checkedRgb));
+    skCanvas.drawRRect(rrect, fillPaint);
+    if (indeterminate) {
+      fillPaint.setColor(skColor({ r: 255, g: 255, b: 255 }));
+      const barH = 2 * dpr;
+      const barW = CB - 6 * dpr;
+      skCanvas.drawRect(
+        ck!.LTRBRect(x + 3 * dpr, y + CB / 2 - barH / 2, x + 3 * dpr + barW, y + CB / 2 + barH / 2),
+        fillPaint,
+      );
+    } else {
+      checkStroke.setColor(skColor({ r: 255, g: 255, b: 255 }));
+      checkStroke.setStrokeWidth(1.5 * dpr);
+      skCanvas.drawLine(x + 3 * dpr, y + CB / 2, x + CB / 2 - 0.5 * dpr, y + CB - 4 * dpr, checkStroke);
+      skCanvas.drawLine(x + CB / 2 - 0.5 * dpr, y + CB - 4 * dpr, x + CB - 3 * dpr, y + 3 * dpr, checkStroke);
+    }
+  } else {
+    const borderRgb = hover ? checkedRgb : hexToRgb(t.checkboxBorder);
+    strokePaint.setColor(skColor(borderRgb));
+    skCanvas.drawRRect(rrect, strokePaint);
   }
 }
 
@@ -433,11 +460,13 @@ function paintSkia() {
     for (let c = 0; c < vis.length; c++) {
       const col = vis[c]!;
       const cellW = (widths[c] ?? tableLayoutDefaults.defaultColumnWidth) * dpr;
+      strokePaint.setColor(skColor(borderRgb));
       skCanvas.drawRect(ck.LTRBRect(cx, yd, cx + cellW, yd + rh), strokePaint);
       const midY = (y + props.rowHeight / 2 + 5) * dpr;
       if (col.type === "selection") {
         const checked = selectedKeys.has(keyString(rowKeyValue(row, props.rowKey)));
-        drawSkiaCheckbox(skCanvas, cx + cellW / 2, y * dpr + rh / 2, checked, false, strokePaint, fillPaint, checkStroke);
+        const hoverB = c === hoverSelCol.value && r === hoverSelRow.value;
+        drawSkiaCheckbox(skCanvas, cx + cellW / 2, y * dpr + rh / 2, checked, false, strokePaint, fillPaint, checkStroke, hoverB);
       } else if (col.type === "switch") {
         const activeVal = (col.activeValue as string | number | boolean) ?? true;
         const isOn = row[col.key] === activeVal;
@@ -518,8 +547,10 @@ function paintSkia() {
   for (let i = 0; i < vis.length; i++) {
     const col = vis[i]!;
     const cw = (widths[i] ?? tableLayoutDefaults.defaultColumnWidth) * dpr;
+    strokePaint.setColor(skColor(borderRgb));
     skCanvas.drawRect(ck.LTRBRect(hx, 0, hx + cw, hhPx), strokePaint);
     if (col.type === "selection") {
+      const hoverH = i === hoverSelCol.value && hoverSelRow.value === -1;
       drawSkiaCheckbox(
         skCanvas,
         hx + cw / 2,
@@ -529,6 +560,7 @@ function paintSkia() {
         strokePaint,
         fillPaint,
         checkStroke,
+        hoverH,
       );
     } else {
       const ht = headerText(col);
@@ -559,6 +591,7 @@ function schedulePaint() {
 function onWheel(e: WheelEvent) {
   e.preventDefault();
   hideTooltip();
+  clearHover(canvasRef.value);
   showScrollbar();
   if (e.shiftKey) {
     scrollX.value += e.deltaY;

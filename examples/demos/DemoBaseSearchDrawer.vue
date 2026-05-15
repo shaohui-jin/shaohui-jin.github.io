@@ -1,0 +1,157 @@
+<script setup lang="ts">
+import { ref } from "vue";
+import {
+  BaseSearchDrawer,
+  type BaseSearchField,
+  type BaseSearchDrawerProps,
+  type BaseSearchDrawerEmits,
+} from "comp-vue-lib";
+import type { ComponentApi } from "./types";
+
+// ==================== 演示数据 ====================
+
+const drawerParams: BaseSearchField[] = [
+  { key: "keyword", label: "产品名称/ID", placeholder: "请输入" },
+  { key: "materialCode", label: "物料编码", placeholder: "请输入" },
+  {
+    key: "status",
+    label: "状态",
+    type: "select",
+    options: [
+      { name: "启用", value: 1 },
+      { name: "禁用", value: 0 },
+    ],
+  },
+  {
+    key: "priority",
+    label: "优先级",
+    type: "radio-group",
+    options: [
+      { name: "高", value: "high" },
+      { name: "中", value: "medium" },
+      { name: "低", value: "low" },
+    ],
+  },
+  {
+    key: "dateRange",
+    label: "创建日期",
+    type: "daterange",
+    startPlaceholder: "开始日期",
+    endPlaceholder: "结束日期",
+  },
+  { key: "remark", label: "备注", type: "textarea", placeholder: "请输入备注" },
+];
+
+const formData = ref<Record<string, unknown>>({});
+const drawerRef = ref<InstanceType<typeof BaseSearchDrawer>>();
+const lastEvent = ref("—");
+
+function openDrawer() {
+  drawerRef.value?.open();
+}
+
+function onSearch(data: Record<string, unknown>) {
+  lastEvent.value = `search: ${JSON.stringify(data)}`;
+}
+
+function onReset() {
+  lastEvent.value = "reset";
+}
+
+// ==================== API 文档 ====================
+
+const api: ComponentApi = {
+  props: [
+    { name: "params", type: "BaseSearchField[]", default: "—", required: true, desc: "搜索字段配置数组" },
+    { name: "modelValue / v-model", type: "Record<string, unknown>", default: "—", required: true, desc: "表单数据双向绑定" },
+    { name: "paramOptions", type: "Record<string, BaseSearchFieldOption[]>", default: "{}", required: false, desc: "异步加载的选项" },
+    { name: "title", type: "string", default: '"高级筛选"', required: false, desc: "抽屉标题" },
+    { name: "drawerWidth", type: "string", default: '"500px"', required: false, desc: "抽屉宽度" },
+  ],
+  events: [
+    { name: "search", payload: "Record<string, unknown>", desc: "点击确定时触发，参数为表单数据" },
+    { name: "reset", payload: "—", desc: "点击取消时触发，同时关闭抽屉并重置表单" },
+  ],
+  notes: [
+    "通过 ref 调用 open() 方法打开抽屉",
+    "支持 input / textarea / select / radio-group / date 等字段类型",
+    "字段配置复用 BaseSearchField 类型，与 BaseSearch 一致",
+    "通过 defineExpose 暴露 open、formData、reset、search 方法",
+  ],
+};
+</script>
+
+<template>
+  <div class="doc-content__header">
+    <h2>BaseSearchDrawer 搜索抽屉</h2>
+    <p>侧边抽屉式高级搜索表单，适用于复杂筛选场景</p>
+  </div>
+
+  <div class="widget-card widget-card--full">
+    <div class="widget-card__head">
+      <span class="widget-card__title">演示</span>
+    </div>
+    <div class="widget-card__body">
+      <el-button type="primary" @click="openDrawer">打开搜索抽屉</el-button>
+      <p class="widget-hint">最近事件：{{ lastEvent }}</p>
+      <BaseSearchDrawer
+        ref="drawerRef"
+        v-model="formData"
+        :params="drawerParams"
+        @search="onSearch"
+        @reset="onReset"
+      />
+    </div>
+  </div>
+
+  <!-- Props -->
+  <div class="api-section">
+    <h3 class="api-section__title">BaseSearchDrawer Props</h3>
+    <div class="api-table-wrap">
+      <table class="api-table">
+        <thead>
+          <tr><th>属性</th><th>类型</th><th>默认值</th><th>必填</th><th>说明</th></tr>
+        </thead>
+        <tbody>
+          <tr v-for="row in api.props" :key="row.name">
+            <td><code>{{ row.name }}</code></td>
+            <td><code class="api-type">{{ row.type }}</code></td>
+            <td><code v-if="row.default !== '—'">{{ row.default }}</code><span v-else>—</span></td>
+            <td>{{ row.required ? "是" : "否" }}</td>
+            <td>{{ row.desc }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Events -->
+  <div class="api-section">
+    <h3 class="api-section__title">BaseSearchDrawer Events</h3>
+    <div class="api-table-wrap">
+      <table class="api-table">
+        <thead><tr><th>事件名</th><th>参数</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr v-for="e in api.events" :key="e.name">
+            <td><code>{{ e.name }}</code></td>
+            <td><code class="api-type">{{ e.payload }}</code></td>
+            <td>{{ e.desc }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Notes -->
+  <div v-if="api.notes?.length" class="api-section">
+    <h3 class="api-section__title">特殊说明</h3>
+    <ul class="api-notes-list">
+      <li v-for="(note, idx) in api.notes" :key="idx">{{ note }}</li>
+    </ul>
+  </div>
+</template>
+
+<style scoped lang="scss">
+@use "./variables" as *;
+@use "./demo";
+</style>

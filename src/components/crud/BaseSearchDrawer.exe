@@ -1,0 +1,292 @@
+<!-- src/components/SearchBar/SearchBar.vue -->
+<template>
+  <el-drawer
+    v-model="visible"
+    :close-on-click-modal="false"
+    direction="rtl"
+    title="高级筛选"
+    size="500px"
+    class="base-search-drawer"
+    append-to-body
+  >
+    <el-form ref="searchFormRef" :model="search" label-width="auto" label-position="top">
+      <el-form-item v-for="param in props.params" :key="param.key" :label="param.label">
+        <template v-if="param.key === 'publishVersion'">
+          <!--          <el-select
+            v-model="formData[param.key]"
+            fit-input-width
+            filterable
+            remote
+            reserve-keyword
+            allow-create
+            default-first-option
+            :remote-method="remoteMethod"
+            placeholder="请选择"
+            clearable
+          >
+            <el-option
+              v-for="item in publishVersionList"
+              :key="item.publishVersion"
+              :label="item.publishVersion"
+              :value="item.publishVersion"
+            >
+              <div
+                style="display: flex; justify-content: space-between; overflow: hidden; width: 100%"
+              >
+                <span style="flex: 0 0 auto; margin-right: 10px; white-space: nowrap">
+                  {{ item.publishVersion }}
+                </span>
+                <div style="flex: 1; display: flex; min-width: 0">
+                  <span
+                    style="
+                      flex: 1;
+                      white-space: nowrap;
+                      overflow: hidden;
+                      text-overflow: ellipsis;
+                      min-width: 0;
+                      text-align: right;
+                      color: var(&#45;&#45;el-text-color-secondary);
+                    "
+                  >
+                    {{ item.remark }}
+                  </span>
+                  <span
+                    style="
+                      flex: 0 0 auto;
+                      white-space: nowrap;
+                      color: var(&#45;&#45;el-text-color-secondary);
+                    "
+                  >
+                    {{ item.remark ? '-' : '' }}{{ item.statusName }}
+                  </span>
+                </div>
+              </div>
+            </el-option>
+          </el-select>-->
+          <SelectVersion v-model="formData[param.key]" clearable />
+        </template>
+        <template v-else-if="param.key === 'publishStatus'">
+          <el-select v-model="formData[param.key]" placeholder="请选择" clearable>
+            <el-option
+              v-for="item in PublishStatusOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </template>
+        <el-date-picker
+          v-else-if="['date', 'daterange', 'datetime', 'datetimerange'].includes(param.type)"
+          v-bind="getBinds(param)"
+          v-model="formData[param.key]"
+          :type="param.type"
+          range-separator="至"
+          :clearable="param.clearable !== false"
+        />
+        <component
+          v-else
+          :is="getComponent(param)"
+          :type="param.type || param.config?.type"
+          v-model="formData[param.key]"
+          :placeholder="param.placeholder"
+          v-bind="getBinds(param)"
+          :empty-values="[null, undefined]"
+          :clearable="param.clearable !== false"
+        >
+          <template v-if="param.type === 'select'">
+            <template v-if="param.options.length > 0">
+              <el-option
+                v-for="option in param.options"
+                :key="param.key + option.value"
+                :label="option.name"
+                :value="option.value"
+              />
+            </template>
+            <template v-else>
+              <el-option
+                v-for="option in paramOptions[param.key]"
+                :key="param.key + option.value"
+                :label="option.name"
+                :value="option.value"
+              />
+            </template>
+          </template>
+          <template v-else-if="param.type === 'radio-group'">
+            <template v-if="param.options.length > 0">
+              <el-radio
+                v-for="option in param.options"
+                :key="param.key + option.value"
+                :value="option.value"
+              >
+                {{ option.label }}
+              </el-radio>
+            </template>
+            <template v-else>
+              <el-radio
+                v-for="option in paramOptions[param.key]"
+                :key="param.key + option.value"
+                :value="option.value"
+              >
+                {{ option.label }}
+              </el-radio>
+            </template>
+          </template>
+        </component>
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <div style="flex: auto; display: flex; justify-content: flex-end; gap: 12px">
+        <el-button @click="handleReset">取消</el-button>
+        <el-button type="primary" @click="handleSearch">确定</el-button>
+      </div>
+    </template>
+  </el-drawer>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import { ElForm, ElFormItem, ElButton } from 'element-plus'
+import { ElInput, ElSelect, ElOption, ElDatePicker, ElCascader, ElTreeSelect,ElRadioGroup,ElRadio } from 'element-plus'
+import { omit } from "lodash-es";
+import { useVModel } from "@vueuse/core";
+import RemoteSearchSelect from "@/components/CommonForm/RemoteSearchSelect.vue";
+import SelectVersion from "@/components/prodRange/SelectVersion/index.vue";
+import { PublishStatusOptions } from "@/components/BasePublishDialog/common";
+import { http } from '@/utils/http'
+
+const visible = ref(false)
+
+
+const props = defineProps({
+  params: {
+    type: Array<any>,
+    default: () => ([])
+  },
+  paramOptions: {
+    type: Object,
+    default: () => ({})
+  },
+  modelValue: {
+    type: Object,
+    default: () => ({})
+  },
+})
+
+const emit = defineEmits(['update:modelValue', 'search', 'reset'])
+
+
+const formData = useVModel(props, 'modelValue', emit)
+
+
+const formRef = ref()
+
+// 组件映射
+const componentMap = {
+  input: ElInput,
+  textarea: ElInput,
+  select: ElSelect,
+  date: ElDatePicker,
+  daterange: ElDatePicker,
+  datetime: ElDatePicker,
+  datetimerange: ElDatePicker,
+  cascader: ElCascader,
+  'tree-select': ElTreeSelect,
+  'remote-search-select': RemoteSearchSelect,
+  'radio-group': ElRadioGroup
+}
+
+// 获取组件
+const getComponent = (item) => {
+  return componentMap[item.type || 'input']
+}
+
+const commonParams = ['key', 'label'] // 时间、textarea 需要type
+// 获取绑定
+const getBinds = (item) => {
+  return omit(item, commonParams)
+}
+
+/*// 获取 版本号 数据
+const publishVersionList = ref([])
+
+const remoteMethod = async version => {
+  const res: any = await http.post('/data-publish/publish-plan/page', {
+    data: {
+      version,
+      pageNo: 1,
+      pageSize: 20
+    }
+  })
+  if (res.success) {
+    publishVersionList.value = res.data.rows || []
+  }
+}*/
+
+// 搜索
+const handleSearch = () => {
+  emit('search', formData.value)
+  visible.value = false
+}
+
+// 重置
+const handleReset = () => {
+  formRef.value?.resetFields()
+  const data: Record<string, any> = {}
+  props.params.forEach(p => {
+    data[p.key] = ''
+  })
+  formData.value = { ...data }
+  visible.value = false
+  emit('reset')
+}
+
+// 初始化表单数据
+const open = () => {
+  // const data: Record<string, any> = {}
+  // props.params.forEach(p => {
+  //   data[p.key] = ''
+  // })
+  formData.value = { ...props.modelValue }
+
+  visible.value = true
+}
+
+// 暴露方法
+defineExpose({
+  open,
+  formData,
+  reset: handleReset,
+  search: handleSearch
+})
+</script>
+<style lang="scss">
+.base-search-drawer {
+  .el-drawer__header {
+    padding: 20px 20px 10px 20px;
+    margin-bottom: 0;
+    span {
+      color: rgba(28, 26, 39, 1);
+    }
+  }
+}
+</style>
+<style lang="scss" scoped>
+.search-bar {
+  padding: 12px 16px 0 16px;
+  border-radius: 4px;
+}
+
+.search-form {
+  margin: 0;
+}
+
+:deep(.el-form-item) {
+  margin-bottom: 24px;
+  //margin-right: 16px;
+}
+
+:deep(.el-form-item__label) {
+  font-weight: 500;
+  color: rgba(28, 26, 39, 1);
+}
+</style>

@@ -1,0 +1,410 @@
+<!-- src/components/SearchBar/SearchBar.vue -->
+<template>
+  <div class="search-bar">
+    <el-form ref="formRef" :model="formData" :inline="true" class="search-form">
+      <!-- 固定显示的字段 -->
+      <div class="fixed-fields">
+        <div class="fixed-fields-line">
+          <el-form-item
+            v-for="param in fixedParams"
+            :key="param.key"
+            :label="param.label"
+            :label-width="param.labelWidth || '70px'"
+          >
+            <el-date-picker
+              v-if="['date', 'daterange', 'datetime', 'datetimerange'].includes(param.type)"
+              v-model="formData[param.key]"
+              :type="param.type"
+              range-separator="至"
+              :clearable="param.clearable !== false"
+              v-bind="getBinds(param)"
+            />
+            <SelectProduct
+              v-else-if="param.type === 'product-v2'"
+              v-model="formData[param.key]"
+              fetchCategoryKey="catFullCodes"
+              fetchCategoryKeyType="array"
+              placeholder="产品名称范围"
+            />
+            <SelectCategory
+              v-else-if="param.type === 'category-v2'"
+              v-model="formData[param.key]"
+              fetchCategoryKey="fullCodes"
+              fetchCategoryKeyType="array"
+              placeholder="产品目录范围"
+            />
+            <SelectTag
+              v-else-if="param.type === 'tag-v2'"
+              v-model="formData[param.key]"
+              fetchCategoryKey="fullCodes"
+              fetchCategoryKeyType="array"
+              placeholder="产品标签范围"
+            />
+            <component
+              v-else
+              :is="getComponent(param)"
+              :type="param.type || param.config?.type"
+              v-model="formData[param.key]"
+              v-bind="getBinds(param)"
+              :empty-values="[null, undefined]"
+              :clearable="param.clearable !== false"
+              @change="e => handleParamChange(e, param.key)"
+              @keydown.enter.prevent="
+                () => {
+                  if (param.keydownSearch !== false) {
+                    handleSearch()
+                  }
+                }
+              "
+            >
+              <template v-if="param.type === 'select'">
+                <template v-if="param.options.length > 0">
+                  <el-option
+                    v-for="option in param.options"
+                    :key="param.key + option.value"
+                    :label="option.name"
+                    :value="option.value"
+                  />
+                </template>
+                <template v-else>
+                  <el-option
+                    v-for="option in paramOptions[param.key]"
+                    :key="param.key + option.value"
+                    :label="option.name"
+                    :value="option.value"
+                  />
+                </template>
+              </template>
+            </component>
+          </el-form-item>
+          <!-- 操作按钮 -->
+          <el-form-item class="action-buttons">
+            <el-button text v-if="expandParams.length > 0" @click="toggleExpand">
+              {{ isExpanded ? '收起' : '更多' }}
+              <el-icon class="ml-1">
+                <ArrowDown v-if="!isExpanded" />
+                <ArrowUp v-else />
+              </el-icon>
+            </el-button>
+            <el-button type="primary" @click="handleSearch" :loading="loading">查询</el-button>
+            <el-button @click="handleReset">重置</el-button>
+          </el-form-item>
+        </div>
+        <!-- 可展开的字段 -->
+        <div class="fields-line" v-if="expandParams.length > 0 && isExpanded">
+          <el-form-item
+            v-for="param in expandParams"
+            :key="param.key"
+            :label="param.label"
+            :label-width="param.labelWidth || '70px'"
+          >
+            <el-date-picker
+              v-if="['date', 'daterange', 'datetime', 'datetimerange'].includes(param.type)"
+              v-model="formData[param.key]"
+              :type="param.type"
+              range-separator="至"
+              :clearable="param.clearable !== false"
+              v-bind="getBinds(param)"
+            />
+            <component
+              v-else
+              :is="getComponent(param)"
+              :type="param.type || param.config?.type"
+              :empty-values="[null, undefined]"
+              v-model="formData[param.key]"
+              v-bind="getBinds(param)"
+              :style="param.style"
+              :clearable="param.clearable !== false"
+              @change="e => handleParamChange(e, param.key)"
+              @keydown.enter.prevent="
+                () => {
+                  if (param.keydownSearch !== false) {
+                    handleSearch()
+                  }
+                }
+              "
+            >
+              <template v-if="param.type === 'select'">
+                <template v-if="param.options.length > 0">
+                  <el-option
+                    v-for="option in param.options"
+                    :key="param.key + option.value"
+                    :label="option.name"
+                    :value="option.value"
+                  />
+                </template>
+                <template v-else>
+                  <el-option
+                    v-for="option in paramOptions[param.key]"
+                    :key="param.key + option.value"
+                    :label="option.name"
+                    :value="option.value"
+                  />
+                </template>
+              </template>
+            </component>
+          </el-form-item>
+        </div>
+      </div>
+    </el-form>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
+import { ElForm, ElFormItem, ElButton, ElIcon } from 'element-plus'
+import { ArrowDown, ArrowUp } from '@element-plus/icons-vue'
+import { ElInput, ElSelect, ElOption, ElDatePicker, ElCascader, ElTreeSelect } from 'element-plus'
+import { omit } from "lodash-es";
+import { useVModel } from "@vueuse/core";
+import RemoteSearchSelect from "@/components/CommonForm/RemoteSearchSelect.vue";
+import SelectProduct from '@/components/prodRange/SelectProduct.vue'
+import SelectCategory from '@/components/prodRange/SelectCategory.vue'
+import SelectTag from '@/components/prodRange/SelectTag.vue'
+import { http } from '@/utils/http'
+import { RestResult } from '@/api/type'
+
+const props = defineProps({
+  params: {
+    type: Array<any>,
+    default: () => ([])
+  },
+  paramOptions: {
+    type: Object,
+    default: () => ({})
+  },
+  modelValue: {
+    type: Object,
+    default: () => ({})
+  },
+  loading: {
+    type: Boolean,
+    default: false
+  }
+})
+
+const emit = defineEmits(['update:modelValue', 'search', 'reset', 'change'])
+const defalutValue = ref({})
+const formData = useVModel(props, 'modelValue', emit)
+
+const formRef = ref()
+// const formData = ref<Record<string, any>>({})
+const isExpanded = ref(false)
+
+// 组件映射
+const componentMap = {
+  input: ElInput,
+  select: ElSelect,
+  date: ElDatePicker,
+  daterange: ElDatePicker,
+  datetime: ElDatePicker,
+  datetimerange: ElDatePicker,
+  cascader: ElCascader,
+  'tree-select': ElTreeSelect,
+  'remote-search-select': RemoteSearchSelect,
+  'product-v2': SelectProduct,
+  'category-v2': SelectCategory,
+  'tag-v2': SelectTag,
+}
+
+// 获取组件
+const getComponent = (item) => {
+  return componentMap[item.type || 'input']
+}
+
+const commonParams = ['key', 'label', 'fixed', 'type']
+// 获取绑定
+const getBinds = (item) => {
+  return omit(item, commonParams)
+}
+
+// 固定显示的字段
+const fixedParams = computed(() => {
+  return props.params.filter(field => field.fixed)
+})
+
+// 可展开的字段
+const expandParams = computed(() => {
+  return props.params.filter(field => !field.fixed)
+})
+
+// 初始化表单数据
+const initFormData = () => {
+  // const data: Record<string, any> = {}
+  // props.params.forEach(p => {
+  //   data[p.key] = ''
+  // })
+  formData.value = { ...props.modelValue }
+  defalutValue.value = { ...props.modelValue }
+}
+
+// 切换展开状态
+const toggleExpand = () => {
+  isExpanded.value = !isExpanded.value
+}
+
+// 处理字段变化
+const handleParamChange = (value: any, field?: string) => {
+  emit('change', { field, value, formData: formData.value })
+}
+
+// 搜索
+const handleSearch = () => {
+  emit('search', formData.value)
+}
+
+// 重置
+const handleReset = () => {
+  formRef.value?.resetFields()
+  const data: Record<string, any> = {}
+  console.log(props.params,'params');
+
+  props.params.forEach(p => {
+    data[p.key] = ''
+  })
+
+  formData.value = { ...data, ...defalutValue.value }
+  emit('reset')
+}
+
+// 产品范围、标签、品类、目录数据
+const productCategoryList = ref([])
+function processCategories(categories, keepCodes = ['A', 'B']) {
+  if (!Array.isArray(categories)) {
+    return []
+  }
+
+  return categories.map(category => {
+    const processed = { ...category }
+
+    if (keepCodes.includes(category.code)) {
+      if (Array.isArray(category.children)) {
+        processed.children = category.children.map(child => ({
+          ...child,
+          children: [],
+          hasChildren: false
+        }))
+        processed.hasChildren = processed.children.length > 0
+      } else {
+        processed.children = []
+        processed.hasChildren = false
+      }
+    } else {
+      processed.children = []
+      processed.hasChildren = false
+    }
+
+    return processed
+  })
+}
+const getChildListData = async () => {
+  const res = await http.post<any, RestResult<any>>('/product/category-v2/child-list', {
+    data: { fullCode: 'MH' }
+  })
+  console.log(res, 'res')
+  if (res.success) {
+    productCategoryList.value = processCategories(res.data)
+  }
+}
+const getModelParamProductPageList = async (data: any) => {
+  return await http.post<any, RestResult<any>>('/product/model-param-product/page', {
+    data: { ...data }
+  })
+}
+const getModelParamProductCatalogPageList = async (data: any) => {
+  return await http.post<any, RestResult<any>>('/product/category-v2/user-list', {
+    data: { ...data, status: 1 }
+  })
+}
+const getModelParamProductTagPageList = async ({ categoryFullCode }) => {
+  return await http.post<any, RestResult<any>>(
+    `/product/tag-v2/list-category?categoryFullCode=${categoryFullCode || 'MH'}`,
+    {
+      data: {}
+    }
+  )
+}
+
+// 暴露方法
+defineExpose({
+  formData,
+  reset: handleReset,
+  search: handleSearch,
+  toggleExpand
+})
+
+onMounted(() => {
+  initFormData()
+  getChildListData()
+})
+</script>
+
+<style lang="scss" scoped>
+.search-bar {
+  padding: 12px 16px 0 16px;
+  border-radius: 4px;
+}
+
+.search-form {
+  margin: 0;
+}
+
+.fixed-fields {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  flex-direction: column;
+  margin-bottom: 12px;
+
+  .fixed-fields-line {
+    .action-buttons {
+      position: fixed;
+      right: 0;
+    }
+  }
+  .fields-line {
+    margin-bottom: 0;
+    :deep(.el-form-item) {
+      margin-top: 8px;
+      margin-right: 16px;
+    }
+  }
+  &:has(.fields-line) {
+    margin-bottom: 0;
+    .fields-line {
+      margin-bottom: 12px;
+    }
+  }
+}
+
+:deep(.el-form-item) {
+  margin-bottom: 0;
+  margin-right: 16px;
+}
+
+:deep(.el-form-item__label) {
+  font-weight: 500;
+  color: #606266;
+}
+
+:deep(.el-input),
+:deep(.el-select) {
+  width: 200px;
+}
+
+:deep(.el-date-editor) {
+  //width: 240px;
+}
+
+:deep(.el-cascader) {
+  width: 200px;
+}
+
+.ml-1 {
+  margin-left: 4px;
+}
+
+:deep(.el-form-item__content) {
+  min-width: 200px;
+}
+</style>

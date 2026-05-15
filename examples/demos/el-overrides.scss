@@ -18,6 +18,9 @@
     font-size: $doc-fs-sm;
     padding-left: 48px !important;
     color: $doc-text-regular;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   :deep(.el-sub-menu__title) {

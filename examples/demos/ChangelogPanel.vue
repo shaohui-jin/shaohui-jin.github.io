@@ -111,11 +111,22 @@ function onClickOutside(e: MouseEvent) {
   }
 }
 
-const isMobile = () => window.innerWidth <= 768;
+let savedScrollY = 0;
 
 function lockScroll(lock: boolean) {
-  if (isMobile()) {
-    document.body.style.overflow = lock ? "hidden" : "";
+  if (window.innerWidth > 1024) return;
+  if (lock) {
+    savedScrollY = window.scrollY;
+    document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${savedScrollY}px`;
+    document.body.style.width = "100%";
+  } else {
+    document.body.style.overflow = "";
+    document.body.style.position = "";
+    document.body.style.top = "";
+    document.body.style.width = "";
+    window.scrollTo(0, savedScrollY);
   }
 }
 
@@ -412,8 +423,26 @@ onBeforeUnmount(() => {
 
 // --- 平板端 ---
 @media (max-width: $doc-bp-tablet) {
+  .cl {
+    position: static;
+  }
+
   .cl__panel {
-    width: 400px;
+    position: fixed;
+    top: 57px;
+    right: 0;
+    width: 420px;
+    max-height: calc(100vh - 57px);
+    border-radius: 0 0 0 $doc-radius-lg;
+  }
+
+  .cl__backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    top: 57px;
+    z-index: 199;
+    background: rgb(0 0 0 / 30%);
   }
 }
 

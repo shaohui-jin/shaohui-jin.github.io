@@ -1,0 +1,228 @@
+<script setup lang="ts">
+import {
+  ElDrawer,
+  ElCheckbox,
+  ElCheckboxGroup,
+  ElRadioButton,
+  ElRadioGroup,
+  ElSwitch
+} from 'element-plus'
+import { TableColumn } from './types'
+import { PropType, ref, reactive, unref, defineProps, onMounted } from 'vue'
+import { cloneDeep } from 'lodash-es'
+import { useVModel } from '@vueuse/core'
+import BaseTable from './BaseTable.vue'
+import { VueDraggable } from 'vue-draggable-plus'
+
+const props = defineProps({
+  columns: {
+    type: Array as PropType<TableColumn[]>,
+    default: () => []
+  }
+})
+
+const emit = defineEmits(['confirm', 'update:modelValue', 'update:columns'])
+
+const columns = useVModel(props, 'columns', emit)
+const _columns = ref<TableColumn[]>([{}])
+const firstDefaultColumnKey = ['expand', 'selection']
+const endDefaultColumnKey = ['action', 'editColumn']
+const firstDefaultColumn = ref<TableColumn[]>()
+const endDefaultColumn = ref<TableColumn[]>()
+
+const selectedColumn = ref<string[]>([])
+
+const initColumns = () => {
+  const columns = cloneDeep(props.columns).map(e => {
+    if (!Object.prototype.hasOwnProperty.call(e, 'show')) {
+      e.show = true
+    }
+    if (!Object.prototype.hasOwnProperty.call(e, 'fixed')) {
+      e.fixed = void 0
+    }
+    return e
+  })
+
+  firstDefaultColumn.value = columns.filter(e => firstDefaultColumnKey.some(key => e.type === key))
+  endDefaultColumn.value = columns.filter(e => endDefaultColumnKey.some(key => e.type === key))
+  _columns.value = columns.filter(
+    e => ![...firstDefaultColumnKey, ...endDefaultColumnKey].some(key => e.type === key)
+  )
+
+  selectedColumn.value = _columns.value.filter(e => e.show).map(e => e.key)
+}
+
+const confirm = () => {
+  console.log('_columns.value', _columns.value)
+
+  const fixedLeft = _columns.value.filter(e => e.fixed === 'left')
+  const fixedRight = _columns.value.filter(e => e.fixed === 'right')
+  const fixedUndefined = _columns.value.filter(e => e.fixed !== 'left' && e.fixed !== 'right')
+
+  // fixed:left的拖到前面
+
+  // fixed:right的放到后面
+  columns.value = [
+    ...firstDefaultColumn.value,
+    ...fixedLeft,
+    ...fixedUndefined,
+    ...fixedRight,
+    ...endDefaultColumn.value
+  ]
+
+  close()
+}
+
+const showSetting = ref(false)
+const open = () => {
+  initColumns()
+  showSetting.value = true
+}
+
+const close = () => {
+  showSetting.value = false
+}
+
+defineExpose({
+  open
+})
+
+// table 拖拽相关
+const onMoveEvent = (event: any) => {
+  //目标被替换的元素
+  const targetElement = event.related
+  const classList = targetElement.childNodes[1]?.childNodes[1]?.childNodes[2]?.classList
+
+  let isUnClassify = false
+  if (classList) {
+    isUnClassify = Array.from(classList).includes('isUnClassify')
+  }
+  if (isUnClassify) {
+    return false
+  }
+}
+
+const onStart = (row: any) => {
+  console.log('onStart', row)
+}
+const onUpdate = (row: any) => {
+  console.log('onUpdate', row)
+}
+const onEnd = () => {}
+</script>
+
+<template>
+  <el-drawer
+    v-model="showSetting"
+    :before-close="close"
+    title="表格设置"
+    size="592px"
+    header-class="column-setting-header"
+    body-class="column-setting-body"
+  >
+    <vue-draggable
+      v-model="_columns"
+      target="tbody"
+      :animation="150"
+      handle=".drag-icon"
+      filter=".isUnClassify"
+      :prevent-on-filter="true"
+      @move="onMoveEvent"
+      @start="onStart"
+      @update="onUpdate"
+      @end="onEnd"
+    >
+      <el-table :data="_columns" max-height="760">
+        <el-table-column label="" prop="sort" width="44">
+          <template #default="{ row }">
+            <el-icon
+              :class="row.isUnClassify ? 'drag-icon isUnClassify' : 'drag-icon'"
+              :size="20"
+              style="cursor: move"
+            >
+              <svg
+                viewBox="0 0 12 20"
+                xmlns="http://www.w3.org/2000/svg"
+                xmlns:xlink="http://www.w3.org/1999/xlink"
+                width="12"
+                height="20"
+                fill="none"
+              >
+                <rect
+                  id="拖点"
+                  width="12"
+                  height="20"
+                  x="0"
+                  y="0"
+                  fill="rgb(255,255,255)"
+                  fill-opacity="0"
+                />
+                <path
+                  id="合并"
+                  d="M5 3L5 5L3 5L3 3L5 3ZM9 3L9 5L7 5L7 3L9 3ZM5 7L5 9L3 9L3 7L5 7ZM9 7L9 9L7 9L7 7L9 7ZM5 11L5 13L3 13L3 11L5 11ZM9 11L9 13L7 13L7 11L9 11ZM5 15L5 17L3 17L3 15L5 15ZM9 15L9 17L7 17L7 15L9 15Z"
+                  fill="rgb(91,91,94)"
+                  fill-rule="evenodd"
+                />
+              </svg>
+            </el-icon>
+          </template>
+        </el-table-column>
+        <el-table-column label="字段名称" prop="label" width="240" />
+        <el-table-column label="显隐" prop="show" width="120" #default="scope">
+          <el-switch v-model="scope.row.show" />
+        </el-table-column>
+        <el-table-column label="冻结列设置" prop="fixed" width="140" #default="scope">
+          <el-radio-group size="small" v-model="scope.row.fixed">
+            <el-radio-button label="left">前</el-radio-button>
+            <el-radio-button :label="undefined">无</el-radio-button>
+            <el-radio-button label="right">后</el-radio-button>
+          </el-radio-group>
+        </el-table-column>
+      </el-table>
+    </vue-draggable>
+    <template #footer>
+      <div>
+        <el-button @click="close">取消</el-button>
+        <el-button type="primary" @click="confirm">确定</el-button>
+      </div>
+    </template>
+  </el-drawer>
+</template>
+
+<style lang="scss">
+.column-setting-header {
+  margin-bottom: 0;
+  padding: 20px 20px 10px 20px;
+}
+.column-setting-body {
+  .table-bar {
+    padding: 0 !important;
+  }
+}
+</style>
+
+<style lang="scss" scoped>
+:deep(.el-table__header) {
+  height: 40px;
+  //background-color: rgba(119,49,25,0.8);
+  .editColumn {
+    .cell {
+      margin-right: 12px;
+      padding: 0;
+    }
+  }
+}
+:deep(.el-table__cell) {
+  height: 40px;
+  padding: 0;
+  //background-color: rgba(119,49,25,0.8);
+}
+:deep(.el-radio-button__inner) {
+  padding: 3px 8px;
+  //width: 28px;
+  //height: 20px;
+  //display: flex;
+  //align-items: center;
+  //justify-content: center;
+}
+</style>

@@ -5,3 +5,6 @@ export { default as EmptyPlaceholder } from "./empty-placeholder/EmptyPlaceholde
 export { default as TextLink } from "./text-link/TextLink.vue";
 export { default as SearchBar } from "./search-bar/SearchBar.vue";
 export { default as BaseTable } from "./crud/base-table/BaseTable.vue";
+export { default as BaseSearch } from "./crud/base-search/BaseSearch.vue";
+export { default as BaseSearchDrawer } from "./crud/base-search-drawer/BaseSearchDrawer.vue";
+export { default as BaseColumnSetting } from "./crud/base-column-setting/BaseColumnSetting.vue";

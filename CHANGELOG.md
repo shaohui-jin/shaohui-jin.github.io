@@ -1,5 +1,22 @@
 # 版本变更记录
 
+## v0.5.0（2026-05-15）
+
+### 组件模块
+
+#### 新增组件
+- **BaseSearch**：配置式搜索表单，支持固定字段与可展开字段，覆盖 input / select / date / cascader / tree-select 等类型，通过 `paramOptions` 支持异步选项加载
+- **BaseSearchDrawer**：侧边抽屉式高级搜索表单，复用 BaseSearchField 类型，额外支持 textarea / radio-group 类型，移动端抽屉全屏适配
+- **BaseColumnSetting**：表格列配置面板，支持原生拖拽排序、显隐切换、冻结列设置（左/无/右），确认时按 fixed 位置自动排列，移动端抽屉全屏适配
+
+#### 组件调整
+- **ChangelogPanel**：滚动锁定阈值从移动端扩展到平板端（≤1024px）；使用 `position: fixed` + 记录恢复 scrollY 的方式解决触屏设备背景滚动穿透；平板端新增遮罩层与固定定位面板
+
+### 配置模块
+
+#### 配置调整
+- **演示站导航**：BaseTable 移入「CRUD 组件」子菜单与新组件并列；侧边栏二级菜单项超出文本省略号处理
+
 ## v0.4.0（2026-05-10）
 
 ### 组件模块

@@ -1,6 +1,9 @@
 import type { App } from "vue";
 import {
   BaseTable,
+  BaseSearch,
+  BaseSearchDrawer,
+  BaseColumnSetting,
   EmptyPlaceholder,
   HelloButton,
   SearchBar,
@@ -9,7 +12,18 @@ import {
   TextLink,
 } from "./components";
 
-export { BaseTable, EmptyPlaceholder, HelloButton, SearchBar, StatusDot, StatusTag, TextLink };
+export {
+  BaseTable,
+  BaseSearch,
+  BaseSearchDrawer,
+  BaseColumnSetting,
+  EmptyPlaceholder,
+  HelloButton,
+  SearchBar,
+  StatusDot,
+  StatusTag,
+  TextLink,
+};
 
 export type { HelloButtonProps } from "./components/hello-button/types";
 export type { EmptyPlaceholderProps } from "./components/empty-placeholder/types";
@@ -24,10 +38,37 @@ export type {
   BaseTableProps,
   BaseTableEmits,
 } from "./components/crud/base-table/types";
+export type {
+  BaseSearchField,
+  BaseSearchFieldType,
+  BaseSearchFieldOption,
+  BaseSearchProps,
+  BaseSearchEmits,
+} from "./components/crud/base-search/types";
+export type {
+  BaseSearchDrawerProps,
+  BaseSearchDrawerEmits,
+} from "./components/crud/base-search-drawer/types";
+export type {
+  BaseColumnSettingColumn,
+  BaseColumnSettingProps,
+  BaseColumnSettingEmits,
+} from "./components/crud/base-column-setting/types";
 export { tableLayoutDefaults } from "./components/crud/base-table/theme/tableSurface";
 export { columnDefaults, normalizeColumns } from "./components/crud/base-table/utils/column";
 
-const components = [HelloButton, StatusDot, StatusTag, EmptyPlaceholder, TextLink, SearchBar, BaseTable];
+const components = [
+  HelloButton,
+  StatusDot,
+  StatusTag,
+  EmptyPlaceholder,
+  TextLink,
+  SearchBar,
+  BaseTable,
+  BaseSearch,
+  BaseSearchDrawer,
+  BaseColumnSetting,
+];
 
 export default {
   install(app: App) {

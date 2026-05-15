@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { computed, type Component, ref } from "vue";
 import DemoBaseTable from "./demos/DemoBaseTable.vue";
+import DemoBaseSearch from "./demos/DemoBaseSearch.vue";
+import DemoBaseSearchDrawer from "./demos/DemoBaseSearchDrawer.vue";
+import DemoBaseColumnSetting from "./demos/DemoBaseColumnSetting.vue";
 import DemoHelloButton from "./demos/DemoHelloButton.vue";
 import DemoStatusTag from "./demos/DemoStatusTag.vue";
 import DemoSearchBar from "./demos/DemoSearchBar.vue";
@@ -11,6 +14,9 @@ import ChangelogPanel from "./demos/ChangelogPanel.vue";
 
 const pageMap: Record<string, Component> = {
   "tables": DemoBaseTable,
+  "base-search": DemoBaseSearch,
+  "base-search-drawer": DemoBaseSearchDrawer,
+  "base-column-setting": DemoBaseColumnSetting,
   "hello-button": DemoHelloButton,
   "status-tag": DemoStatusTag,
   "search-bar": DemoSearchBar,
@@ -49,13 +55,19 @@ function handleSelect(key: string) {
         :default-active="activeName"
         class="doc-nav"
         :class="{ 'doc-nav--open': navOpen }"
-        :default-openeds="['basic']"
+        :default-openeds="['basic', 'crud']"
         @select="handleSelect"
       >
-        <el-menu-item index="tables">
-          <el-icon><i class="nav-icon nav-icon--table" /></el-icon>
-          <span>BaseTable 多模式</span>
-        </el-menu-item>
+        <el-sub-menu index="crud">
+          <template #title>
+            <el-icon><i class="nav-icon nav-icon--crud" /></el-icon>
+            <span>CRUD 组件</span>
+          </template>
+          <el-menu-item index="tables">BaseTable 多模式表格</el-menu-item>
+          <el-menu-item index="base-search">BaseSearch 搜索栏</el-menu-item>
+          <el-menu-item index="base-search-drawer">BaseSearchDrawer 搜索抽屉</el-menu-item>
+          <el-menu-item index="base-column-setting">BaseColumnSetting 列设置</el-menu-item>
+        </el-sub-menu>
         <el-sub-menu index="basic">
           <template #title>
             <el-icon><i class="nav-icon nav-icon--widget" /></el-icon>
@@ -205,7 +217,7 @@ function handleSelect(key: string) {
   height: 16px;
   border-radius: $doc-radius-sm;
 
-  &--table { background: $doc-color-primary; }
+  &--crud { background: $doc-color-warning; }
   &--widget { background: $doc-color-success; }
 }
 

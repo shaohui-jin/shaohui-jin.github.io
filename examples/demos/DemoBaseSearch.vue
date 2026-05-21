@@ -7,6 +7,7 @@ import {
   type BaseSearchEmits,
 } from "comp-vue-lib";
 import type { ApiRow, ComponentApi } from "./types";
+import ApiTable from "./ApiTable.vue";
 
 // ==================== 演示数据 ====================
 
@@ -111,7 +112,7 @@ const fieldApi: ApiRow[] = [
     <div class="widget-card__head">
       <span class="widget-card__title">演示</span>
     </div>
-    <div class="widget-card__body" style="padding-bottom: 0">
+    <div class="widget-card__body">
       <BaseSearch
         v-model="formData"
         :params="searchParams"
@@ -126,60 +127,19 @@ const fieldApi: ApiRow[] = [
   <!-- Props -->
   <div class="api-section">
     <h3 class="api-section__title">BaseSearch Props</h3>
-    <div class="api-table-wrap">
-      <table class="api-table">
-        <thead>
-          <tr><th>属性</th><th>类型</th><th>默认值</th><th>必填</th><th>说明</th></tr>
-        </thead>
-        <tbody>
-          <tr v-for="row in api.props" :key="row.name">
-            <td><code>{{ row.name }}</code></td>
-            <td><code class="api-type">{{ row.type }}</code></td>
-            <td><code v-if="row.default !== '—'">{{ row.default }}</code><span v-else>—</span></td>
-            <td>{{ row.required ? "是" : "否" }}</td>
-            <td>{{ row.desc }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <ApiTable type="props" :rows="api.props" />
   </div>
 
   <!-- Events -->
   <div class="api-section">
     <h3 class="api-section__title">BaseSearch Events</h3>
-    <div class="api-table-wrap">
-      <table class="api-table">
-        <thead><tr><th>事件名</th><th>参数</th><th>说明</th></tr></thead>
-        <tbody>
-          <tr v-for="e in api.events" :key="e.name">
-            <td><code>{{ e.name }}</code></td>
-            <td><code class="api-type">{{ e.payload }}</code></td>
-            <td>{{ e.desc }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <ApiTable type="events" :rows="api.events!" />
   </div>
 
   <!-- BaseSearchField -->
   <div class="api-section">
     <h3 class="api-section__title">BaseSearchField 字段配置</h3>
-    <div class="api-table-wrap">
-      <table class="api-table">
-        <thead>
-          <tr><th>属性</th><th>类型</th><th>默认值</th><th>必填</th><th>说明</th></tr>
-        </thead>
-        <tbody>
-          <tr v-for="row in fieldApi" :key="row.name">
-            <td><code>{{ row.name }}</code></td>
-            <td><code class="api-type">{{ row.type }}</code></td>
-            <td><code v-if="row.default !== '—'">{{ row.default }}</code><span v-else>—</span></td>
-            <td>{{ row.required ? "是" : "否" }}</td>
-            <td>{{ row.desc }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <ApiTable type="props" :rows="fieldApi" />
   </div>
 
   <!-- Notes -->

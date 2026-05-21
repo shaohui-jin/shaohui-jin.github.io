@@ -4,11 +4,7 @@ import DemoBaseTable from "./demos/DemoBaseTable.vue";
 import DemoBaseSearch from "./demos/DemoBaseSearch.vue";
 import DemoBaseSearchDrawer from "./demos/DemoBaseSearchDrawer.vue";
 import DemoBaseColumnSetting from "./demos/DemoBaseColumnSetting.vue";
-import DemoHelloButton from "./demos/DemoHelloButton.vue";
 import DemoStatusTag from "./demos/DemoStatusTag.vue";
-import DemoSearchBar from "./demos/DemoSearchBar.vue";
-import DemoTextLink from "./demos/DemoTextLink.vue";
-import DemoEmptyPlaceholder from "./demos/DemoEmptyPlaceholder.vue";
 import DemoStatusDot from "./demos/DemoStatusDot.vue";
 import ChangelogPanel from "./demos/ChangelogPanel.vue";
 
@@ -17,11 +13,7 @@ const pageMap: Record<string, Component> = {
   "base-search": DemoBaseSearch,
   "base-search-drawer": DemoBaseSearchDrawer,
   "base-column-setting": DemoBaseColumnSetting,
-  "hello-button": DemoHelloButton,
   "status-tag": DemoStatusTag,
-  "search-bar": DemoSearchBar,
-  "text-link": DemoTextLink,
-  "empty-placeholder": DemoEmptyPlaceholder,
   "status-dot": DemoStatusDot,
 };
 
@@ -73,12 +65,8 @@ function handleSelect(key: string) {
             <el-icon><i class="nav-icon nav-icon--widget" /></el-icon>
             <span>基础组件</span>
           </template>
-          <el-menu-item index="hello-button">HelloButton</el-menu-item>
           <el-menu-item index="status-tag">StatusTag</el-menu-item>
           <el-menu-item index="status-dot">StatusDot</el-menu-item>
-          <el-menu-item index="search-bar">SearchBar</el-menu-item>
-          <el-menu-item index="text-link">TextLink</el-menu-item>
-          <el-menu-item index="empty-placeholder">EmptyPlaceholder</el-menu-item>
         </el-sub-menu>
       </el-menu>
 
@@ -94,15 +82,17 @@ function handleSelect(key: string) {
 @use "./demos/el-overrides" as *;
 
 .doc {
-  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
   background: $doc-bg-page;
   font-family: $doc-font-family;
   color: $doc-text-primary;
 }
 
 .doc-header {
-  position: sticky;
-  top: 0;
+  flex: none;
   z-index: 100;
   height: 56px;
   background: $doc-bg-card;
@@ -111,9 +101,7 @@ function handleSelect(key: string) {
 }
 
 .doc-header__inner {
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 0 $doc-sp-2xl;
+  padding: 0 32px 0 $doc-sp-2xl;
   display: flex;
   align-items: center;
   height: 100%;
@@ -189,11 +177,11 @@ function handleSelect(key: string) {
 }
 
 .doc-main {
+  flex: 1 1 0;
   display: flex;
-  max-width: 1440px;
-  margin: 0 auto;
-  min-height: calc(100vh - 56px);
+  min-height: 0;
   position: relative;
+  overflow: hidden;
 }
 
 .doc-nav-backdrop {
@@ -206,7 +194,13 @@ function handleSelect(key: string) {
   border-right: 1px solid $doc-border-color;
   background: $doc-bg-card;
   padding-top: $doc-sp-sm;
+  overflow-y: auto;
+  scrollbar-width: none;
   transition: transform 0.3s ease;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 
   @include el-menu-nav;
 }
@@ -222,9 +216,15 @@ function handleSelect(key: string) {
 }
 
 .doc-content {
-  flex: 1;
+  flex: 1 1 0;
   min-width: 0;
   padding: 28px 32px 48px;
+  overflow: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 // ============================================================

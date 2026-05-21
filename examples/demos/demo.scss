@@ -89,7 +89,7 @@
   border: 1px solid $doc-border-color;
   border-radius: $doc-radius-lg;
   padding: $doc-sp-xl;
-  box-shadow: $doc-shadow-md;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 6%), 0 0 1px rgb(0 0 0 / 4%);
 }
 
 .api-section__title {

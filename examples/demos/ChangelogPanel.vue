@@ -23,6 +23,14 @@ interface VersionBlock {
   modules: ChangeModule[];
 }
 
+function getGroupColor(type: string): string {
+  if (type.includes("新增")) return "#67c23a";
+  if (type.includes("调整") || type.includes("修改")) return "#409eff";
+  if (type.includes("修复")) return "#e6a23c";
+  if (type.includes("移除") || type.includes("删除")) return "#f56c6c";
+  return "#909399";
+}
+
 function parseChangelog(raw: string): VersionBlock[] {
   const blocks: VersionBlock[] = [];
   const lines = raw.split("\n");
@@ -171,12 +179,18 @@ onBeforeUnmount(() => {
                 <div v-for="mod in v.modules" :key="mod.name" class="cl__mod">
                   <div class="cl__mod-name">{{ mod.name }}</div>
                   <template v-for="g in mod.groups" :key="g.type">
-                    <div v-if="g.type" class="cl__grp-type">{{ g.type }}</div>
+                    <div v-if="g.type" class="cl__grp-type">
+                      <span class="cl__grp-dot" :style="{ background: getGroupColor(g.type) }" />
+                      {{ g.type }}
+                    </div>
                     <div class="cl__items">
-                      <p v-for="(item, i) in g.items" :key="i" class="cl__item">
-                        <code v-if="item.label" class="cl__tag">{{ item.label }}</code>
-                        <span>{{ item.text }}</span>
-                      </p>
+                      <div v-for="(item, i) in g.items" :key="i" class="cl__item">
+                        <span class="cl__item-bullet" :style="{ background: getGroupColor(g.type) }" />
+                        <div class="cl__item-content">
+                          <code v-if="item.label" class="cl__tag">{{ item.label }}</code>
+                          <span>{{ item.text }}</span>
+                        </div>
+                      </div>
                     </div>
                   </template>
                 </div>
@@ -382,27 +396,54 @@ onBeforeUnmount(() => {
 }
 
 .cl__grp-type {
-  font-size: 11px;
-  color: $doc-text-secondary;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: $doc-fs-xs;
+  font-weight: 500;
+  color: $doc-text-primary;
+  margin: 8px 0 4px;
   padding-left: 4px;
-  margin: 4px 0 2px;
 
-  &::before {
-    content: "› ";
-    color: $doc-border-color;
+  &:first-child {
+    margin-top: 0;
   }
 }
 
+.cl__grp-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
 .cl__items {
-  padding-left: 4px;
+  padding-left: 18px;
 }
 
 .cl__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
   margin: 0;
-  padding: 1px 0;
+  padding: 2px 0;
   font-size: $doc-fs-xs;
   line-height: 1.7;
   color: $doc-text-regular;
+}
+
+.cl__item-bullet {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 8px;
+  opacity: 0.6;
+}
+
+.cl__item-content {
+  flex: 1;
+  min-width: 0;
 }
 
 .cl__tag {

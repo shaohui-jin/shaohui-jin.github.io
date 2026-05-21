@@ -7,6 +7,7 @@ import {
   type BaseSearchDrawerEmits,
 } from "comp-vue-lib";
 import type { ComponentApi } from "./types";
+import ApiTable from "./ApiTable.vue";
 
 // ==================== 演示数据 ====================
 
@@ -107,39 +108,13 @@ const api: ComponentApi = {
   <!-- Props -->
   <div class="api-section">
     <h3 class="api-section__title">BaseSearchDrawer Props</h3>
-    <div class="api-table-wrap">
-      <table class="api-table">
-        <thead>
-          <tr><th>属性</th><th>类型</th><th>默认值</th><th>必填</th><th>说明</th></tr>
-        </thead>
-        <tbody>
-          <tr v-for="row in api.props" :key="row.name">
-            <td><code>{{ row.name }}</code></td>
-            <td><code class="api-type">{{ row.type }}</code></td>
-            <td><code v-if="row.default !== '—'">{{ row.default }}</code><span v-else>—</span></td>
-            <td>{{ row.required ? "是" : "否" }}</td>
-            <td>{{ row.desc }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <ApiTable type="props" :rows="api.props" />
   </div>
 
   <!-- Events -->
   <div class="api-section">
     <h3 class="api-section__title">BaseSearchDrawer Events</h3>
-    <div class="api-table-wrap">
-      <table class="api-table">
-        <thead><tr><th>事件名</th><th>参数</th><th>说明</th></tr></thead>
-        <tbody>
-          <tr v-for="e in api.events" :key="e.name">
-            <td><code>{{ e.name }}</code></td>
-            <td><code class="api-type">{{ e.payload }}</code></td>
-            <td>{{ e.desc }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <ApiTable type="events" :rows="api.events!" />
   </div>
 
   <!-- Notes -->

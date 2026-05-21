@@ -9,6 +9,7 @@ import {
   type BaseTableProps,
 } from "comp-vue-lib";
 import type { ApiRow, ComponentApi } from "./types";
+import ApiTable from "./ApiTable.vue";
 
 // ==================== 演示数据 ====================
 
@@ -21,6 +22,7 @@ const modes: { label: string; value: BaseTableMode; desc: string; rows: number }
 ];
 
 const activeMode = ref<BaseTableMode>("element");
+const activeTypeTab = ref("switch");
 
 function generateRows(count: number) {
   return Array.from({ length: count }, (_, i) => ({
@@ -191,146 +193,42 @@ const baseTableColumnTableSlotApi: ApiRow[] = [
   <!-- BaseTable API 文档 -->
   <div class="api-section">
     <h3 class="api-section__title">BaseTable Props</h3>
-    <div class="api-table-wrap">
-      <table class="api-table">
-        <thead>
-          <tr><th>属性</th><th>类型</th><th>默认值</th><th>必填</th><th>说明</th></tr>
-        </thead>
-        <tbody>
-          <tr v-for="row in baseTableApi.props" :key="row.name">
-            <td><code>{{ row.name }}</code></td>
-            <td><code class="api-type">{{ row.type }}</code></td>
-            <td><code v-if="row.default !== '—'">{{ row.default }}</code><span v-else>—</span></td>
-            <td>{{ row.required ? "是" : "否" }}</td>
-            <td>
-              {{ row.desc }}
-              <span v-if="row.note" class="api-note">{{ row.note }}</span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <ApiTable type="props" :rows="baseTableApi.props" />
   </div>
 
   <div class="api-section">
     <h3 class="api-section__title">BaseTable Events</h3>
-    <div class="api-table-wrap">
-      <table class="api-table">
-        <thead><tr><th>事件名</th><th>参数</th><th>说明</th></tr></thead>
-        <tbody>
-          <tr v-for="e in baseTableApi.events" :key="e.name">
-            <td><code>{{ e.name }}</code></td>
-            <td><code class="api-type">{{ e.payload }}</code></td>
-            <td>{{ e.desc }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <ApiTable type="events" :rows="baseTableApi.events!" />
   </div>
 
   <div class="api-section">
     <h3 class="api-section__title">BaseTable Slots</h3>
-    <div class="api-table-wrap">
-      <table class="api-table">
-        <thead><tr><th>插槽名</th><th>说明</th></tr></thead>
-        <tbody>
-          <tr v-for="s in baseTableApi.slots" :key="s.name">
-            <td><code>{{ s.name }}</code></td>
-            <td>{{ s.desc }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <ApiTable type="slots" :rows="baseTableApi.slots!" />
   </div>
 
   <div class="api-section">
     <h3 class="api-section__title">BaseTableMode 渲染模式</h3>
-    <div class="api-table-wrap">
-      <table class="api-table">
-        <thead><tr><th>值</th><th>说明</th></tr></thead>
-        <tbody>
-          <tr v-for="m in baseTableModeApi" :key="m.value">
-            <td><code>{{ m.value }}</code></td>
-            <td>{{ m.desc }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <ApiTable type="slots" :rows="baseTableModeApi.map(m => ({ name: m.value, desc: m.desc }))" />
   </div>
 
   <div class="api-section">
     <h3 class="api-section__title">BaseTableColumn 列配置（通用）</h3>
-    <div class="api-table-wrap">
-      <table class="api-table">
-        <thead><tr><th>属性</th><th>类型</th><th>默认值</th><th>必填</th><th>说明</th></tr></thead>
-        <tbody>
-          <tr v-for="row in baseTableColumnApi" :key="row.name">
-            <td><code>{{ row.name }}</code></td>
-            <td><code class="api-type">{{ row.type }}</code></td>
-            <td><code v-if="row.default !== '—'">{{ row.default }}</code><span v-else>—</span></td>
-            <td>{{ row.required ? "是" : "否" }}</td>
-            <td>
-              {{ row.desc }}
-              <span v-if="row.note" class="api-note">{{ row.note }}</span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <ApiTable type="props" :rows="baseTableColumnApi" />
   </div>
 
   <div class="api-section">
-    <h3 class="api-section__title">BaseTableColumn — type="switch" 扩展字段</h3>
-    <div class="api-table-wrap">
-      <table class="api-table">
-        <thead><tr><th>属性</th><th>类型</th><th>默认值</th><th>必填</th><th>说明</th></tr></thead>
-        <tbody>
-          <tr v-for="row in baseTableColumnSwitchApi" :key="row.name">
-            <td><code>{{ row.name }}</code></td>
-            <td><code class="api-type">{{ row.type }}</code></td>
-            <td><code v-if="row.default !== '—'">{{ row.default }}</code><span v-else>—</span></td>
-            <td>{{ row.required ? "是" : "否" }}</td>
-            <td>{{ row.desc }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="api-section">
-    <h3 class="api-section__title">BaseTableColumn — type="status-custom" 扩展字段</h3>
-    <div class="api-table-wrap">
-      <table class="api-table">
-        <thead><tr><th>属性</th><th>类型</th><th>默认值</th><th>必填</th><th>说明</th></tr></thead>
-        <tbody>
-          <tr v-for="row in baseTableColumnStatusCustomApi" :key="row.name">
-            <td><code>{{ row.name }}</code></td>
-            <td><code class="api-type">{{ row.type }}</code></td>
-            <td><code v-if="row.default !== '—'">{{ row.default }}</code><span v-else>—</span></td>
-            <td>{{ row.required ? "是" : "否" }}</td>
-            <td>{{ row.desc }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="api-section">
-    <h3 class="api-section__title">BaseTableColumn — type="tableSlot" 扩展字段</h3>
-    <div class="api-table-wrap">
-      <table class="api-table">
-        <thead><tr><th>属性</th><th>类型</th><th>默认值</th><th>必填</th><th>说明</th></tr></thead>
-        <tbody>
-          <tr v-for="row in baseTableColumnTableSlotApi" :key="row.name">
-            <td><code>{{ row.name }}</code></td>
-            <td><code class="api-type">{{ row.type }}</code></td>
-            <td><code v-if="row.default !== '—'">{{ row.default }}</code><span v-else>—</span></td>
-            <td>{{ row.required ? "是" : "否" }}</td>
-            <td>{{ row.desc }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <h3 class="api-section__title">BaseTableColumn 扩展字段（按 type）</h3>
+    <el-tabs v-model="activeTypeTab" type="border-card" class="type-tabs">
+      <el-tab-pane label="switch" name="switch">
+        <ApiTable type="props" :rows="baseTableColumnSwitchApi" />
+      </el-tab-pane>
+      <el-tab-pane label="status-custom" name="status-custom">
+        <ApiTable type="props" :rows="baseTableColumnStatusCustomApi" />
+      </el-tab-pane>
+      <el-tab-pane label="tableSlot" name="tableSlot">
+        <ApiTable type="props" :rows="baseTableColumnTableSlotApi" />
+      </el-tab-pane>
+    </el-tabs>
   </div>
 
   <div v-if="baseTableApi.notes?.length" class="api-section">
@@ -347,6 +245,10 @@ const baseTableColumnTableSlotApi: ApiRow[] = [
 @use "./demo";
 
 .doc-tabs {
+  @include el-tabs-border-card;
+}
+
+.type-tabs {
   @include el-tabs-border-card;
 }
 

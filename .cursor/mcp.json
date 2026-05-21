@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "cursor-feedback": {
+      "command": "cursor-feedback-mcp",
+      "args": ["-y", "cursor-feedback@latest"],
+      "env": {
+        "MCP_FEEDBACK_TIMEOUT": "21600" // 超时时间拉长一点
+      }
+    }
+  }
+}

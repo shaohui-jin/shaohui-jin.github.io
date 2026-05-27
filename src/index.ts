@@ -2,14 +2,12 @@ import type { App } from "vue";
 import {
   BaseTable,
   BaseSearch,
+  BaseSearchField,
   BaseSearchDrawer,
   BaseColumnSetting,
-  EmptyPlaceholder,
-  HelloButton,
-  SearchBar,
+  BaseCrud,
   StatusDot,
   StatusTag,
-  TextLink,
 } from "./components";
 import { createCompLib } from "./config/configInjection";
 import ConfigProvider from "./config/ConfigProvider.vue";
@@ -17,18 +15,17 @@ import ConfigProvider from "./config/ConfigProvider.vue";
 export {
   BaseTable,
   BaseSearch,
+  BaseSearchField,
   BaseSearchDrawer,
   BaseColumnSetting,
-  EmptyPlaceholder,
-  HelloButton,
-  SearchBar,
+  BaseCrud,
   StatusDot,
   StatusTag,
-  TextLink,
 };
 
 // 配置系统
 export { createCompLib, ConfigProvider };
+export { elementPlusLocale } from "./config/elementPlusLocale";
 export { useLibConfig } from "./config/useLibConfig";
 export { defaultLibConfig } from "./config/configDefaults";
 export type {
@@ -39,12 +36,8 @@ export type {
 } from "./config/configTypes";
 export type { PersistOptions } from "./config/configInjection";
 
-export type { HelloButtonProps } from "./components/hello-button/types";
-export type { EmptyPlaceholderProps } from "./components/empty-placeholder/types";
-export type { SearchBarProps, SearchBarEmits } from "./components/search-bar/types";
-export type { StatusDotProps } from "./components/status-dot/types";
-export type { StatusTagProps, StatusTagType } from "./components/status-tag/types";
-export type { TextLinkProps, TextLinkEmits } from "./components/text-link/types";
+export type { StatusDotProps } from "./components/basic/status-dot/types";
+export type { StatusTagProps, StatusTagType } from "./components/basic/status-tag/types";
 export type {
   BaseTableColumn,
   BaseTableColumnType,
@@ -60,6 +53,10 @@ export type {
   BaseSearchEmits,
 } from "./components/crud/base-search/types";
 export type {
+  BaseSearchFieldProps,
+  BaseSearchFieldEmits,
+} from "./components/crud/base-search-field/types";
+export type {
   BaseSearchDrawerProps,
   BaseSearchDrawerEmits,
 } from "./components/crud/base-search-drawer/types";
@@ -68,24 +65,23 @@ export type {
   BaseColumnSettingProps,
   BaseColumnSettingEmits,
 } from "./components/crud/base-column-setting/types";
+export type { BaseCrudProps, BaseCrudEmits } from "./components/crud/base-crud/types";
 /** @deprecated 使用 createCompLib 配置代替 */
 export {
   tableLayoutDefaults,
   tableSurfaceConfig,
 } from "./components/crud/base-table/theme/tableSurface";
-export { columnDefaults, normalizeColumns } from "./components/crud/base-table/utils/column";
+export { columnDefaults, normalizeColumns, withEditColumn, stripEditColumn } from "./components/crud/base-table/utils/column";
 
 const components = [
-  HelloButton,
   StatusDot,
   StatusTag,
-  EmptyPlaceholder,
-  TextLink,
-  SearchBar,
   BaseTable,
   BaseSearch,
+  BaseSearchField,
   BaseSearchDrawer,
   BaseColumnSetting,
+  BaseCrud,
 ];
 
 /**

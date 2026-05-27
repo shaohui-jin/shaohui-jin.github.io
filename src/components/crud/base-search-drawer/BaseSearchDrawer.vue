@@ -1,27 +1,15 @@
 <script setup lang="ts">
-import { ref, computed, type Component } from "vue";
-import {
-  ElDrawer,
-  ElForm,
-  ElFormItem,
-  ElButton,
-  ElInput,
-  ElSelect,
-  ElOption,
-  ElDatePicker,
-  ElCascader,
-  ElTreeSelect,
-  ElRadioGroup,
-  ElRadio,
-} from "element-plus";
-import { omit } from "lodash-es";
-import type { BaseSearchField, BaseSearchFieldOption } from "./types";
+import { ref, computed } from "vue";
+import { ElDrawer, ElForm, ElFormItem, ElButton } from "element-plus";
+import BaseSearchField from "../base-search-field/BaseSearchField.vue";
+import type { BaseSearchField as SearchFieldConfig, BaseSearchFieldOption } from "./types";
+import { omitEmptySearchFields, patchSearchFormField } from "../base-search/searchFormData";
 
 defineOptions({ name: "BaseSearchDrawer" });
 
 const props = withDefaults(
   defineProps<{
-    params: BaseSearchField[];
+    params: SearchFieldConfig[];
     modelValue: Record<string, unknown>;
     paramOptions?: Record<string, BaseSearchFieldOption[]>;
     title?: string;
@@ -48,49 +36,24 @@ const formData = computed({
   set: (val: Record<string, any>) => emit("update:modelValue", val),
 });
 
-const DATE_TYPES = new Set(["date", "daterange", "datetime", "datetimerange"]);
-
-const componentMap: Record<string, Component> = {
-  input: ElInput,
-  textarea: ElInput,
-  select: ElSelect,
-  date: ElDatePicker,
-  daterange: ElDatePicker,
-  datetime: ElDatePicker,
-  datetimerange: ElDatePicker,
-  cascader: ElCascader,
-  "tree-select": ElTreeSelect,
-  "radio-group": ElRadioGroup,
-};
-
-function getComponent(item: BaseSearchField): Component {
-  return componentMap[item.type || "input"] || ElInput;
-}
-
-const BIND_OMIT_KEYS = ["key", "label"];
-
-function getBinds(item: BaseSearchField): Record<string, unknown> {
-  return omit(item as unknown as Record<string, unknown>, BIND_OMIT_KEYS);
+function updateFieldValue(key: string, value: unknown) {
+  formData.value = patchSearchFormField(formData.value, key, value);
 }
 
 function handleSearch() {
-  emit("search", formData.value);
+  emit("search", omitEmptySearchFields(formData.value));
   visible.value = false;
 }
 
 function handleReset() {
   formRef.value?.resetFields();
-  const data: Record<string, unknown> = {};
-  props.params.forEach((p) => {
-    data[p.key] = "";
-  });
-  formData.value = { ...data };
+  formData.value = {};
   visible.value = false;
   emit("reset");
 }
 
 function open() {
-  formData.value = { ...props.modelValue };
+  formData.value = { ...omitEmptySearchFields(props.modelValue) };
   visible.value = true;
 }
 
@@ -114,63 +77,12 @@ defineExpose({
   >
     <ElForm ref="formRef" :model="formData" label-width="auto" label-position="top">
       <ElFormItem v-for="param in params" :key="param.key" :label="param.label">
-        <ElDatePicker
-          v-if="DATE_TYPES.has(param.type ?? '')"
-          v-model="formData[param.key]"
-          :type="param.type as any"
-          range-separator="至"
-          :clearable="param.clearable !== false"
-          v-bind="getBinds(param)"
+        <BaseSearchField
+          :model-value="formData[param.key]"
+          :field="param"
+          :param-options="paramOptions[param.key]"
+          @update:model-value="(value) => updateFieldValue(param.key, value)"
         />
-        <component
-          :is="getComponent(param)"
-          v-else
-          v-model="formData[param.key]"
-          :placeholder="param.placeholder"
-          v-bind="getBinds(param)"
-          :empty-values="[null, undefined]"
-          :clearable="param.clearable !== false"
-        >
-          <template v-if="param.type === 'select'">
-            <template v-if="param.options && param.options.length > 0">
-              <ElOption
-                v-for="option in param.options"
-                :key="param.key + String(option.value)"
-                :label="option.name"
-                :value="option.value"
-              />
-            </template>
-            <template v-else-if="paramOptions[param.key]">
-              <ElOption
-                v-for="option in paramOptions[param.key]"
-                :key="param.key + String(option.value)"
-                :label="option.name"
-                :value="option.value"
-              />
-            </template>
-          </template>
-
-          <template v-else-if="param.type === 'radio-group'">
-            <template v-if="param.options && param.options.length > 0">
-              <ElRadio
-                v-for="option in param.options"
-                :key="param.key + String(option.value)"
-                :value="option.value"
-              >
-                {{ option.name }}
-              </ElRadio>
-            </template>
-            <template v-else-if="paramOptions[param.key]">
-              <ElRadio
-                v-for="option in paramOptions[param.key]"
-                :key="param.key + String(option.value)"
-                :value="option.value"
-              >
-                {{ option.name }}
-              </ElRadio>
-            </template>
-          </template>
-        </component>
       </ElFormItem>
     </ElForm>
 

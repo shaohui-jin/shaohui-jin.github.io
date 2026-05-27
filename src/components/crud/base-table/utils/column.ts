@@ -70,6 +70,27 @@ export function visibleColumns(columns: BaseTableColumn[]): BaseTableColumn[] {
   return columns.filter((c) => c.show !== false);
 }
 
+/** 列设置图标列（固定右侧，不参与列设置面板排序） */
+export function createEditColumnConfig(): BaseTableColumn {
+  return {
+    key: "__editColumn__",
+    type: "editColumn",
+    fixed: "right",
+    width: 48,
+    resizable: false,
+  };
+}
+
+export function stripEditColumn(columns: BaseTableColumn[]): BaseTableColumn[] {
+  return columns.filter((c) => c.type !== "editColumn");
+}
+
+export function withEditColumn(columns: BaseTableColumn[], enabled: boolean): BaseTableColumn[] {
+  const base = stripEditColumn(columns);
+  if (!enabled) return base;
+  return [...base, createEditColumnConfig()];
+}
+
 export function headerText(col: BaseTableColumn): string {
   if (col.type === "selection" || col.type === "index") {
     return "";

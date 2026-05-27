@@ -1,15 +1,22 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { onMounted, onUnmounted, ref } from "vue";
+import { ElPopover } from "element-plus";
 import type { ApiRow, EventRow, SlotRow } from "./types";
+import {
+  formatApiTypeHint,
+  getApiTypeHint,
+  shouldShowTypeHint,
+} from "./apiTypeHints";
 
 type TableType = "props" | "events" | "slots";
 
-const props = defineProps<{
+defineProps<{
   type?: TableType;
   rows: ApiRow[] | EventRow[] | SlotRow[];
 }>();
 
 const expandedRows = ref<Set<number>>(new Set());
+const isTouchLike = ref(false);
 
 function toggleRow(index: number) {
   if (expandedRows.value.has(index)) {
@@ -19,13 +26,32 @@ function toggleRow(index: number) {
   }
 }
 
-const tableType = props.type ?? "props";
+function updateTouchLike() {
+  if (typeof window === "undefined") return;
+  isTouchLike.value = window.matchMedia(`(max-width: 1024px)`).matches;
+}
+
+function hintContent(typeName: string) {
+  const hint = getApiTypeHint(typeName);
+  if (!hint) return "";
+  const title = hint.title ? `${hint.title}：` : "";
+  return `${title}${formatApiTypeHint(hint)}`;
+}
+
+onMounted(() => {
+  updateTouchLike();
+  window.addEventListener("resize", updateTouchLike);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("resize", updateTouchLike);
+});
 </script>
 
 <template>
   <!-- 桌面端：常规表格 -->
   <div class="api-table-wrap api-table--desktop">
-    <table v-if="tableType === 'props'" class="api-table">
+    <table v-if="(type ?? 'props') === 'props'" class="api-table">
       <thead>
         <tr>
           <th>属性</th>
@@ -41,7 +67,20 @@ const tableType = props.type ?? "props";
             <code>{{ row.name }}</code>
           </td>
           <td>
-            <code class="api-type">{{ row.type }}</code>
+            <span class="api-type-cell">
+              <code class="api-type">{{ row.type }}</code>
+              <ElPopover
+                v-if="shouldShowTypeHint(row.type)"
+                :trigger="isTouchLike ? 'click' : 'hover'"
+                :width="420"
+                placement="top"
+              >
+                <template #reference>
+                  <button type="button" class="api-type-hint" aria-label="查看类型说明"></button>
+                </template>
+                <span class="api-type-hint-pop">{{ hintContent(row.type) }}</span>
+              </ElPopover>
+            </span>
           </td>
           <td>
             <code v-if="row.default !== '—'">{{ row.default }}</code>
@@ -53,7 +92,7 @@ const tableType = props.type ?? "props";
       </tbody>
     </table>
 
-    <table v-else-if="tableType === 'events'" class="api-table">
+    <table v-else-if="(type ?? 'props') === 'events'" class="api-table">
       <thead>
         <tr>
           <th>事件名</th>
@@ -67,7 +106,20 @@ const tableType = props.type ?? "props";
             <code>{{ row.name }}</code>
           </td>
           <td>
-            <code class="api-type">{{ row.payload }}</code>
+            <span class="api-type-cell">
+              <code class="api-type">{{ row.payload }}</code>
+              <ElPopover
+                v-if="shouldShowTypeHint(row.payload)"
+                :trigger="isTouchLike ? 'click' : 'hover'"
+                :width="420"
+                placement="top"
+              >
+                <template #reference>
+                  <button type="button" class="api-type-hint" aria-label="查看类型说明"></button>
+                </template>
+                <span class="api-type-hint-pop">{{ hintContent(row.payload) }}</span>
+              </ElPopover>
+            </span>
           </td>
           <td>{{ row.desc }}</td>
         </tr>
@@ -92,9 +144,9 @@ const tableType = props.type ?? "props";
     </table>
   </div>
 
-  <!-- 移动端：方案 C 精简展开 -->
+  <!-- 移动端：精简展开 -->
   <div class="api-table--mobile">
-    <table v-if="tableType === 'props'" class="api-table api-table-c">
+    <table v-if="(type ?? 'props') === 'props'" class="api-table api-table-c">
       <thead>
         <tr>
           <th>属性</th>
@@ -117,7 +169,20 @@ const tableType = props.type ?? "props";
           <tr v-show="expandedRows.has(idx)" class="api-table-c__detail">
             <td colspan="2">
               <span class="api-table-c__label">类型：</span>
-              <code class="api-type">{{ row.type }}</code>
+              <span class="api-type-cell">
+                <code class="api-type">{{ row.type }}</code>
+                <ElPopover
+                  v-if="shouldShowTypeHint(row.type)"
+                  :trigger="isTouchLike ? 'click' : 'hover'"
+                  :width="420"
+                  placement="top"
+                >
+                  <template #reference>
+                    <button type="button" class="api-type-hint" aria-label="查看类型说明"></button>
+                  </template>
+                  <span class="api-type-hint-pop">{{ hintContent(row.type) }}</span>
+                </ElPopover>
+              </span>
               <span v-if="row.default !== '—'" class="api-table-c__default">
                 &nbsp;| 默认：<code>{{ row.default }}</code>
               </span>
@@ -127,7 +192,7 @@ const tableType = props.type ?? "props";
       </tbody>
     </table>
 
-    <table v-else-if="tableType === 'events'" class="api-table api-table-c">
+    <table v-else-if="(type ?? 'props') === 'events'" class="api-table api-table-c">
       <thead>
         <tr>
           <th>事件名</th>
@@ -149,7 +214,20 @@ const tableType = props.type ?? "props";
           <tr v-show="expandedRows.has(idx)" class="api-table-c__detail">
             <td colspan="2">
               <span class="api-table-c__label">参数：</span>
-              <code class="api-type">{{ row.payload }}</code>
+              <span class="api-type-cell">
+                <code class="api-type">{{ row.payload }}</code>
+                <ElPopover
+                  v-if="shouldShowTypeHint(row.payload)"
+                  :trigger="isTouchLike ? 'click' : 'hover'"
+                  :width="420"
+                  placement="top"
+                >
+                  <template #reference>
+                    <button type="button" class="api-type-hint" aria-label="查看类型说明"></button>
+                  </template>
+                  <span class="api-type-hint-pop">{{ hintContent(row.payload) }}</span>
+                </ElPopover>
+              </span>
             </td>
           </tr>
         </template>
@@ -237,5 +315,41 @@ const tableType = props.type ?? "props";
 
 .api-table-c__label {
   font-weight: 500;
+}
+
+.api-type-hint {
+  box-sizing: border-box;
+  appearance: none;
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  margin-left: 4px;
+  padding: 0;
+  border: 1px solid $doc-border-color;
+  border-radius: 50%;
+  background: $doc-bg-card;
+  color: $doc-color-primary;
+  font-size: 0;
+  line-height: 0;
+  cursor: help;
+  flex-shrink: 0;
+
+  &::after {
+    content: "?";
+    font-family: system-ui, sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+  }
+}
+
+.api-type-hint-pop {
+  display: block;
+  font-size: $doc-fs-xs;
+  line-height: 1.6;
+  color: $doc-text-regular;
+  white-space: normal;
+  word-break: break-word;
 }
 </style>

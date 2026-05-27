@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { provide, reactive, watch, ref, onMounted, inject } from "vue";
+import { ElConfigProvider } from "element-plus";
 import type { LibConfig, ResolvedLibConfig } from "./configTypes";
 import { defaultLibConfig } from "./configDefaults";
 import { LIB_CONFIG_KEY, configToCssVars } from "./configInjection";
+import { elementPlusLocale } from "./elementPlusLocale";
 
 defineOptions({ name: "ConfigProvider" });
 
@@ -47,9 +49,11 @@ function syncCssVars() {
 </script>
 
 <template>
-  <div ref="root" class="comp-config-provider">
-    <slot />
-  </div>
+  <ElConfigProvider :locale="elementPlusLocale">
+    <div ref="root" class="comp-config-provider">
+      <slot />
+    </div>
+  </ElConfigProvider>
 </template>
 
 <style scoped>

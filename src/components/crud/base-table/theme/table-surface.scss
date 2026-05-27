@@ -106,4 +106,33 @@
     font-weight: var(--crud-bt-cell-font-weight);
     border-right: 1px solid var(--crud-bt-border);
   }
+
+  /* 列设置图标列：固定最右、与前一列视觉融合（无左右边框） */
+  :deep(th.crud-base-table__edit-column.el-table__cell),
+  :deep(td.crud-base-table__edit-column.el-table__cell) {
+    overflow: visible;
+    border-right: none !important;
+    border-left: none !important;
+  }
+
+  :deep(th.crud-base-table__edit-column .cell),
+  :deep(td.crud-base-table__edit-column .cell) {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 0 12px;
+    overflow: visible;
+  }
+
+  :deep(.el-table__fixed-right-patch) {
+    background: var(--crud-bt-header-bg);
+  }
+
+  /* 有 editColumn 时，倒数第二列右侧不画线，与列设置列连成一体 */
+  :deep(.el-table:has(.crud-base-table__edit-column) .el-table__header tr th:nth-last-child(2).el-table__cell),
+  :deep(.el-table:has(.crud-base-table__edit-column) .el-table__body tr td:nth-last-child(2).el-table__cell) {
+    border-right: none !important;
+  }
 }

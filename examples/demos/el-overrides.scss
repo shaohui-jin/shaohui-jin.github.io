@@ -16,18 +16,36 @@
     height: 40px;
     line-height: 40px;
     font-size: $doc-fs-base;
+    border-left: 3px solid transparent;
+    transition:
+      background 0.2s,
+      border-color 0.2s;
+
+    &.is-active {
+      color: $doc-color-primary;
+      font-weight: 600;
+      background: rgba($doc-color-primary, 0.06);
+      border-left-color: $doc-color-primary;
+    }
   }
 
   :deep(.el-sub-menu .el-menu-item) {
     height: 36px;
     font-size: $doc-fs-sm;
-    padding-left: 48px !important;
+    padding-left: 45px !important;
     padding-right: 12px;
     color: $doc-text-regular;
     display: flex;
     align-items: center;
     overflow: hidden;
     line-height: 1;
+
+    &.is-active {
+      color: $doc-color-primary !important;
+      font-weight: 600;
+      background: rgba($doc-color-primary, 0.06);
+      border-left-color: $doc-color-primary;
+    }
   }
 
   :deep(.el-sub-menu__title) {

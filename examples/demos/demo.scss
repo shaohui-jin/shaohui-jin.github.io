@@ -82,6 +82,17 @@
   color: $doc-text-secondary;
 }
 
+.demo-subsection__title {
+  margin: $doc-sp-2xl 0 $doc-sp-md;
+  font-size: $doc-fs-base;
+  font-weight: 600;
+  color: $doc-text-primary;
+
+  &:first-of-type {
+    margin-top: $doc-sp-xl;
+  }
+}
+
 // -- API Section --
 .api-section {
   margin-top: $doc-sp-2xl;
@@ -99,6 +110,13 @@
   font-size: $doc-fs-md;
   font-weight: 600;
   color: $doc-text-heading;
+}
+
+.api-section__hint {
+  margin: 0 0 $doc-sp-md;
+  font-size: $doc-fs-sm;
+  color: $doc-text-secondary;
+  line-height: 1.6;
 }
 
 .api-table-wrap {
@@ -149,8 +167,15 @@
 }
 
 .api-type {
-  color: $doc-color-type !important;
-  background: $doc-bg-type !important;
+  color: $doc-color-primary !important;
+  background: color-mix(in srgb, $doc-color-primary 12%, transparent) !important;
+}
+
+.api-type-cell {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2px;
 }
 
 .api-note {

@@ -1,0 +1,253 @@
+---
+description: 新增组件一站式规范（分类目录、命名、导出、Demo 文档自动生成）
+globs: src/components/**/*,examples/demos/**/*,examples/App.vue
+alwaysApply: false
+---
+
+# 组件一站式创建规范
+
+新增组件时必须按本规范执行。**先确认分类，再创建代码，最后同步 Demo。**
+
+## 一、创建前：确认组件分类
+
+**必须先向开发者确认（或从需求推断）组件属于哪一类：**
+
+| 分类 | 目录 | 菜单分组 | 命名前缀示例 |
+|------|------|----------|-------------|
+| **CRUD** | `src/components/crud/` | 侧边栏「CRUD 组件」 | `BaseTable`、`BaseSearch` |
+| **基础** | `src/components/basic/` | 侧边栏「基础组件」 | `StatusTag`、`StatusDot` |
+| **特殊** | 需开发者确认 | 需开发者确认是否新开 Tab/分组 | 如 `ConfigProvider` 在 `src/config/` |
+
+特殊类组件必须确认：
+1. 目录路径（是否新开 `src/components/{category}/`）
+2. 是否在 `examples/App.vue` 新开菜单分组或 Tab
+3. 是否对外导出（`src/index.ts`）
+
+**无 Demo 的组件不得对外发布**（不导出、不写菜单）。
+
+## 二、目录与文件结构
+
+### CRUD 组件（现有模式）
+
+```
+src/components/crud/
+└── base-xxx/                    # kebab-case，语义化
+    ├── BaseXxx.vue              # PascalCase，与导出名一致
+    ├── types.ts                 # Props / Emits / 配置类型
+    └── ...                      # 子模块按需：modes/ utils/ theme/
+```
+
+- 可被多个 CRUD 组件复用的子组件：同级新建目录，如 `base-search-field/BaseSearchField.vue`
+- 仅某一组件内部使用：放在父组件子目录，如 `base-table/modes/CellSwitch.vue`，**不单独导出**
+
+### 基础组件（现有模式）
+
+```
+src/components/basic/
+└── status-xxx/                  # kebab-case
+    ├── StatusXxx.vue            # PascalCase
+    └── types.ts
+```
+
+### 命名对照（从现有组件归纳）
+
+| 项 | 规范 | 示例 |
+|----|------|------|
+| 文件夹 | kebab-case，带业务前缀 | `base-search-field`、`status-dot` |
+| Vue 文件 | PascalCase = 组件名 | `BaseSearchField.vue` |
+| 类型文件 | `types.ts`（模块专用） | 跨模块共享需加前缀文件名 |
+| 组合式函数 | camelCase + `use` 前缀 | `useBaseTableSelection.ts` |
+| 工具函数 | camelCase | `column.ts`、`canvasDraw.ts` |
+| Demo 页 | `Demo{ComponentName}.vue` | `DemoBaseSearchField.vue` |
+| defineOptions name | 与导出名一致 | `{ name: "BaseSearchField" }` |
+
+### 禁止
+
+- 泛化文件名：`utils.ts`、`temp.vue`、`blank.vue`
+- 硬编码颜色（组件内用 `src/styles/variables.scss` 的 `$lib-*`）
+- 未经确认自行新增 npm 依赖
+
+## 三、代码模板要点
+
+```vue
+<script setup lang="ts">
+import type { XxxProps, XxxEmits } from "./types";
+
+defineOptions({ name: "Xxx" });
+
+const props = withDefaults(defineProps<XxxProps>(), { /* 默认值 */ });
+const emit = defineEmits<XxxEmits>();
+</script>
+```
+
+- 使用 `<script setup lang="ts">` + Composition API
+- Props / Emits 类型定义在同目录 `types.ts`
+- 注释优先中文（公共 API 的 JSDoc 除外）
+
+## 四、导出与注册（必做）
+
+1. **`src/components/index.ts`** — 按分类注释分组导出
+2. **`src/index.ts`** — 具名导出组件 + `export type { XxxProps, XxxEmits }`
+3. **`src/index.ts` 的 `components` 数组** — 加入 `install()` 注册
+4. **`doc/架构设计.md`** — 更新「目录结构」章节（新增/删除组件时）
+
+## 五、创建后检查清单
+
+- [ ] 分类目录正确（`basic/` 或 `crud/` 或已确认的特殊路径）
+- [ ] 命名符合上表
+- [ ] 已从 `src/index.ts` 导出
+- [ ] 已创建 Demo 页并注册菜单（见下文第六节）
+- [ ] 三端断点适配（`$doc-bp-tablet` / `$doc-bp-mobile`）
+- [ ] 未引入无 Demo 的对外组件
+
+---
+
+## 六、Demo 文档自动生成规范
+
+**组件代码完成后，必须同步创建 Demo 文档页。**
+
+### 6.1 文件与导航
+
+- 文档页：`examples/demos/Demo{ComponentName}.vue`
+- 在 `examples/App.vue` 中：
+  - `pageMap` 增加路由 key → Demo 组件
+  - 对应 `el-sub-menu` 下增加 `el-menu-item`（CRUD / 基础 分组与组件分类一致）
+- 菜单 `index` 用 kebab-case，如 `base-search-field`
+
+### 6.2 页面结构（固定顺序）
+
+```vue
+<!-- 1. 页头 -->
+<div class="doc-content__header"><h2>组件名</h2><p>一句话说明</p></div>
+
+<!-- 2. 演示区：DemoWidgetTabs（预览 / 代码切换，BaseTable Demo 除外） -->
+<DemoWidgetTabs :code="demoCodes.xxx">
+  <!-- 预览内容 -->
+</DemoWidgetTabs>
+
+<!-- 3. API 区 api-section + ApiTable -->
+<div class="api-section">
+  <h3 class="api-section__title">组件名 Props</h3>
+  <ApiTable type="props" :rows="api.props" />
+</div>
+
+<!-- 4. 特殊说明（有 api.notes 时） -->
+<div v-if="api.notes?.length" class="api-section">
+  <h3 class="api-section__title">特殊说明</h3>
+  <ul class="api-notes-list">
+    <li v-for="(note, idx) in api.notes" :key="idx">{{ note }}</li>
+  </ul>
+</div>
+```
+
+- 样式：`@use "./variables" as *;` + `@use "./demo";`
+- 禁止硬编码文档色值；类型标签色由 `demo.scss` 的 `.api-type` 跟随 theme 主色
+- 补充说明统一标题为 **特殊说明**，列表使用 `api-notes-list`（禁止用「说明」或其他类名）
+
+**演示区布局（DemoWidgetTabs，BaseTable 多模式 Demo 除外）**
+
+| 文件 | 职责 |
+|------|------|
+| `DemoWidgetTabs.vue` | 演示卡片容器：EP Tabs + 预览/代码 + 复制 |
+| `demoCodes.ts` | 各组件示例代码字符串（`:code` 传入） |
+| `demoCodeHighlight.ts` | highlight.js 封装（xml 语言高亮 Vue 模板片段） |
+
+**Tab 与容器**
+
+- 必须使用 `DemoWidgetTabs.vue`，内部为 Element Plus **`el-tabs` + `type="border-card"`**（样式 mixin：`el-overrides.scss` → `el-tabs-border-card`，与 BaseTable Demo 一致）
+- **禁止**自定义 Tab 按钮、禁止左侧「演示」标题、禁止裸 `widget-card` 包一层
+- **唯一例外**：`DemoBaseTable.vue` 多模式表格 Demo 不使用 DemoWidgetTabs
+
+**预览 Tab 三段结构**
+
+1. **顶部**：EP Tab 标签栏（预览 / 代码），由 `border-card` 自带分隔，不额外加上下 padding
+2. **中部**：组件预览；表格 / BaseCrud 等全宽贴边时加 **`flush`**（`padding: 0`）
+3. **底部**（可选）：`#footer` 插槽，放「最近事件」；`border-top` + padding `0 $doc-sp-lg $doc-sp-xl`
+
+**代码 Tab**
+
+- 高亮：`highlight.js`（`demoCodeHighlight.ts`），语言 `xml`
+- **hljs token 样式必须写在 `DemoWidgetTabs.vue` 的非 scoped `<style>` 块**（`v-html` 注入节点无法命中 scoped）
+- 背景 / token 色使用 `$doc-bg-subtle`、`$doc-color-primary` 等文档变量（跟随 theme）
+- **复制按钮**：代码块右上角绝对定位浮层（`position: absolute`），**不得**通过增大代码块 `padding-top` 挤占布局；复制原始 `code` 字符串，成功 `ElMessage` 提示
+
+**多演示块**
+
+- 同一 Demo 页多个示例时，在 `DemoWidgetTabs` **上方**用 `demo-subsection__title` 作小节标题
+
+```vue
+<DemoWidgetTabs :code="demoCodes.baseSearch">
+  <BaseSearch v-model="formData" :params="searchParams" @search="onSearch" />
+  <template #footer>
+    <p class="widget-hint">最近事件：{{ lastEvent }}</p>
+  </template>
+</DemoWidgetTabs>
+
+<!-- 全宽表格类 -->
+<DemoWidgetTabs :code="demoCodes.baseCrud" flush>
+  <BaseCrud ... />
+  <template #footer>
+    <p class="widget-hint">最近事件：{{ lastEvent }}</p>
+  </template>
+</DemoWidgetTabs>
+```
+
+**事件反馈（最近事件）**
+
+- 有事件监听时，统一 `lastEvent` + `#footer` 插槽 + `.widget-hint`
+- **禁止**放在中部预览区（与组件混排）或裸写 `widget-card__api`
+- 中部可放「当前值」等调试信息，但「最近事件」必须在 `#footer`
+
+**依赖**
+
+- Demo 站专用 devDependency：`highlight.js`（不进入组件库产物）
+
+### 6.3 API 表格
+
+- **必须**使用 `ApiTable.vue`，禁止手写 API 表格
+- Props / Events / Slots 定义在 `<script setup>` 的 `ComponentApi` 或 `ApiRow[]`
+- 配置 interface 与 Vue 组件同名时，文档标题区分：
+  - 组件：`BaseSearchField Props`
+  - 配置：`field 配置项（BaseSearchField 类型）` 或 `params 字段配置`
+
+### 6.4 类型列写法
+
+| 场景 | 写法 | 是否显示 `?` |
+|------|------|-------------|
+| 字面量枚举 | `'"success" \| "warning" \| "info" \| "danger"'` | 否 |
+| 字面量联合 | `'"left" \| "center" \| "right"'` | 否 |
+| 基础类型 | `string` / `boolean` / `number` | 否 |
+| 仅类型名、看不出具体值 | `BaseTableMode` / `BaseColumnSettingColumn[]` | 是（自动） |
+
+**能在类型列写清可选值的，写完整字面量联合，不依赖 `?`。**
+
+### 6.5 类型提示注册
+
+ opaque 类型名注册到 `examples/demos/apiTypeHints.ts`：
+
+```typescript
+BaseXxxType: {
+  title: "可选值",
+  values: ["a", "b", "c"],
+  desc: "补充说明（可选）",
+},
+BaseXxxColumn: {
+  title: "说明",
+  desc: "继承 BaseYyy，新增 fixed?: 'left' | 'right'",
+},
+```
+
+- `ApiTable` 内用 **Element Plus `ElPopover`**，内容**单行**展示，枚举用 ` · ` 分隔
+- PC 悬停；平板/手机（≤1024px）点击；`?` 触屏区域 ≥ 32×32px
+- 新增 opaque 类型时同步更新 `apiTypeHints.ts`
+
+### 6.6 Demo 检查清单
+
+- [ ] `Demo{ComponentName}.vue` 已创建
+- [ ] `App.vue` 菜单与 pageMap 已注册
+- [ ] 演示区使用 `DemoWidgetTabs`（BaseTable 除外），`demoCodes.ts` 已注册对应条目
+- [ ] 有事件反馈时用 `#footer` + `widget-hint`，特殊说明用 `api-notes-list`
+- [ ] 使用 `ApiTable` 渲染 API
+- [ ] 字面量枚举已完整写在 `type` 字段
+- [ ] 新 opaque 类型已注册 `apiTypeHints.ts`
+- [ ] 演示区三端适配

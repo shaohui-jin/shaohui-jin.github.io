@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch, onMounted, onBeforeUnmount } from "vue";
+import { computed, ref } from "vue";
 import changelogRaw from "../../CHANGELOG.md?raw";
 
 interface ChangeItem {
@@ -24,11 +24,11 @@ interface VersionBlock {
 }
 
 function getGroupColor(type: string): string {
-  if (type.includes("新增")) return "#67c23a";
-  if (type.includes("调整") || type.includes("修改")) return "#409eff";
-  if (type.includes("修复")) return "#e6a23c";
-  if (type.includes("移除") || type.includes("删除")) return "#f56c6c";
-  return "#909399";
+  if (type.includes("新增")) return "#10b981";
+  if (type.includes("调整") || type.includes("修改")) return "#4366f1";
+  if (type.includes("修复")) return "#f59e0b";
+  if (type.includes("移除") || type.includes("删除")) return "#ef4444";
+  return "#94a3b8";
 }
 
 function parseChangelog(raw: string): VersionBlock[] {
@@ -101,104 +101,51 @@ function parseChangelog(raw: string): VersionBlock[] {
 }
 
 const versions = computed(() => parseChangelog(changelogRaw));
-const visible = ref(false);
 const expandedIdx = ref(0);
-const rootRef = ref<HTMLElement>();
-
-function toggle() {
-  visible.value = !visible.value;
-}
 
 function toggleVersion(idx: number) {
   expandedIdx.value = expandedIdx.value === idx ? -1 : idx;
 }
-
-function onClickOutside(e: MouseEvent) {
-  if (visible.value && rootRef.value && !rootRef.value.contains(e.target as Node)) {
-    visible.value = false;
-  }
-}
-
-let savedScrollY = 0;
-
-function lockScroll(lock: boolean) {
-  if (window.innerWidth > 1024) return;
-  if (lock) {
-    savedScrollY = window.scrollY;
-    document.body.style.overflow = "hidden";
-    document.body.style.position = "fixed";
-    document.body.style.top = `-${savedScrollY}px`;
-    document.body.style.width = "100%";
-  } else {
-    document.body.style.overflow = "";
-    document.body.style.position = "";
-    document.body.style.top = "";
-    document.body.style.width = "";
-    window.scrollTo(0, savedScrollY);
-  }
-}
-
-watch(visible, (v) => lockScroll(v));
-
-onMounted(() => document.addEventListener("mousedown", onClickOutside));
-onBeforeUnmount(() => {
-  document.removeEventListener("mousedown", onClickOutside);
-  lockScroll(false);
-});
 </script>
 
 <template>
-  <div ref="rootRef" class="cl">
-    <button class="cl__trigger" @click="toggle">
-      <span class="cl__trigger-dot" />
-      <span>变更记录</span>
-      <span class="cl__trigger-ver">{{ versions[0]?.version }}</span>
-      <span class="cl__trigger-arrow" :class="{ 'is-open': visible }" />
-    </button>
-
-    <Transition name="cl-backdrop">
-      <div v-show="visible" class="cl__backdrop" @click="visible = false" />
-    </Transition>
-    <Transition name="cl-slide">
-      <div v-show="visible" class="cl__panel">
-        <div class="cl__list">
-          <div v-for="(v, idx) in versions" :key="v.version" class="cl__ver">
-            <div class="cl__ver-head" @click="toggleVersion(idx)">
-              <span class="cl__dot" :class="{ 'is-latest': idx === 0 }" />
-              <span class="cl__ver-tag">{{ v.version }}</span>
-              <span class="cl__ver-date">{{ v.date }}</span>
-              <span class="cl__arrow" :class="{ 'is-open': expandedIdx === idx }" />
-            </div>
-
-            <Transition name="cl-expand">
-              <div v-show="expandedIdx === idx" class="cl__body">
-                <div v-for="mod in v.modules" :key="mod.name" class="cl__mod">
-                  <div class="cl__mod-name">{{ mod.name }}</div>
-                  <template v-for="g in mod.groups" :key="g.type">
-                    <div v-if="g.type" class="cl__grp-type">
-                      <span class="cl__grp-dot" :style="{ background: getGroupColor(g.type) }" />
-                      {{ g.type }}
-                    </div>
-                    <div class="cl__items">
-                      <div v-for="(item, i) in g.items" :key="i" class="cl__item">
-                        <span
-                          class="cl__item-bullet"
-                          :style="{ background: getGroupColor(g.type) }"
-                        />
-                        <div class="cl__item-content">
-                          <code v-if="item.label" class="cl__tag">{{ item.label }}</code>
-                          <span>{{ item.text }}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </template>
-                </div>
-              </div>
-            </Transition>
-          </div>
+  <div class="cl">
+    <div class="cl__list">
+      <div v-for="(v, idx) in versions" :key="v.version" class="cl__ver">
+        <div class="cl__ver-head" @click="toggleVersion(idx)">
+          <span class="cl__dot" :class="{ 'is-latest': idx === 0 }" />
+          <span class="cl__ver-tag">{{ v.version }}</span>
+          <span class="cl__ver-date">{{ v.date }}</span>
+          <span class="cl__arrow" :class="{ 'is-open': expandedIdx === idx }" />
         </div>
+
+        <Transition name="cl-expand">
+          <div v-show="expandedIdx === idx" class="cl__body">
+            <div v-for="mod in v.modules" :key="mod.name" class="cl__mod">
+              <div class="cl__mod-name">{{ mod.name }}</div>
+              <template v-for="g in mod.groups" :key="g.type">
+                <div v-if="g.type" class="cl__grp-type">
+                  <span class="cl__grp-dot" :style="{ background: getGroupColor(g.type) }" />
+                  {{ g.type }}
+                </div>
+                <div class="cl__items">
+                  <div v-for="(item, i) in g.items" :key="i" class="cl__item">
+                    <span
+                      class="cl__item-bullet"
+                      :style="{ background: getGroupColor(g.type) }"
+                    />
+                    <div class="cl__item-content">
+                      <code v-if="item.label" class="cl__tag">{{ item.label }}</code>
+                      <span>{{ item.text }}</span>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+        </Transition>
       </div>
-    </Transition>
+    </div>
   </div>
 </template>
 
@@ -206,91 +153,13 @@ onBeforeUnmount(() => {
 @use "./variables" as *;
 
 .cl {
-  position: relative;
-}
-
-// --- 触发按钮 ---
-.cl__trigger {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 12px;
-  font-size: $doc-fs-xs;
-  color: $doc-text-secondary;
-  background: transparent;
-  border: 1px solid $doc-border-color;
-  border-radius: $doc-radius-pill;
-  cursor: pointer;
-  transition: all 0.2s;
-  user-select: none;
-  white-space: nowrap;
-
-  &:hover {
-    color: $doc-color-primary;
-    border-color: $doc-color-primary;
-  }
-}
-
-.cl__trigger-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: $doc-color-primary;
-}
-
-.cl__trigger-ver {
-  font-family: $doc-font-mono;
-  font-size: $doc-fs-xs;
-  color: $doc-color-primary;
-  background: rgba($doc-color-primary, 0.08);
-  padding: 1px 6px;
-  border-radius: $doc-radius-sm;
-}
-
-.cl__trigger-arrow {
-  display: inline-block;
-  width: 0;
-  height: 0;
-  border-left: 4px solid transparent;
-  border-right: 4px solid transparent;
-  border-top: 5px solid currentcolor;
-  transition: transform 0.25s;
-  margin-left: 2px;
-
-  &.is-open {
-    transform: rotate(180deg);
-  }
-}
-
-// --- 面板 ---
-.cl__panel {
-  position: absolute;
-  top: calc(100% + 10px);
-  right: 0;
-  z-index: 200;
-  width: 480px;
-  padding: 16px 20px;
-  background: $doc-bg-card;
-  border: 1px solid $doc-border-color;
-  border-radius: $doc-radius-lg;
-  box-shadow: 0 6px 24px rgb(0 0 0 / 10%);
-  max-height: min(460px, calc(100vh - 80px));
-  overflow-y: auto;
-
-  &::-webkit-scrollbar {
-    width: 5px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: #dcdfe6;
-    border-radius: 3px;
-  }
+  max-width: 720px;
 }
 
 // --- 时间线 ---
 .cl__list {
   position: relative;
-  padding-left: 16px;
+  padding-left: 20px;
 
   &::before {
     content: "";
@@ -305,7 +174,7 @@ onBeforeUnmount(() => {
 
 .cl__ver {
   position: relative;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 
   &:last-child {
     margin-bottom: 0;
@@ -315,9 +184,9 @@ onBeforeUnmount(() => {
 .cl__ver-head {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   cursor: pointer;
-  padding: 2px 0;
+  padding: 4px 0;
   user-select: none;
 
   &:hover .cl__ver-tag {
@@ -327,8 +196,8 @@ onBeforeUnmount(() => {
 
 .cl__dot {
   position: absolute;
-  left: -16px;
-  top: 8px;
+  left: -20px;
+  top: 10px;
   width: 7px;
   height: 7px;
   border-radius: 50%;
@@ -344,17 +213,17 @@ onBeforeUnmount(() => {
 
 .cl__ver-tag {
   font-family: $doc-font-mono;
-  font-size: $doc-fs-sm;
+  font-size: $doc-fs-md;
   font-weight: 600;
   color: $doc-text-heading;
   transition: color 0.2s;
 }
 
 .cl__ver-date {
-  font-size: 11px;
+  font-size: $doc-fs-xs;
   color: $doc-text-secondary;
   background: $doc-bg-muted;
-  padding: 0 6px;
+  padding: 1px 8px;
   border-radius: $doc-radius-sm;
 }
 
@@ -363,9 +232,9 @@ onBeforeUnmount(() => {
   width: 0;
   height: 0;
   margin-left: auto;
-  border-left: 3.5px solid transparent;
-  border-right: 3.5px solid transparent;
-  border-top: 4px solid $doc-text-secondary;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid $doc-text-secondary;
   transition: transform 0.25s;
 
   &.is-open {
@@ -375,11 +244,11 @@ onBeforeUnmount(() => {
 
 // --- 内容区 ---
 .cl__body {
-  padding-top: 6px;
+  padding-top: 8px;
 }
 
 .cl__mod {
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 
   &:last-child {
     margin-bottom: 0;
@@ -387,21 +256,21 @@ onBeforeUnmount(() => {
 }
 
 .cl__mod-name {
-  font-size: $doc-fs-xs;
+  font-size: $doc-fs-sm;
   font-weight: 600;
   color: $doc-text-heading;
   padding: 2px 0;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 
 .cl__grp-type {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: $doc-fs-xs;
+  font-size: $doc-fs-sm;
   font-weight: 500;
   color: $doc-text-primary;
-  margin: 8px 0 4px;
+  margin: 10px 0 4px;
   padding-left: 4px;
 
   &:first-child {
@@ -425,8 +294,8 @@ onBeforeUnmount(() => {
   align-items: flex-start;
   gap: 8px;
   margin: 0;
-  padding: 2px 0;
-  font-size: $doc-fs-xs;
+  padding: 3px 0;
+  font-size: $doc-fs-sm;
   line-height: 1.7;
   color: $doc-text-regular;
 }
@@ -436,7 +305,7 @@ onBeforeUnmount(() => {
   height: 4px;
   border-radius: 50%;
   flex-shrink: 0;
-  margin-top: 8px;
+  margin-top: 9px;
   opacity: 0.6;
 }
 
@@ -448,96 +317,15 @@ onBeforeUnmount(() => {
 .cl__tag {
   display: inline;
   font-family: $doc-font-mono;
-  font-size: 11px;
+  font-size: $doc-fs-xs;
   color: $doc-color-primary;
   background: rgba($doc-color-primary, 0.06);
-  padding: 0 5px;
-  border-radius: 2px;
+  padding: 1px 6px;
+  border-radius: $doc-radius-sm;
   margin-right: 4px;
 }
 
-// --- 遮罩 ---
-.cl__backdrop {
-  display: none;
-}
-
-// --- 平板端 ---
-@media (max-width: $doc-bp-tablet) {
-  .cl {
-    position: static;
-  }
-
-  .cl__panel {
-    position: fixed;
-    top: 57px;
-    right: 0;
-    width: 420px;
-    max-height: calc(100vh - 57px);
-    border-radius: 0 0 0 $doc-radius-lg;
-  }
-
-  .cl__backdrop {
-    display: block;
-    position: fixed;
-    inset: 0;
-    top: 57px;
-    z-index: 199;
-    background: rgb(0 0 0 / 30%);
-  }
-}
-
-// --- 手机端 ---
-@media (max-width: $doc-bp-mobile) {
-  .cl {
-    position: static;
-  }
-
-  .cl__trigger {
-    padding: 6px 10px;
-    gap: 4px;
-
-    > span:nth-child(2) {
-      display: none;
-    }
-  }
-
-  .cl__panel {
-    position: fixed;
-    top: 57px;
-    left: 0;
-    right: 0;
-    width: auto;
-    border-radius: 0;
-    border-left: none;
-    border-right: none;
-    max-height: calc(100vh - 57px);
-    padding: 16px;
-  }
-
-  .cl__backdrop {
-    display: block;
-    position: fixed;
-    inset: 0;
-    top: 57px;
-    z-index: 199;
-    background: rgb(0 0 0 / 30%);
-  }
-}
-
 // --- Transitions ---
-.cl-slide-enter-active,
-.cl-slide-leave-active {
-  transition:
-    opacity 0.2s ease,
-    transform 0.2s ease;
-}
-
-.cl-slide-enter-from,
-.cl-slide-leave-to {
-  opacity: 0;
-  transform: translateY(-8px);
-}
-
 .cl-expand-enter-active,
 .cl-expand-leave-active {
   transition: all 0.25s ease;
@@ -548,15 +336,5 @@ onBeforeUnmount(() => {
 .cl-expand-leave-to {
   opacity: 0;
   max-height: 0;
-}
-
-.cl-backdrop-enter-active,
-.cl-backdrop-leave-active {
-  transition: opacity 0.2s ease;
-}
-
-.cl-backdrop-enter-from,
-.cl-backdrop-leave-to {
-  opacity: 0;
 }
 </style>

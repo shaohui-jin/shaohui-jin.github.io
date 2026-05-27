@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { libColorDefaults } from "../../styles/colorDefaults";
+import { libColorDefaults } from "../../../styles/colorDefaults";
 import type { StatusDotProps } from "./types";
 
 defineOptions({ name: "StatusDot" });

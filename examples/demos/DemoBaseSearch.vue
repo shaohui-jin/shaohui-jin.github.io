@@ -8,20 +8,22 @@ import {
 } from "comp-vue-lib";
 import type { ApiRow, ComponentApi } from "./types";
 import ApiTable from "./ApiTable.vue";
+import DemoWidgetTabs from "./DemoWidgetTabs.vue";
+import { demoCodes } from "./demoCodes";
 
 // ==================== 演示数据 ====================
 
 const searchParams: BaseSearchField[] = [
   {
-    key: "keyword",
-    label: "产品名称/ID",
+    key: "searchKeyword",
+    label: "关键词",
     placeholder: "请输入",
     labelWidth: "90px",
     fixed: true,
   },
   {
-    key: "groupName",
-    label: "材质组名称",
+    key: "category",
+    label: "分类",
     placeholder: "请输入",
     labelWidth: "90px",
     fixed: true,
@@ -39,7 +41,7 @@ const searchParams: BaseSearchField[] = [
   },
   {
     key: "dateRange",
-    label: "创建日期",
+    label: "日期范围",
     type: "daterange",
     labelWidth: "80px",
     startPlaceholder: "开始日期",
@@ -109,6 +111,7 @@ const api: ComponentApi = {
   notes: [
     "fixed: true 的字段始终显示，其余字段在点击「更多」后展开",
     "支持 input / select / date / daterange / datetime / datetimerange / cascader / tree-select 类型",
+    "表单项由 BaseSearchField 组件渲染，详见 BaseSearchField 文档",
     "通过 defineExpose 暴露 formData、reset、search、toggleExpand 方法",
   ],
 };
@@ -156,21 +159,18 @@ const fieldApi: ApiRow[] = [
     <p>配置式搜索表单，支持固定字段与可展开字段，覆盖常用表单类型</p>
   </div>
 
-  <div class="widget-card widget-card--full">
-    <div class="widget-card__head">
-      <span class="widget-card__title">演示</span>
-    </div>
-    <div class="widget-card__body">
-      <BaseSearch
-        v-model="formData"
-        :params="searchParams"
-        @search="onSearch"
-        @reset="onReset"
-        @change="onChange"
-      />
+  <DemoWidgetTabs :code="demoCodes.baseSearch">
+    <BaseSearch
+      v-model="formData"
+      :params="searchParams"
+      @search="onSearch"
+      @reset="onReset"
+      @change="onChange"
+    />
+    <template #footer>
       <p class="widget-hint">最近事件：{{ lastEvent }}</p>
-    </div>
-  </div>
+    </template>
+  </DemoWidgetTabs>
 
   <!-- Props -->
   <div class="api-section">
@@ -184,9 +184,12 @@ const fieldApi: ApiRow[] = [
     <ApiTable type="events" :rows="api.events!" />
   </div>
 
-  <!-- BaseSearchField -->
+  <!-- params 字段配置 -->
   <div class="api-section">
-    <h3 class="api-section__title">BaseSearchField 字段配置</h3>
+    <h3 class="api-section__title">params 字段配置</h3>
+    <p class="api-section__hint">
+      字段配置类型为 BaseSearchField，组件级说明见 <strong>BaseSearchField</strong> 文档页。
+    </p>
     <ApiTable type="props" :rows="fieldApi" />
   </div>
 

@@ -8,12 +8,14 @@ import {
 } from "comp-vue-lib";
 import type { ComponentApi } from "./types";
 import ApiTable from "./ApiTable.vue";
+import DemoWidgetTabs from "./DemoWidgetTabs.vue";
+import { demoCodes } from "./demoCodes";
 
 // ==================== 演示数据 ====================
 
 const drawerParams: BaseSearchField[] = [
-  { key: "keyword", label: "产品名称/ID", placeholder: "请输入" },
-  { key: "materialCode", label: "物料编码", placeholder: "请输入" },
+  { key: "searchKeyword", label: "关键词", placeholder: "请输入" },
+  { key: "serialNo", label: "编号", placeholder: "请输入" },
   {
     key: "status",
     label: "状态",
@@ -35,7 +37,7 @@ const drawerParams: BaseSearchField[] = [
   },
   {
     key: "dateRange",
-    label: "创建日期",
+    label: "日期范围",
     type: "daterange",
     startPlaceholder: "开始日期",
     endPlaceholder: "结束日期",
@@ -94,7 +96,7 @@ const api: ComponentApi = {
   notes: [
     "通过 ref 调用 open() 方法打开抽屉",
     "支持 input / textarea / select / radio-group / date 等字段类型",
-    "字段配置复用 BaseSearchField 类型，与 BaseSearch 一致",
+    "表单项由 BaseSearchField 组件渲染，字段配置类型与 BaseSearch 一致",
     "通过 defineExpose 暴露 open、formData、reset、search 方法",
   ],
 };
@@ -106,22 +108,19 @@ const api: ComponentApi = {
     <p>侧边抽屉式高级搜索表单，适用于复杂筛选场景</p>
   </div>
 
-  <div class="widget-card widget-card--full">
-    <div class="widget-card__head">
-      <span class="widget-card__title">演示</span>
-    </div>
-    <div class="widget-card__body">
-      <el-button type="primary" @click="openDrawer">打开搜索抽屉</el-button>
+  <DemoWidgetTabs :code="demoCodes.baseSearchDrawer">
+    <el-button type="primary" @click="openDrawer">打开搜索抽屉</el-button>
+    <BaseSearchDrawer
+      ref="drawerRef"
+      v-model="formData"
+      :params="drawerParams"
+      @search="onSearch"
+      @reset="onReset"
+    />
+    <template #footer>
       <p class="widget-hint">最近事件：{{ lastEvent }}</p>
-      <BaseSearchDrawer
-        ref="drawerRef"
-        v-model="formData"
-        :params="drawerParams"
-        @search="onSearch"
-        @reset="onReset"
-      />
-    </div>
-  </div>
+    </template>
+  </DemoWidgetTabs>
 
   <!-- Props -->
   <div class="api-section">

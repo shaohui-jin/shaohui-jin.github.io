@@ -21,9 +21,9 @@ $lib-border-color: var(--comp-border-color, #ebeef5);
 $lib-border-medium: var(--comp-border-medium, #dcdfe6);
 
 // -- 功能色 --
-$lib-color-primary: var(--comp-color-primary, #409eff);
-$lib-color-success: var(--comp-color-success, #67c23a);
-$lib-color-warning: var(--comp-color-warning, #e6a23c);
+$lib-color-primary: var(--comp-color-primary, #3370ff);
+$lib-color-success: var(--comp-color-success, #00b42a);
+$lib-color-warning: var(--comp-color-warning, #ff7d00);
 
 // -- 中性色（图标、占位等） --
 $lib-neutral-icon: #5b5b5e;
@@ -40,5 +40,5 @@ $lib-font-size-base: var(--comp-font-size-base, 14px);
 $lib-font-size-sm: var(--comp-font-size-sm, 13px);
 
 // -- 圆角 --
-$lib-radius-sm: var(--comp-radius-sm, 3px);
-$lib-radius-md: var(--comp-radius-md, 6px);
+$lib-radius-sm: var(--comp-radius-sm, 4px);
+$lib-radius-md: var(--comp-radius-md, 8px);

@@ -1,26 +1,16 @@
 <script setup lang="ts">
-import { ref, computed, type Component } from "vue";
-import {
-  ElForm,
-  ElFormItem,
-  ElButton,
-  ElIcon,
-  ElInput,
-  ElSelect,
-  ElOption,
-  ElDatePicker,
-  ElCascader,
-  ElTreeSelect,
-} from "element-plus";
+import { ref, computed } from "vue";
+import { ElForm, ElFormItem, ElButton, ElIcon } from "element-plus";
 import { ArrowDown, ArrowUp } from "@element-plus/icons-vue";
-import { omit } from "lodash-es";
-import type { BaseSearchField, BaseSearchFieldOption } from "./types";
+import BaseSearchField from "../base-search-field/BaseSearchField.vue";
+import type { BaseSearchField as SearchFieldConfig, BaseSearchFieldOption } from "./types";
+import { isEmptySearchFieldValue, omitEmptySearchFields, patchSearchFormField } from "./searchFormData";
 
 defineOptions({ name: "BaseSearch" });
 
 const props = withDefaults(
   defineProps<{
-    params: BaseSearchField[];
+    params: SearchFieldConfig[];
     modelValue: Record<string, unknown>;
     loading?: boolean;
     paramOptions?: Record<string, BaseSearchFieldOption[]>;
@@ -47,29 +37,6 @@ const formData = computed({
   set: (val: Record<string, any>) => emit("update:modelValue", val),
 });
 
-const DATE_TYPES = new Set(["date", "daterange", "datetime", "datetimerange"]);
-
-const componentMap: Record<string, Component> = {
-  input: ElInput,
-  select: ElSelect,
-  date: ElDatePicker,
-  daterange: ElDatePicker,
-  datetime: ElDatePicker,
-  datetimerange: ElDatePicker,
-  cascader: ElCascader,
-  "tree-select": ElTreeSelect,
-};
-
-function getComponent(item: BaseSearchField): Component {
-  return componentMap[item.type || "input"] || ElInput;
-}
-
-const BIND_OMIT_KEYS = ["key", "label", "fixed", "type", "options", "keydownSearch"];
-
-function getBinds(item: BaseSearchField): Record<string, unknown> {
-  return omit(item as unknown as Record<string, unknown>, BIND_OMIT_KEYS);
-}
-
 const fixedParams = computed(() => props.params.filter((f) => f.fixed));
 const expandParams = computed(() => props.params.filter((f) => !f.fixed));
 
@@ -77,27 +44,30 @@ function toggleExpand() {
   isExpanded.value = !isExpanded.value;
 }
 
+function updateFieldValue(key: string, value: unknown) {
+  formData.value = patchSearchFormField(formData.value, key, value);
+}
+
 function handleParamChange(value: unknown, field?: string) {
   emit("change", { field, value, formData: formData.value });
 }
 
 function handleSearch() {
-  emit("search", formData.value);
+  emit("search", omitEmptySearchFields(formData.value));
 }
 
 function handleReset() {
   formRef.value?.resetFields();
-  const data: Record<string, unknown> = {};
-  props.params.forEach((p) => {
-    data[p.key] = "";
-  });
-  formData.value = { ...data, ...defaultValue.value };
+  formData.value = { ...defaultValue.value };
   emit("reset");
 }
 
 function initFormData() {
-  formData.value = { ...props.modelValue };
-  defaultValue.value = { ...props.modelValue };
+  const cleaned = omitEmptySearchFields(props.modelValue);
+  defaultValue.value = { ...cleaned };
+  if (Object.values(props.modelValue).some(isEmptySearchFieldValue)) {
+    emit("update:modelValue", cleaned);
+  }
 }
 
 initFormData();
@@ -113,124 +83,54 @@ defineExpose({
 <template>
   <div class="crud-base-search">
     <ElForm ref="formRef" :model="formData" :inline="true" class="crud-base-search__form">
-      <div class="crud-base-search__fixed">
-        <div class="crud-base-search__line">
+      <div class="crud-base-search__body">
+        <div class="crud-base-search__fields">
           <ElFormItem
             v-for="param in fixedParams"
             :key="param.key"
             :label="param.label"
             :label-width="param.labelWidth || '70px'"
           >
-            <ElDatePicker
-              v-if="DATE_TYPES.has(param.type ?? '')"
-              v-model="formData[param.key]"
-              :type="param.type as any"
-              range-separator="至"
-              :clearable="param.clearable !== false"
-              v-bind="getBinds(param)"
+            <BaseSearchField
+              :model-value="formData[param.key]"
+              :field="param"
+              :param-options="paramOptions[param.key]"
+              @update:model-value="(value) => updateFieldValue(param.key, value)"
+              @change="(value) => handleParamChange(value, param.key)"
+              @enter="handleSearch"
             />
-            <component
-              :is="getComponent(param)"
-              v-else
-              v-model="formData[param.key]"
-              v-bind="getBinds(param)"
-              :empty-values="[null, undefined]"
-              :clearable="param.clearable !== false"
-              @change="(e: unknown) => handleParamChange(e, param.key)"
-              @keydown.enter.prevent="
-                () => {
-                  if (param.keydownSearch !== false) handleSearch();
-                }
-              "
-            >
-              <template v-if="param.type === 'select'">
-                <template v-if="param.options && param.options.length > 0">
-                  <ElOption
-                    v-for="option in param.options"
-                    :key="param.key + String(option.value)"
-                    :label="option.name"
-                    :value="option.value"
-                  />
-                </template>
-                <template v-else-if="paramOptions[param.key]">
-                  <ElOption
-                    v-for="option in paramOptions[param.key]"
-                    :key="param.key + String(option.value)"
-                    :label="option.name"
-                    :value="option.value"
-                  />
-                </template>
-              </template>
-            </component>
           </ElFormItem>
 
-          <ElFormItem class="crud-base-search__actions">
-            <ElButton v-if="expandParams.length > 0" text @click="toggleExpand">
-              {{ isExpanded ? "收起" : "更多" }}
-              <ElIcon class="crud-base-search__arrow">
-                <ArrowUp v-if="isExpanded" />
-                <ArrowDown v-else />
-              </ElIcon>
-            </ElButton>
-            <ElButton type="primary" :loading="loading" @click="handleSearch">查询</ElButton>
-            <ElButton @click="handleReset">重置</ElButton>
-          </ElFormItem>
+          <template v-if="expandParams.length > 0 && isExpanded">
+            <ElFormItem
+              v-for="param in expandParams"
+              :key="param.key"
+              :label="param.label"
+              :label-width="param.labelWidth || '70px'"
+            >
+              <BaseSearchField
+                :model-value="formData[param.key]"
+                :field="param"
+                :param-options="paramOptions[param.key]"
+                @update:model-value="(value) => updateFieldValue(param.key, value)"
+                @change="(value) => handleParamChange(value, param.key)"
+                @enter="handleSearch"
+              />
+            </ElFormItem>
+          </template>
         </div>
 
-        <div
-          v-if="expandParams.length > 0 && isExpanded"
-          class="crud-base-search__line crud-base-search__expand"
-        >
-          <ElFormItem
-            v-for="param in expandParams"
-            :key="param.key"
-            :label="param.label"
-            :label-width="param.labelWidth || '70px'"
-          >
-            <ElDatePicker
-              v-if="DATE_TYPES.has(param.type ?? '')"
-              v-model="formData[param.key]"
-              :type="param.type as any"
-              range-separator="至"
-              :clearable="param.clearable !== false"
-              v-bind="getBinds(param)"
-            />
-            <component
-              :is="getComponent(param)"
-              v-else
-              v-model="formData[param.key]"
-              v-bind="getBinds(param)"
-              :style="param.style"
-              :empty-values="[null, undefined]"
-              :clearable="param.clearable !== false"
-              @change="(e: unknown) => handleParamChange(e, param.key)"
-              @keydown.enter.prevent="
-                () => {
-                  if (param.keydownSearch !== false) handleSearch();
-                }
-              "
-            >
-              <template v-if="param.type === 'select'">
-                <template v-if="param.options && param.options.length > 0">
-                  <ElOption
-                    v-for="option in param.options"
-                    :key="param.key + String(option.value)"
-                    :label="option.name"
-                    :value="option.value"
-                  />
-                </template>
-                <template v-else-if="paramOptions[param.key]">
-                  <ElOption
-                    v-for="option in paramOptions[param.key]"
-                    :key="param.key + String(option.value)"
-                    :label="option.name"
-                    :value="option.value"
-                  />
-                </template>
-              </template>
-            </component>
-          </ElFormItem>
-        </div>
+        <ElFormItem class="crud-base-search__actions">
+          <ElButton v-if="expandParams.length > 0" text @click="toggleExpand">
+            {{ isExpanded ? "收起" : "更多" }}
+            <ElIcon class="crud-base-search__arrow">
+              <ArrowUp v-if="isExpanded" />
+              <ArrowDown v-else />
+            </ElIcon>
+          </ElButton>
+          <ElButton type="primary" :loading="loading" @click="handleSearch">查询</ElButton>
+          <ElButton @click="handleReset">重置</ElButton>
+        </ElFormItem>
       </div>
     </ElForm>
   </div>
@@ -239,45 +139,55 @@ defineExpose({
 <style scoped lang="scss">
 @use "../../../styles/variables" as *;
 
+$search-field-gap: var(--comp-font-size-sm, 13px);
+$search-stack-gap: var(--comp-font-size-base, 14px);
+$search-label-max: 90px;
+$search-control-width: 200px;
+$search-daterange-width: 350px;
+// 标准字段 + 日期范围并排的最小容器宽度（含 padding，不压缩桌面端日期范围展示）
+$search-stack-bp: calc(
+  (#{$search-label-max} + #{$search-control-width}) + (80px + #{$search-daterange-width}) + 16px + 32px
+);
+
 .crud-base-search {
-  padding: 12px 16px 0;
-  border-radius: 4px;
+  container-type: inline-size;
+  container-name: crud-base-search;
+  padding: $search-stack-gap 16px 0;
+  border-radius: $lib-radius-sm;
 }
 
 .crud-base-search__form {
   margin: 0;
 }
 
-.crud-base-search__fixed {
-  display: flex;
-  flex-flow: column wrap;
-  align-items: flex-start;
-  margin-bottom: 12px;
-
-  &:has(.crud-base-search__expand) {
-    margin-bottom: 0;
-
-    .crud-base-search__expand {
-      margin-bottom: 12px;
-    }
-  }
-}
-
-.crud-base-search__line {
+.crud-base-search__body {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-end;
+  gap: $search-stack-gap 0;
+  margin-bottom: $search-stack-gap;
 }
 
-.crud-base-search__expand {
-  :deep(.el-form-item) {
-    margin-top: 8px;
-    margin-right: 16px;
-  }
+.crud-base-search__fields {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $search-stack-gap 16px;
+  min-width: 0;
 }
 
 .crud-base-search__actions {
+  flex: 0 0 auto;
   margin-left: auto;
+
+  :deep(.el-form-item__content) {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: $search-field-gap;
+    min-width: auto;
+  }
 }
 
 .crud-base-search__arrow {
@@ -286,7 +196,7 @@ defineExpose({
 
 :deep(.el-form-item) {
   margin-bottom: 0;
-  margin-right: 16px;
+  margin-right: 0;
 }
 
 :deep(.el-form-item__label) {
@@ -297,10 +207,81 @@ defineExpose({
 :deep(.el-input),
 :deep(.el-select),
 :deep(.el-cascader) {
-  width: 200px;
+  width: $search-control-width;
 }
 
 :deep(.el-form-item__content) {
-  min-width: 200px;
+  min-width: $search-control-width;
+}
+
+:deep(.el-form-item:has(.el-date-editor) .el-form-item__content) {
+  min-width: 0;
+}
+
+// 容器宽度不足两个表单项并排时，与移动端一致：纵向全宽布局
+@container crud-base-search (max-width: #{$search-stack-bp}) {
+  .crud-base-search {
+    padding: $search-stack-gap 12px 0;
+  }
+
+  .crud-base-search__form :deep(.el-form--inline) {
+    display: block;
+  }
+
+  .crud-base-search__body {
+    flex-direction: column;
+    align-items: stretch;
+    gap: $search-stack-gap;
+  }
+
+  .crud-base-search__fields {
+    flex-direction: column;
+    align-items: stretch;
+    gap: $search-stack-gap;
+    width: 100%;
+  }
+
+  .crud-base-search__actions {
+    width: 100%;
+    margin-left: 0;
+    margin-bottom: 0;
+
+    :deep(.el-form-item__content) {
+      justify-content: stretch;
+      flex-direction: column;
+      gap: $search-field-gap;
+    }
+
+    :deep(.el-button) {
+      width: 100%;
+      min-height: 36px;
+      margin: 0;
+    }
+  }
+
+  :deep(.el-form-item) {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  :deep(.el-form-item__label) {
+    width: auto !important;
+    justify-content: flex-start;
+    padding-bottom: 6px;
+    line-height: 1.4;
+  }
+
+  :deep(.el-form-item__content) {
+    min-width: 0;
+    width: 100%;
+  }
+
+  :deep(.el-input),
+  :deep(.el-select),
+  :deep(.el-cascader),
+  :deep(.el-date-editor) {
+    width: 100%;
+  }
 }
 </style>

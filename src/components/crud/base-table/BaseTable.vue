@@ -32,6 +32,10 @@ function onSelectionChange(rows: Record<string, unknown>[]) {
   emit("selectionChange", rows);
 }
 
+function onEditColumn() {
+  emit("editColumn");
+}
+
 const surfaceStyle = computed(() =>
   tableSurfaceCssVars(config.value, props.rowHeight, props.headerHeight),
 );
@@ -52,6 +56,7 @@ const surfaceStyle = computed(() =>
           :empty-text="emptyText"
           :loading="loading"
           @selection-change="onSelectionChange"
+          @edit-column="onEditColumn"
         />
         <BaseTableVirtual
           v-else-if="mode === 'virtual'"

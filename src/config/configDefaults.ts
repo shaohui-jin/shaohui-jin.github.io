@@ -2,13 +2,12 @@ import type { ResolvedLibConfig } from "./configTypes";
 
 /**
  * 组件库全量默认值
- * 色值与 Element Plus 默认主题对齐
  */
 export const defaultLibConfig: ResolvedLibConfig = {
   theme: {
-    colorPrimary: "#409eff",
-    colorSuccess: "#67c23a",
-    colorWarning: "#e6a23c",
+    colorPrimary: "#3370ff",
+    colorSuccess: "#00b42a",
+    colorWarning: "#ff7d00",
 
     textHeading: "#1d2129",
     textPrimary: "#303133",
@@ -27,8 +26,8 @@ export const defaultLibConfig: ResolvedLibConfig = {
     fontSizeBase: 14,
     fontSizeSm: 13,
 
-    radiusSm: 3,
-    radiusMd: 6,
+    radiusSm: 4,
+    radiusMd: 8,
   },
 
   table: {

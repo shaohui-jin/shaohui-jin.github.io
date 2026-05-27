@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { BaseTableColumn } from "../types";
 import { formatCell, statusCustomLampColor } from "../utils/column";
-import StatusDot from "../../../status-dot/StatusDot.vue";
+import StatusDot from "../../../basic/status-dot/StatusDot.vue";
 
 defineOptions({ name: "CellStatusCustom" });
 

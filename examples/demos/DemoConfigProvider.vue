@@ -66,6 +66,26 @@ const presets = {
     Object.assign(themeForm, defaultLibConfig.theme);
     Object.assign(tableForm, defaultLibConfig.table);
   },
+  light: () =>
+    applyPreset({
+      colorPrimary: "#409eff",
+      colorSuccess: "#67c23a",
+      colorWarning: "#e6a23c",
+      textHeading: "#1d2129",
+      textPrimary: "#303133",
+      textRegular: "#606266",
+      textSecondary: "#909399",
+      bgPage: "#f5f7fa",
+      bgCard: "#ffffff",
+      bgSubtle: "#fafbfc",
+      bgMuted: "#f4f4f5",
+      borderColor: "#ebeef5",
+      borderMedium: "#dcdfe6",
+      fontSizeBase: 14,
+      fontSizeSm: 13,
+      radiusSm: 3,
+      radiusMd: 6,
+    }),
   purple: () =>
     applyPreset({
       colorPrimary: "#6366f1",
@@ -85,26 +105,6 @@ const presets = {
       fontSizeSm: 13,
       radiusSm: 4,
       radiusMd: 8,
-    }),
-  green: () =>
-    applyPreset({
-      colorPrimary: "#10b981",
-      colorSuccess: "#059669",
-      colorWarning: "#d97706",
-      textHeading: "#064e3b",
-      textPrimary: "#065f46",
-      textRegular: "#047857",
-      textSecondary: "#6ee7b7",
-      bgPage: "#f0fdf4",
-      bgCard: "#ffffff",
-      bgSubtle: "#ecfdf5",
-      bgMuted: "#d1fae5",
-      borderColor: "#d1fae5",
-      borderMedium: "#a7f3d0",
-      fontSizeBase: 14,
-      fontSizeSm: 13,
-      radiusSm: 3,
-      radiusMd: 6,
     }),
   dark: () =>
     applyPreset({
@@ -333,6 +333,100 @@ const showJson = ref(false);
               class="demo-config__card"
               :style="{ background: themeForm.bgCard, borderColor: themeForm.borderColor }"
             >
+              <h4 :style="{ color: themeForm.textHeading }">品牌色</h4>
+              <div class="demo-config__swatches">
+                <div
+                  v-for="item in [
+                    { color: themeForm.colorPrimary, label: '主色 Primary' },
+                    { color: themeForm.colorSuccess, label: '成功 Success' },
+                    { color: themeForm.colorWarning, label: '警告 Warning' },
+                  ]"
+                  :key="item.label"
+                  class="demo-config__swatch"
+                >
+                  <span class="demo-config__swatch-block" :style="{ background: item.color }" />
+                  <span class="demo-config__swatch-info">
+                    <span :style="{ color: themeForm.textPrimary }">{{ item.label }}</span>
+                    <code :style="{ color: themeForm.textSecondary }">{{ item.color }}</code>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="demo-config__card"
+              :style="{ background: themeForm.bgCard, borderColor: themeForm.borderColor }"
+            >
+              <h4 :style="{ color: themeForm.textHeading }">按钮与标签</h4>
+              <div class="demo-config__btn-row">
+                <span
+                  class="demo-config__btn"
+                  :style="{ background: themeForm.colorPrimary, borderRadius: themeForm.radiusSm + 'px' }"
+                >
+                  主要按钮
+                </span>
+                <span
+                  class="demo-config__btn demo-config__btn--outline"
+                  :style="{
+                    color: themeForm.colorPrimary,
+                    borderColor: themeForm.colorPrimary,
+                    borderRadius: themeForm.radiusSm + 'px',
+                  }"
+                >
+                  次要按钮
+                </span>
+                <span
+                  class="demo-config__tag"
+                  :style="{ background: themeForm.colorPrimary + '1a', color: themeForm.colorPrimary, borderRadius: themeForm.radiusSm + 'px' }"
+                >
+                  标签 A
+                </span>
+                <span
+                  class="demo-config__tag"
+                  :style="{ background: themeForm.colorSuccess + '1a', color: themeForm.colorSuccess, borderRadius: themeForm.radiusSm + 'px' }"
+                >
+                  标签 B
+                </span>
+                <span
+                  class="demo-config__tag"
+                  :style="{ background: themeForm.colorWarning + '1a', color: themeForm.colorWarning, borderRadius: themeForm.radiusSm + 'px' }"
+                >
+                  标签 C
+                </span>
+              </div>
+            </div>
+
+            <div
+              class="demo-config__card"
+              :style="{ background: themeForm.bgCard, borderColor: themeForm.borderColor }"
+            >
+              <h4 :style="{ color: themeForm.textHeading }">背景层级</h4>
+              <div class="demo-config__bg-layers">
+                <div
+                  v-for="item in [
+                    { bg: themeForm.bgPage, label: 'bgPage' },
+                    { bg: themeForm.bgSubtle, label: 'bgSubtle' },
+                    { bg: themeForm.bgMuted, label: 'bgMuted' },
+                    { bg: themeForm.bgCard, label: 'bgCard' },
+                  ]"
+                  :key="item.label"
+                  class="demo-config__bg-layer"
+                  :style="{
+                    background: item.bg,
+                    borderColor: themeForm.borderColor,
+                    borderRadius: themeForm.radiusSm + 'px',
+                  }"
+                >
+                  <span :style="{ color: themeForm.textPrimary }">{{ item.label }}</span>
+                  <code :style="{ color: themeForm.textSecondary }">{{ item.bg }}</code>
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="demo-config__card"
+              :style="{ background: themeForm.bgCard, borderColor: themeForm.borderColor }"
+            >
               <h4 :style="{ color: themeForm.textHeading }">StatusDot 组件</h4>
               <div class="demo-config__dots">
                 <StatusDot :color="themeForm.colorSuccess" text="在线" />
@@ -366,6 +460,35 @@ const showJson = ref(false);
               <p :style="{ color: themeForm.textSecondary, fontSize: themeForm.fontSizeSm + 'px' }">
                 次要文字 (textSecondary) — 用于最弱信息
               </p>
+            </div>
+
+            <div
+              class="demo-config__card"
+              :style="{ background: themeForm.bgCard, borderColor: themeForm.borderColor }"
+            >
+              <h4 :style="{ color: themeForm.textHeading }">边框与圆角</h4>
+              <div class="demo-config__border-demo">
+                <div
+                  class="demo-config__border-box"
+                  :style="{
+                    borderColor: themeForm.borderColor,
+                    borderRadius: themeForm.radiusSm + 'px',
+                    color: themeForm.textRegular,
+                  }"
+                >
+                  borderColor + radiusSm ({{ themeForm.radiusSm }}px)
+                </div>
+                <div
+                  class="demo-config__border-box"
+                  :style="{
+                    borderColor: themeForm.borderMedium,
+                    borderRadius: themeForm.radiusMd + 'px',
+                    color: themeForm.textRegular,
+                  }"
+                >
+                  borderMedium + radiusMd ({{ themeForm.radiusMd }}px)
+                </div>
+              </div>
             </div>
           </div>
         </ConfigProvider>
@@ -412,10 +535,7 @@ const showJson = ref(false);
 .demo-config__panel {
   position: sticky;
   top: 16px;
-  background: $doc-bg-card;
-  border: 1px solid $doc-border-color;
-  border-radius: $doc-radius-lg;
-  padding: $doc-sp-md;
+  padding: 0 $doc-sp-md 0 0;
   max-height: calc(100vh - 32px);
   overflow-y: auto;
 }
@@ -432,24 +552,26 @@ const showJson = ref(false);
   min-width: 50px;
   padding: 5px 0;
   font-size: $doc-fs-xs;
-  border: 1px solid $doc-border-color;
+  border: none;
   border-radius: $doc-radius-sm;
   background: $doc-bg-card;
   cursor: pointer;
   text-transform: capitalize;
   transition: all 0.15s;
+  color: $doc-text-regular;
 
   &:hover {
-    border-color: $doc-color-primary;
+    background: $doc-bg-muted;
     color: $doc-color-primary;
   }
 
   &--save {
-    border-color: $doc-color-primary;
-    color: $doc-color-primary;
+    background: $doc-color-primary;
+    color: #fff;
     font-weight: 600;
 
     &:hover {
+      opacity: 0.85;
       background: $doc-color-primary;
       color: #fff;
     }
@@ -458,25 +580,26 @@ const showJson = ref(false);
 
 .demo-config__tabs {
   display: flex;
-  border-bottom: 1px solid $doc-border-color;
   margin-bottom: $doc-sp-md;
+  gap: 4px;
 }
 
 .demo-config__tab {
   flex: 1;
   padding: 6px 0;
   border: none;
-  background: none;
+  background: transparent;
   font-size: $doc-fs-sm;
   font-weight: 500;
   color: $doc-text-secondary;
   cursor: pointer;
-  border-bottom: 2px solid transparent;
+  border-radius: $doc-radius-sm;
   transition: all 0.15s;
 
   &.active {
     color: $doc-color-primary;
-    border-bottom-color: $doc-color-primary;
+    background: $doc-bg-card;
+    font-weight: 600;
   }
 
   &:hover:not(.active) {
@@ -598,7 +721,6 @@ const showJson = ref(false);
 .demo-config__preview {
   padding: $doc-sp-lg;
   border-radius: $doc-radius-lg;
-  border: 1px solid $doc-border-color;
   display: flex;
   flex-direction: column;
   gap: $doc-sp-md;
@@ -607,7 +729,6 @@ const showJson = ref(false);
 
 .demo-config__card {
   padding: $doc-sp-md;
-  border: 1px solid;
   border-radius: $doc-radius-md;
   transition: all 0.3s;
 
@@ -623,6 +744,105 @@ const showJson = ref(false);
   }
 }
 
+.demo-config__swatches {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.demo-config__swatch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.demo-config__swatch-block {
+  width: 36px;
+  height: 36px;
+  border-radius: $doc-radius-sm;
+  flex-shrink: 0;
+}
+
+.demo-config__swatch-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: $doc-fs-xs;
+
+  code {
+    font-size: 11px;
+    font-family: $doc-font-mono;
+  }
+}
+
+.demo-config__btn-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.demo-config__btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 16px;
+  font-size: $doc-fs-sm;
+  font-weight: 500;
+  color: #fff;
+  cursor: default;
+  transition: all 0.2s;
+}
+
+.demo-config__btn--outline {
+  background: transparent !important;
+  border: 1px solid;
+}
+
+.demo-config__tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  font-size: $doc-fs-xs;
+  font-weight: 500;
+}
+
+.demo-config__bg-layers {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+}
+
+.demo-config__bg-layer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 16px 8px;
+  border: 1px solid;
+  font-size: $doc-fs-xs;
+
+  code {
+    font-size: 11px;
+    font-family: $doc-font-mono;
+  }
+}
+
+.demo-config__border-demo {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.demo-config__border-box {
+  flex: 1;
+  min-width: 160px;
+  padding: 12px 16px;
+  border: 1px solid;
+  font-size: $doc-fs-xs;
+  text-align: center;
+}
+
 .demo-config__dots {
   display: flex;
   gap: 16px;
@@ -632,25 +852,24 @@ const showJson = ref(false);
 
 // --- JSON ---
 .demo-config__json-section {
-  border: 1px solid $doc-border-color;
   border-radius: $doc-radius-md;
   overflow: hidden;
 }
 
 .demo-config__json-toggle {
   width: 100%;
-  padding: 8px 12px;
-  background: $doc-bg-subtle;
+  padding: 8px 0;
+  background: none;
   border: none;
   font-size: $doc-fs-sm;
-  color: $doc-text-regular;
+  color: $doc-text-secondary;
   cursor: pointer;
   text-align: left;
   font-weight: 500;
-  transition: background 0.15s;
+  transition: color 0.15s;
 
   &:hover {
-    background: $doc-bg-muted;
+    color: $doc-color-primary;
   }
 }
 
@@ -663,7 +882,6 @@ const showJson = ref(false);
   color: $doc-text-regular;
   background: $doc-bg-card;
   overflow: auto;
-  border-top: 1px solid $doc-border-color;
   max-height: 400px;
 }
 

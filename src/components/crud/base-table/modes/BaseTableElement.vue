@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ElImage, ElTable, ElTableColumn } from "element-plus";
+import { ElIcon, ElImage, ElTable, ElTableColumn } from "element-plus";
+import { Setting } from "@element-plus/icons-vue";
 import type { BaseTableColumn } from "../types";
 import { tableLayoutDefaults, TABLE_TOOLTIP_POPPER_CLASS } from "../theme/tableSurface";
 import { formatCell, getTableColumnBinds, visibleColumns } from "../utils/column";
@@ -23,6 +24,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   selectionChange: [rows: Record<string, unknown>[]];
+  editColumn: [];
 }>();
 
 function onSelectionChange(val: Record<string, unknown>[]) {
@@ -115,6 +117,22 @@ function columnFormatter(col: BaseTableColumn) {
           <TableSlotPopup :row="scope.row" :column="col" />
         </ElTableColumn>
         <ElTableColumn
+          v-else-if="col.type === 'editColumn'"
+          v-bind="getTableColumnBinds(col)"
+          class-name="crud-base-table__edit-column"
+          label-class-name="crud-base-table__edit-column"
+          fixed="right"
+          :width="col.width ?? 48"
+          :resizable="false"
+          :show-overflow-tooltip="false"
+        >
+          <template #header>
+            <ElIcon class="crud-base-table__edit-column-btn" @click="emit('editColumn')">
+              <Setting />
+            </ElIcon>
+          </template>
+        </ElTableColumn>
+        <ElTableColumn
           v-else-if="col.formatter"
           v-bind="getTableColumnBinds(col)"
           :formatter="columnFormatter(col)"
@@ -150,5 +168,16 @@ function columnFormatter(col: BaseTableColumn) {
   z-index: 2;
   background: $lib-mask-light;
   pointer-events: none;
+}
+
+:deep(.crud-base-table__edit-column-btn) {
+  flex-shrink: 0;
+  cursor: pointer;
+  color: $lib-neutral-icon;
+  font-size: 16px;
+
+  &:hover {
+    color: $lib-color-primary;
+  }
 }
 </style>

@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { StatusDot, type StatusDotProps } from "comp-vue-lib";
+import { StatusDot } from "comp-vue-lib";
 import type { ComponentApi } from "./types";
 import ApiTable from "./ApiTable.vue";
+import DemoWidgetTabs from "./DemoWidgetTabs.vue";
+import { demoCodes } from "./demoCodes";
 
 const api: ComponentApi = {
   props: [
@@ -35,46 +37,42 @@ const demos = [
     <h2>StatusDot</h2>
     <p>彩色圆点状态指示器，用于在行内以圆点 + 文字标识状态</p>
   </div>
-  <div class="widget-card widget-card--full">
-    <div class="widget-card__head">
-      <span class="widget-card__title">基础用法</span>
+
+  <h3 class="demo-subsection__title">基础用法</h3>
+  <DemoWidgetTabs :code="demoCodes.statusDotBasic">
+    <div class="widget-row">
+      <StatusDot v-for="d in demos" :key="d.text" :color="d.color" :text="d.text" />
     </div>
-    <div class="widget-card__body">
-      <div class="widget-row">
-        <StatusDot v-for="d in demos" :key="d.text" :color="d.color" :text="d.text" />
-      </div>
+  </DemoWidgetTabs>
+
+  <h3 class="demo-subsection__title">使用插槽</h3>
+  <DemoWidgetTabs :code="demoCodes.statusDotSlot">
+    <div class="widget-row">
+      <StatusDot color="#409eff">
+        <span style="margin-left: 6px; font-weight: 600">自定义内容</span>
+      </StatusDot>
     </div>
+  </DemoWidgetTabs>
+
+  <div class="api-section">
+    <h3 class="api-section__title">StatusDot Props</h3>
+    <ApiTable type="props" :rows="api.props" />
   </div>
 
-  <div class="widget-card widget-card--full">
-    <div class="widget-card__head">
-      <span class="widget-card__title">使用插槽</span>
-    </div>
-    <div class="widget-card__body">
-      <div class="widget-row">
-        <StatusDot color="#409eff">
-          <span style="margin-left: 6px; font-weight: 600">自定义内容</span>
-        </StatusDot>
-      </div>
-    </div>
+  <div class="api-section">
+    <h3 class="api-section__title">StatusDot Slots</h3>
+    <ApiTable type="slots" :rows="api.slots!" />
   </div>
 
-  <div class="widget-card widget-card--full">
-    <div class="widget-card__api">
-      <h4>Props</h4>
-      <ApiTable type="props" :rows="api.props" />
-      <h4>Slots</h4>
-      <ApiTable type="slots" :rows="api.slots!" />
-      <div v-if="api.notes?.length" class="api-note">
-        <h4>说明</h4>
-        <ul>
-          <li v-for="(n, i) in api.notes" :key="i">{{ n }}</li>
-        </ul>
-      </div>
-    </div>
+  <div v-if="api.notes?.length" class="api-section">
+    <h3 class="api-section__title">特殊说明</h3>
+    <ul class="api-notes-list">
+      <li v-for="(n, i) in api.notes" :key="i">{{ n }}</li>
+    </ul>
   </div>
 </template>
 
 <style scoped lang="scss">
+@use "./variables" as *;
 @use "./demo";
 </style>

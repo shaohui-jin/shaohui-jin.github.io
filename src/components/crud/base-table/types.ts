@@ -18,7 +18,9 @@ export type BaseTableColumnType =
   | "image"
   | "status"
   | "status-custom"
-  | "tableSlot";
+  | "tableSlot"
+  | "editColumn"
+  | "action";
 
 /** 列配置（高性能模式仅使用其中一部分字段） */
 export interface BaseTableColumn {
@@ -89,4 +91,6 @@ export interface BaseTableProps {
 export interface BaseTableEmits {
   /** 选中行变化时触发 */
   selectionChange: [rows: Record<string, unknown>[]];
+  /** 点击列设置表头图标（editColumn 列） */
+  editColumn: [];
 }

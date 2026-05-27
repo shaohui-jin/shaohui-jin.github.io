@@ -50,6 +50,7 @@ function resolveConfig(userConfig?: LibConfig): ResolvedLibConfig {
 function configToCssVars(config: ResolvedLibConfig): Record<string, string> {
   const { theme, table } = config;
   return {
+    // ── 组件库自有变量 ──
     "--comp-color-primary": theme.colorPrimary,
     "--comp-color-success": theme.colorSuccess,
     "--comp-color-warning": theme.colorWarning,
@@ -80,6 +81,35 @@ function configToCssVars(config: ResolvedLibConfig): Record<string, string> {
     "--comp-table-font-size-empty": `${table.fontSizeEmpty}px`,
     "--comp-table-header-font-weight": String(table.headerFontWeight),
     "--comp-table-cell-font-weight": String(table.cellFontWeight),
+
+    // ── Element Plus 全局变量同步 ──
+    "--el-color-primary": theme.colorPrimary,
+    "--el-color-success": theme.colorSuccess,
+    "--el-color-warning": theme.colorWarning,
+
+    "--el-text-color-primary": theme.textPrimary,
+    "--el-text-color-regular": theme.textRegular,
+    "--el-text-color-secondary": theme.textSecondary,
+    "--el-text-color-placeholder": theme.textSecondary,
+
+    "--el-bg-color": theme.bgCard,
+    "--el-bg-color-page": theme.bgPage,
+    "--el-bg-color-overlay": theme.bgCard,
+
+    "--el-border-color": theme.borderColor,
+    "--el-border-color-light": theme.borderColor,
+    "--el-border-color-lighter": theme.borderMedium,
+
+    "--el-fill-color-blank": theme.bgCard,
+    "--el-fill-color-light": theme.bgSubtle,
+    "--el-fill-color": theme.bgMuted,
+
+    "--el-border-radius-base": `${theme.radiusMd}px`,
+    "--el-border-radius-small": `${theme.radiusSm}px`,
+
+    "--el-font-size-base": `${theme.fontSizeBase}px`,
+    "--el-font-size-small": `${theme.fontSizeSm}px`,
+    "--el-font-family": theme.fontFamily,
   };
 }
 

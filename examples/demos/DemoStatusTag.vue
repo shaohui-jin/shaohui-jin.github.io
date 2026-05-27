@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { StatusTag, type StatusTagProps, type StatusTagType } from "comp-vue-lib";
+import { StatusTag, type StatusTagType } from "comp-vue-lib";
 import type { ComponentApi } from "./types";
 import ApiTable from "./ApiTable.vue";
+import DemoWidgetTabs from "./DemoWidgetTabs.vue";
+import { demoCodes } from "./demoCodes";
 
 const demos: { label: string; type: StatusTagType }[] = [
   { label: "成功", type: "success" },
@@ -29,19 +31,15 @@ const api: ComponentApi = {
     <h2>StatusTag</h2>
     <p>用于显示状态的圆角标签</p>
   </div>
-  <div class="widget-card widget-card--full">
-    <div class="widget-card__head">
-      <span class="widget-card__title">演示</span>
+  <DemoWidgetTabs :code="demoCodes.statusTag">
+    <div class="widget-row">
+      <StatusTag v-for="d in demos" :key="d.type" :label="d.label" :type="d.type" />
     </div>
-    <div class="widget-card__body">
-      <div class="widget-row">
-        <StatusTag v-for="d in demos" :key="d.type" :label="d.label" :type="d.type" />
-      </div>
-    </div>
-    <div class="widget-card__api">
-      <h4>Props</h4>
-      <ApiTable type="props" :rows="api.props" />
-    </div>
+  </DemoWidgetTabs>
+
+  <div class="api-section">
+    <h3 class="api-section__title">StatusTag Props</h3>
+    <ApiTable type="props" :rows="api.props" />
   </div>
 </template>
 

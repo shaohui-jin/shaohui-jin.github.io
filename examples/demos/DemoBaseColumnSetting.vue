@@ -1,15 +1,17 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import {
   BaseTable,
   BaseColumnSetting,
+  withEditColumn,
+  stripEditColumn,
   type BaseTableColumn,
   type BaseColumnSettingColumn,
-  type BaseColumnSettingProps,
-  type BaseColumnSettingEmits,
 } from "comp-vue-lib";
 import type { ComponentApi } from "./types";
 import ApiTable from "./ApiTable.vue";
+import DemoWidgetTabs from "./DemoWidgetTabs.vue";
+import { demoCodes } from "./demoCodes";
 
 // ==================== 演示数据 ====================
 
@@ -23,6 +25,8 @@ const columns = ref<BaseColumnSettingColumn[]>([
   { key: "category", label: "分类", width: 120 },
   { key: "remark", label: "备注" },
 ]);
+
+const tableColumns = computed(() => withEditColumn(columns.value as BaseTableColumn[], true));
 
 const tableData = Array.from({ length: 20 }, (_, i) => ({
   id: i + 1,
@@ -41,7 +45,8 @@ function openSetting() {
 }
 
 function onConfirm(cols: BaseColumnSettingColumn[]) {
-  const visible = cols.filter((c) => c.show !== false).length;
+  columns.value = stripEditColumn(cols) as BaseColumnSettingColumn[];
+  const visible = columns.value.filter((c) => c.show !== false).length;
   lastEvent.value = `confirm: ${visible} 列可见`;
 }
 
@@ -68,13 +73,15 @@ const api: ComponentApi = {
     { name: "confirm", payload: "BaseColumnSettingColumn[]", desc: "点击确定时触发" },
   ],
   notes: [
-    "通过 ref 调用 open() 方法打开设置抽屉",
+    "推荐配合 BaseTable 的 editColumn 列：表头 Setting 图标触发 open()，与 BaseCrud 一致",
+    "editColumn 列使用 withEditColumn() 追加，不参与本面板排序与显隐",
     "selection / index / expand 类型的列不会在设置面板中显示",
     "支持拖拽排序、显隐切换、冻结列设置（左 / 无 / 右）",
     "确认时会按 fixed 位置重新排列：左冻结 → 正常 → 右冻结",
     "列配置类型 BaseColumnSettingColumn 继承自 BaseTableColumn，新增 fixed 字段",
   ],
 };
+
 </script>
 
 <template>
@@ -83,24 +90,19 @@ const api: ComponentApi = {
     <p>表格列配置面板，支持拖拽排序、显隐切换和冻结列设置</p>
   </div>
 
-  <div class="widget-card widget-card--full">
-    <div class="widget-card__head">
-      <span class="widget-card__title">演示</span>
-      <el-button size="small" @click="openSetting">列设置</el-button>
-    </div>
-    <div class="widget-card__body" style="padding: 0">
-      <BaseTable
-        mode="element"
-        :table-data="tableData"
-        :columns="columns as BaseTableColumn[]"
-        height="360px"
-      />
-      <BaseColumnSetting ref="settingRef" v-model:columns="columns" @confirm="onConfirm" />
-    </div>
-    <div class="widget-card__api">
-      <p class="widget-hint" style="margin: 12px 0 0">最近事件：{{ lastEvent }}</p>
-    </div>
-  </div>
+  <DemoWidgetTabs :code="demoCodes.baseColumnSetting" flush>
+    <BaseTable
+      mode="element"
+      :table-data="tableData"
+      :columns="tableColumns"
+      height="360px"
+      @edit-column="openSetting"
+    />
+    <BaseColumnSetting ref="settingRef" v-model:columns="columns" @confirm="onConfirm" />
+    <template #footer>
+      <p class="widget-hint">最近事件：{{ lastEvent }}</p>
+    </template>
+  </DemoWidgetTabs>
 
   <!-- Props -->
   <div class="api-section">

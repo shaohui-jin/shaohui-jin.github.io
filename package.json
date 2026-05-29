@@ -1,6 +1,6 @@
 {
   "name": "comp-vue-lib",
-  "version": "0.5.0",
+  "version": "0.8.0",
   "private": true,
   "packageManager": "pnpm@10.13.1",
   "type": "module",
@@ -15,6 +15,26 @@
       "import": "./dist/index.mjs",
       "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./util": {
+      "import": "./dist/util/index.mjs",
+      "require": "./dist/util/index.js",
+      "types": "./dist/util/index.d.ts"
+    },
+    "./util/*": {
+      "import": "./dist/util/*.mjs",
+      "require": "./dist/util/*.js",
+      "types": "./dist/util/*.d.ts"
+    },
+    "./type": {
+      "import": "./dist/type/index.mjs",
+      "require": "./dist/type/index.js",
+      "types": "./dist/type/index.d.ts"
+    },
+    "./type/*": {
+      "import": "./dist/type/*.mjs",
+      "require": "./dist/type/*.js",
+      "types": "./dist/type/*.d.ts"
     },
     "./style.css": "./dist/style.css"
   },

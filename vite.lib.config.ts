@@ -1,46 +1,17 @@
-import { copyFileSync, mkdirSync } from "node:fs";
 import { resolve } from "node:path";
-import { fileURLToPath, URL } from "node:url";
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import dts from "vite-plugin-dts";
-
-/** 将 canvaskit.wasm、Noto SC 字重复制到 dist/assets，供打包后使用（与 index 同包分发） */
-function copySkiaAssets(): import("vite").Plugin {
-  return {
-    name: "copy-skia-assets",
-    closeBundle() {
-      const root = fileURLToPath(new URL(".", import.meta.url));
-      const destDir = resolve(root, "dist/assets");
-      mkdirSync(destDir, { recursive: true });
-      copyFileSync(
-        resolve(root, "node_modules/canvaskit-wasm/bin/canvaskit.wasm"),
-        resolve(destDir, "canvaskit.wasm"),
-      );
-      try {
-        copyFileSync(
-          resolve(
-            root,
-            "node_modules/@fontsource/noto-sans-sc/files/noto-sans-sc-chinese-simplified-400-normal.woff2",
-          ),
-          resolve(destDir, "NotoSansSC-400.woff2"),
-        );
-      } catch {
-        /* 未安装 @fontsource/noto-sans-sc 时跳过，运行时使用 Typeface.GetDefault() */
-      }
-    },
-  };
-}
+import { fileURLToPath, URL } from "node:url";
 
 export default defineConfig({
   plugins: [
     vue(),
-    copySkiaAssets(),
     dts({
-      tsconfigPath: "tsconfig.lib.json",
-      entryRoot: "src",
+      tsconfigPath: "./tsconfig.lib.json",
       outDir: "dist",
-      rollupTypes: true,
+      staticImport: true,
+      insertTypesEntry: true,
     }),
   ],
   resolve: {
@@ -49,34 +20,51 @@ export default defineConfig({
     },
   },
   build: {
+    outDir: "dist",
+    emptyOutDir: true,
     lib: {
-      entry: fileURLToPath(new URL("./src/index.ts", import.meta.url)),
-      name: "CompVueLib",
-      fileName: (format) => (format === "es" ? "index.mjs" : "index.js"),
+      entry: {
+        index: resolve(__dirname, "src/index.ts"),
+        "util/index": resolve(__dirname, "src/util/index.ts"),
+        "util/color": resolve(__dirname, "src/util/color.ts"),
+        "util/number": resolve(__dirname, "src/util/number.ts"),
+        "util/object": resolve(__dirname, "src/util/object.ts"),
+        "util/array": resolve(__dirname, "src/util/array.ts"),
+        "util/clipboard": resolve(__dirname, "src/util/clipboard.ts"),
+        "util/debounce": resolve(__dirname, "src/util/debounce.ts"),
+        "util/optimize": resolve(__dirname, "src/util/optimize.ts"),
+        "util/permission": resolve(__dirname, "src/util/permission.ts"),
+        "util/typescript": resolve(__dirname, "src/util/typescript.ts"),
+        "type/index": resolve(__dirname, "src/type/index.ts"),
+        "type/basic": resolve(__dirname, "src/type/basic.ts"),
+        "type/crud": resolve(__dirname, "src/type/crud.ts"),
+      },
       formats: ["es", "cjs"],
+      fileName: (format, entryName) => {
+        const ext = format === "es" ? "mjs" : "js";
+        return `${entryName}.${ext}`;
+      },
     },
     rollupOptions: {
       external: [
         "vue",
+        /^vue\//,
         "element-plus",
         /^element-plus\//,
         "@element-plus/icons-vue",
         "lodash-es",
+        /^lodash-es\//,
         "canvaskit-wasm",
       ],
       output: {
         exports: "named",
-        assetFileNames: "style[extname]",
         globals: {
           vue: "Vue",
           "element-plus": "ElementPlus",
-          "@element-plus/icons-vue": "ElementPlusIconsVue",
-          "lodash-es": "_",
-          "canvaskit-wasm": "CanvasKitInit",
         },
       },
     },
+    cssCodeSplit: false,
     sourcemap: true,
-    emptyOutDir: true,
   },
 });

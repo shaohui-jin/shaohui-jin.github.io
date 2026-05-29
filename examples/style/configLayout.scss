@@ -1,0 +1,93 @@
+@use "variables" as *;
+
+// ============================================================
+// 配置页布局与响应式适配
+// 仅包含结构性布局规则，业务样式保留在组件内
+// ============================================================
+
+.demo-config__layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: $doc-sp-lg;
+  align-items: start;
+  min-width: 0;
+}
+
+.demo-config__panel {
+  position: sticky;
+  top: 16px;
+  padding: 0 $doc-sp-md 0 0;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  min-width: 0;
+}
+
+.demo-config__main {
+  display: flex;
+  flex-direction: column;
+  gap: $doc-sp-md;
+  min-width: 0;
+}
+
+.demo-config__preview {
+  padding: $doc-sp-lg;
+  border-radius: $doc-radius-lg;
+  display: flex;
+  flex-direction: column;
+  gap: $doc-sp-md;
+  min-width: 0;
+  overflow: hidden;
+}
+
+// ============================================================
+// 平板端 (768px ~ 1024px)
+// ============================================================
+@media (max-width: $doc-bp-tablet) {
+  .demo-config__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .demo-config__panel {
+    position: static;
+    max-height: none;
+    padding: 0;
+  }
+}
+
+// ============================================================
+// 移动端 (< 768px)
+// ============================================================
+@media (max-width: $doc-bp-mobile) {
+  .demo-config__header {
+    margin-bottom: $doc-sp-md;
+
+    h2 {
+      font-size: $doc-fs-lg;
+    }
+  }
+
+  .demo-config__layout {
+    gap: $doc-sp-md;
+  }
+
+  .demo-config__panel {
+    padding: 0;
+  }
+
+  .demo-config__preview {
+    padding: $doc-sp-sm;
+  }
+
+  .demo-config__card {
+    padding: $doc-sp-sm;
+
+    h4 {
+      font-size: $doc-fs-sm;
+    }
+  }
+
+  .demo-config__json {
+    max-height: 240px;
+    font-size: 11px;
+  }
+}

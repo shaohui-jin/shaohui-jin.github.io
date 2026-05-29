@@ -1,6 +1,6 @@
 ---
 description: 新增组件一站式规范（分类目录、命名、导出、Demo 文档自动生成）
-globs: src/components/**/*,examples/demos/**/*,examples/App.vue
+globs: src/component/**/*,examples/demo/**/*,examples/App.vue
 alwaysApply: false
 ---
 
@@ -14,12 +14,12 @@ alwaysApply: false
 
 | 分类 | 目录 | 菜单分组 | 命名前缀示例 |
 |------|------|----------|-------------|
-| **CRUD** | `src/components/crud/` | 侧边栏「CRUD 组件」 | `BaseTable`、`BaseSearch` |
-| **基础** | `src/components/basic/` | 侧边栏「基础组件」 | `StatusTag`、`StatusDot` |
+| **CRUD** | `src/component/crud/` | 侧边栏「CRUD 组件」 | `BaseTable`、`BaseSearch` |
+| **基础** | `src/component/basic/` | 侧边栏「基础组件」 | `StatusTag`、`StatusDot` |
 | **特殊** | 需开发者确认 | 需开发者确认是否新开 Tab/分组 | 如 `ConfigProvider` 在 `src/config/` |
 
 特殊类组件必须确认：
-1. 目录路径（是否新开 `src/components/{category}/`）
+1. 目录路径（是否新开 `src/component/{category}/`）
 2. 是否在 `examples/App.vue` 新开菜单分组或 Tab
 3. 是否对外导出（`src/index.ts`）
 
@@ -30,24 +30,25 @@ alwaysApply: false
 ### CRUD 组件（现有模式）
 
 ```
-src/components/crud/
+src/component/crud/
 └── base-xxx/                    # kebab-case，语义化
     ├── BaseXxx.vue              # PascalCase，与导出名一致
-    ├── types.ts                 # Props / Emits / 配置类型
     └── ...                      # 子模块按需：modes/ utils/ theme/
 ```
 
+- 类型声明统一放在 `src/type/crud.ts`，组件目录内不保留 `types.ts`
 - 可被多个 CRUD 组件复用的子组件：同级新建目录，如 `base-search-field/BaseSearchField.vue`
 - 仅某一组件内部使用：放在父组件子目录，如 `base-table/modes/CellSwitch.vue`，**不单独导出**
 
 ### 基础组件（现有模式）
 
 ```
-src/components/basic/
+src/component/basic/
 └── status-xxx/                  # kebab-case
-    ├── StatusXxx.vue            # PascalCase
-    └── types.ts
+    └── StatusXxx.vue            # PascalCase
 ```
+
+- 类型声明统一放在 `src/type/basic.ts`
 
 ### 命名对照（从现有组件归纳）
 
@@ -55,7 +56,7 @@ src/components/basic/
 |----|------|------|
 | 文件夹 | kebab-case，带业务前缀 | `base-search-field`、`status-dot` |
 | Vue 文件 | PascalCase = 组件名 | `BaseSearchField.vue` |
-| 类型文件 | `types.ts`（模块专用） | 跨模块共享需加前缀文件名 |
+| 类型文件 | 统一放 `src/type/` | `basic.ts`、`crud.ts` |
 | 组合式函数 | camelCase + `use` 前缀 | `useBaseTableSelection.ts` |
 | 工具函数 | camelCase | `column.ts`、`canvasDraw.ts` |
 | Demo 页 | `Demo{ComponentName}.vue` | `DemoBaseSearchField.vue` |
@@ -64,14 +65,14 @@ src/components/basic/
 ### 禁止
 
 - 泛化文件名：`utils.ts`、`temp.vue`、`blank.vue`
-- 硬编码颜色（组件内用 `src/styles/variables.scss` 的 `$lib-*`）
+- 硬编码颜色（组件内用 `src/style/variables.scss` 的 `$lib-*`）
 - 未经确认自行新增 npm 依赖
 
 ## 三、代码模板要点
 
 ```vue
 <script setup lang="ts">
-import type { XxxProps, XxxEmits } from "./types";
+import type { XxxProps, XxxEmits } from "@/type/crud"; // 或 @/type/basic
 
 defineOptions({ name: "Xxx" });
 
@@ -81,15 +82,16 @@ const emit = defineEmits<XxxEmits>();
 ```
 
 - 使用 `<script setup lang="ts">` + Composition API
-- Props / Emits 类型定义在同目录 `types.ts`
+- Props / Emits 类型声明在 `src/type/basic.ts` 或 `src/type/crud.ts`，通过 `@/type/` 引入
 - 注释优先中文（公共 API 的 JSDoc 除外）
 
 ## 四、导出与注册（必做）
 
-1. **`src/components/index.ts`** — 按分类注释分组导出
-2. **`src/index.ts`** — 具名导出组件 + `export type { XxxProps, XxxEmits }`
-3. **`src/index.ts` 的 `components` 数组** — 加入 `install()` 注册
-4. **`doc/架构设计.md`** — 更新「目录结构」章节（新增/删除组件时）
+1. **`src/component/index.ts`** — 按分类注释分组导出
+2. **`src/type/crud.ts` 或 `src/type/basic.ts`** — 新增类型声明
+3. **`src/index.ts`** — 具名导出组件 + `export type { XxxProps, XxxEmits }`
+4. **`src/index.ts` 的 `components` 数组** — 加入 `install()` 注册
+5. **`doc/架构设计.md`** — 更新「目录结构」章节（新增/删除组件时）
 
 ## 五、创建后检查清单
 
@@ -108,9 +110,9 @@ const emit = defineEmits<XxxEmits>();
 
 ### 6.1 文件与导航
 
-- 文档页：`examples/demos/Demo{ComponentName}.vue`
+- 文档页：`examples/demo/{component-name}/Demo{ComponentName}.vue`
 - 在 `examples/App.vue` 中：
-  - `pageMap` 增加路由 key → Demo 组件
+  - `pageMap` 增加路由 key → Demo 组件（`import from "./demo/{component-name}/Demo{ComponentName}.vue"`）
   - 对应 `el-sub-menu` 下增加 `el-menu-item`（CRUD / 基础 分组与组件分类一致）
 - 菜单 `index` 用 kebab-case，如 `base-search-field`
 
@@ -140,7 +142,7 @@ const emit = defineEmits<XxxEmits>();
 </div>
 ```
 
-- 样式：`@use "./variables" as *;` + `@use "./demo";`
+- 样式：`@use "../../style/variables" as *;` + `@use "../../style/demo";`
 - 禁止硬编码文档色值；类型标签色由 `demo.scss` 的 `.api-type` 跟随 theme 主色
 - 补充说明统一标题为 **特殊说明**，列表使用 `api-notes-list`（禁止用「说明」或其他类名）
 
@@ -223,7 +225,7 @@ const emit = defineEmits<XxxEmits>();
 
 ### 6.5 类型提示注册
 
- opaque 类型名注册到 `examples/demos/apiTypeHints.ts`：
+ opaque 类型名注册到 `examples/type/apiTypeHints.ts`：
 
 ```typescript
 BaseXxxType: {

@@ -6,11 +6,19 @@ import {
   BaseSearchDrawer,
   BaseColumnSetting,
   BaseCrud,
-  StatusDot,
-  StatusTag,
-} from "./components";
-import { createCompLib } from "./config/configInjection";
-import ConfigProvider from "./config/ConfigProvider.vue";
+  Dot,
+  Tag,
+  Image3D,
+  ImageCarousel,
+  ImagePointer,
+  TextEraseArea,
+  TextOverflowArea,
+  CanvasTime,
+  CodeBlock,
+  WidgetTabs,
+} from "@/component";
+import { createCompLib } from "@/config/configInjection";
+import ConfigProvider from "@/config/ConfigProvider.vue";
 
 export {
   BaseTable,
@@ -19,63 +27,83 @@ export {
   BaseSearchDrawer,
   BaseColumnSetting,
   BaseCrud,
-  StatusDot,
-  StatusTag,
+  Dot,
+  Tag,
+  Image3D,
+  ImageCarousel,
+  ImagePointer,
+  TextEraseArea,
+  TextOverflowArea,
+  CanvasTime,
+  CodeBlock,
+  WidgetTabs,
 };
 
 // 配置系统
 export { createCompLib, ConfigProvider };
-export { elementPlusLocale } from "./config/elementPlusLocale";
-export { useLibConfig } from "./config/useLibConfig";
-export { defaultLibConfig } from "./config/configDefaults";
+export { elementPlusLocale } from "@/config/elementPlusLocale";
+export { useLibConfig } from "@/config/useLibConfig";
+export { defaultLibConfig } from "@/config/configDefaults";
 export type {
   LibConfig,
   LibThemeConfig,
   LibTableConfig,
   ResolvedLibConfig,
-} from "./config/configTypes";
-export type { PersistOptions } from "./config/configInjection";
+} from "@/config/configTypes";
+export type { PersistOptions } from "@/config/configInjection";
 
-export type { StatusDotProps } from "./components/basic/status-dot/types";
-export type { StatusTagProps, StatusTagType } from "./components/basic/status-tag/types";
+export type {
+  DotProps,
+  TagProps,
+  TagType,
+  Image3DProps,
+  ImageCarouselProps,
+  ImagePointerProps,
+  TextEraseAreaProps,
+  TextOverflowAreaProps,
+  CanvasTimeProps,
+  CodeBlockProps,
+  WidgetTabsProps,
+} from "@/type/basic";
 export type {
   BaseTableColumn,
   BaseTableColumnType,
   BaseTableMode,
   BaseTableProps,
   BaseTableEmits,
-} from "./components/crud/base-table/types";
-export type {
   BaseSearchField as SearchFieldConfig,
   BaseSearchFieldType,
   BaseSearchFieldOption,
   BaseSearchProps,
   BaseSearchEmits,
-} from "./components/crud/base-search/types";
-export type {
   BaseSearchFieldProps,
   BaseSearchFieldEmits,
-} from "./components/crud/base-search-field/types";
-export type {
   BaseSearchDrawerProps,
   BaseSearchDrawerEmits,
-} from "./components/crud/base-search-drawer/types";
-export type {
   BaseColumnSettingColumn,
   BaseColumnSettingProps,
   BaseColumnSettingEmits,
-} from "./components/crud/base-column-setting/types";
-export type { BaseCrudProps, BaseCrudEmits } from "./components/crud/base-crud/types";
+  BaseCrudProps,
+  BaseCrudEmits,
+} from "@/type/crud";
 /** @deprecated 使用 createCompLib 配置代替 */
 export {
   tableLayoutDefaults,
   tableSurfaceConfig,
-} from "./components/crud/base-table/theme/tableSurface";
-export { columnDefaults, normalizeColumns, withEditColumn, stripEditColumn } from "./components/crud/base-table/utils/column";
+} from "@/component/crud/base-table/theme/tableSurface";
+export { columnDefaults, normalizeColumns, withEditColumn, stripEditColumn } from "@/component/crud/base-table/utils/column";
 
 const components = [
-  StatusDot,
-  StatusTag,
+  Dot,
+  Tag,
+  Image3D,
+  ImageCarousel,
+  ImagePointer,
+  TextEraseArea,
+  TextOverflowArea,
+  CanvasTime,
+  CodeBlock,
+  WidgetTabs,
   BaseTable,
   BaseSearch,
   BaseSearchField,

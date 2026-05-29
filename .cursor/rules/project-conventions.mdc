@@ -16,21 +16,109 @@ alwaysApply: true
 
 始终使用简体中文回复。代码注释也优先使用中文，除非是公共 API 的 JSDoc。
 
+## 目录结构规范
+
+`src/` 下目录名使用单数形式，各职责分离：
+
+```
+src/
+  component/           ← Vue 组件源码
+    basic/             ← 基础组件（Tag、Dot、CodeBlock、WidgetTabs 等）
+    crud/              ← CRUD 组件（BaseTable、BaseSearch 等）
+  config/              ← 配置注入系统
+  style/               ← SCSS 变量 + TS 颜色默认值
+  type/                ← 类型声明（所有组件类型的唯一源头）
+    basic.ts           ← 基础组件类型
+    crud.ts            ← CRUD 组件类型
+    index.ts           ← 统一 re-export
+  util/                ← 工具函数
+  index.ts             ← 库入口
+```
+
+`examples/` 下按职责分离：
+
+```
+examples/
+  App.vue              ← 演示站入口
+  style/               ← 演示站 SCSS（variables、demo、el-overrides 等）
+  type/                ← 演示站类型（ApiRow、apiTypeHints 等）
+  demo/                ← 组件 Demo 页
+    base-table/        ← 每个组件独立子目录
+    base-search/
+    config-provider/
+    ...
+    ApiTable.vue       ← 共享 Demo 辅助组件
+    DemoCodeBlock.vue  ← 代码展示 + 复制（通用）
+    DemoWidgetTabs.vue ← 预览/代码 Tab 切换
+    demoCodes.ts
+    demoCodeHighlight.ts
+```
+
+## 路径引用规范
+
+- `src/` 内的文件，跨目录引用必须使用 `@/` alias（`@` 指向 `src/`）
+- 同目录内用 `./` 相对引用
+- 禁止出现三层及以上的相对路径（`../../../`）
+- SCSS `@use` 同样支持 `@/style/variables`
+- `examples/` 下的 Demo 文件引用 `src/` 内容时使用 `@/` 或 `comp-vue-lib` 别名
+- 唯一例外：`node_modules` 运行时资源引用和项目根文件（如 `CHANGELOG.md`）
+
 ## 代码风格
 
 - Vue 组件使用 `<script setup lang="ts">` + Composition API
 - 组件文件名：PascalCase（如 `ChangelogPanel.vue`）
 - 组合式函数文件名：camelCase，`use` 前缀（如 `useCanvasCheckboxHover.ts`）
 - 工具函数文件名：camelCase（如 `canvasDraw.ts`）
-- SCSS 变量统一定义在 `src/styles/variables.scss`（组件库公共变量源头），Demo 页通过 `@use` 继承
-- 主题 token 统一定义在 `src/components/crud/base-table/theme/tableSurface.ts`
+- SCSS 变量统一定义在 `src/style/variables.scss`（组件库公共变量源头），Demo 页通过 `@use` 继承
+- 主题 token 统一定义在 `src/component/crud/base-table/theme/tableSurface.ts`
+- 类型声明统一放在 `src/type/`，组件目录内不再保留 `types.ts`
 - 不要自行添加 npm 依赖，除非明确要求
+
+## 组件复用原则
+
+- 相同功能/UI 不允许重复实现，必须提取为通用组件复用
+- 代码展示 + 复制功能统一使用组件库的 `CodeBlock` 组件，不要自行实现复制逻辑
+- 预览/代码切换容器统一使用组件库的 `WidgetTabs` 组件（默认 `flush: true`）
+- `examples/demo/DemoCodeBlock.vue` 和 `DemoWidgetTabs.vue` 是 Demo 站的薄包装层
+- 新增 Demo 辅助组件前，先检查 `src/component/basic/` 下是否已有可复用的组件
+
+## Demo 文档规范
+
+- 每个组件的 Demo 页统一使用 `DemoWidgetTabs` 包裹，展示「预览」和「代码」两个 Tab
+- 「代码」Tab 的内容必须是预览区的真实源代码，不允许放通用示例或占位代码
+- Demo 页结构：标题描述 → DemoWidgetTabs（可多个场景） → API 参数表
+- 工具函数 Demo 统一使用 `CodeBlock` 展示代码，同样保持一致的复制功能
+
+## npm 包导出规范
+
+组件和工具函数使用不同的导入路径：
+
+```ts
+// 组件（主入口）
+import { BaseTable, CodeBlock } from "comp-vue-lib";
+
+// 工具函数（/util 子路径）
+import { rgbaToHex, debounce } from "comp-vue-lib/util";
+import { rgbaToHex } from "comp-vue-lib/util/color";
+
+// 类型（/type 子路径）
+import type { TagProps, BaseTableColumn } from "comp-vue-lib/type";
+
+// 样式
+import "comp-vue-lib/style.css";
+```
+
+- `src/index.ts` 只导出组件和配置，不导出工具函数和类型
+- 工具函数通过 `src/util/index.ts` 统一导出
+- 类型通过 `src/type/index.ts` 统一导出
+- `package.json` 的 `exports` 字段维护子路径映射
+- 构建使用 `vite.lib.config.ts`（多入口），确保每个子路径有独立产物
 
 ## 文件命名
 
 - 新增或修改文件时，文件名必须语义化，能准确反映文件内容或职责
 - 禁止使用泛化/无意义命名，如 `blank`、`temp`、`test1`、`utils` 单独作为文件名
-- 类型定义文件：若为某组件/模块专用，可用 `types.ts`；若跨模块共享，需加前缀说明（如 `apiDocTypes.ts`）
+- 目录名使用单数形式（`component` 不是 `components`，`style` 不是 `styles`）
 - 常量文件：以内容类别命名（如 `colorDefaults.ts`），不用 `constants`、`tokens` 等泛化词
 
 ## 三端适配
@@ -75,6 +163,7 @@ alwaysApply: true
 - 只记录"做了什么"，不记录"怎么实现的"
 - 不写括号内的实现细节、技术手段、具体参数
 - 同类变更合并为一句话，避免子列表展开
+- 同一版本内新增的内容不记录中途重命名/重构过程，直接以最终形态记录为"新增"
 
 版本规则：
 - 新功能 minor+1，纯修复 patch+1

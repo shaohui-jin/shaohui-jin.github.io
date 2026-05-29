@@ -1,17 +1,27 @@
 <script setup lang="ts">
-import { computed, type Component, ref, watch } from "vue";
-import DemoBaseTable from "./demos/DemoBaseTable.vue";
-import DemoBaseSearch from "./demos/DemoBaseSearch.vue";
-import DemoBaseSearchField from "./demos/DemoBaseSearchField.vue";
-import DemoBaseSearchDrawer from "./demos/DemoBaseSearchDrawer.vue";
-import DemoBaseColumnSetting from "./demos/DemoBaseColumnSetting.vue";
-import DemoBaseCrud from "./demos/DemoBaseCrud.vue";
-import DemoStatusTag from "./demos/DemoStatusTag.vue";
-import DemoStatusDot from "./demos/DemoStatusDot.vue";
-import DemoConfigProvider from "./demos/DemoConfigProvider.vue";
-import ChangelogPanel from "./demos/ChangelogPanel.vue";
+import { computed, type Component, ref, watch, defineAsyncComponent } from "vue";
 
-type TopTab = "docs" | "config" | "changelog";
+const DemoBaseTable = defineAsyncComponent(() => import("./demo/base-table/DemoBaseTable.vue"));
+const DemoBaseSearch = defineAsyncComponent(() => import("./demo/base-search/DemoBaseSearch.vue"));
+const DemoBaseSearchField = defineAsyncComponent(() => import("./demo/base-search-field/DemoBaseSearchField.vue"));
+const DemoBaseSearchDrawer = defineAsyncComponent(() => import("./demo/base-search-drawer/DemoBaseSearchDrawer.vue"));
+const DemoBaseColumnSetting = defineAsyncComponent(() => import("./demo/base-column-setting/DemoBaseColumnSetting.vue"));
+const DemoBaseCrud = defineAsyncComponent(() => import("./demo/base-crud/DemoBaseCrud.vue"));
+const DemoTag = defineAsyncComponent(() => import("./demo/tag/DemoTag.vue"));
+const DemoDot = defineAsyncComponent(() => import("./demo/dot/DemoDot.vue"));
+const DemoImage3D = defineAsyncComponent(() => import("./demo/image-3d/DemoImage3D.vue"));
+const DemoImageCarousel = defineAsyncComponent(() => import("./demo/image-carousel/DemoImageCarousel.vue"));
+const DemoImagePointer = defineAsyncComponent(() => import("./demo/image-pointer/DemoImagePointer.vue"));
+const DemoTextEraseArea = defineAsyncComponent(() => import("./demo/text-erase-area/DemoTextEraseArea.vue"));
+const DemoTextOverflowArea = defineAsyncComponent(() => import("./demo/text-overflow-area/DemoTextOverflowArea.vue"));
+const DemoCanvasTime = defineAsyncComponent(() => import("./demo/canvas-time/DemoCanvasTime.vue"));
+const DemoCodeBlock = defineAsyncComponent(() => import("./demo/code-block/DemoCodeBlock.vue"));
+const DemoWidgetTabs = defineAsyncComponent(() => import("./demo/widget-tabs/DemoWidgetTabs.vue"));
+const DemoUtils = defineAsyncComponent(() => import("./demo/utils/DemoUtils.vue"));
+const DemoConfigProvider = defineAsyncComponent(() => import("./demo/config-provider/DemoConfigProvider.vue"));
+const ChangelogPanel = defineAsyncComponent(() => import("./demo/changelog/ChangelogPanel.vue"));
+
+type TopTab = "docs" | "utils" | "config" | "changelog";
 
 const pageMap: Record<string, Component> = {
   tables: DemoBaseTable,
@@ -20,14 +30,24 @@ const pageMap: Record<string, Component> = {
   "base-search-drawer": DemoBaseSearchDrawer,
   "base-column-setting": DemoBaseColumnSetting,
   "base-crud": DemoBaseCrud,
-  "status-tag": DemoStatusTag,
-  "status-dot": DemoStatusDot,
+  tag: DemoTag,
+  dot: DemoDot,
+  "image-3d": DemoImage3D,
+  "image-carousel": DemoImageCarousel,
+  "image-pointer": DemoImagePointer,
+  "text-erase-area": DemoTextEraseArea,
+  "text-overflow-area": DemoTextOverflowArea,
+  "canvas-time": DemoCanvasTime,
+  "code-block": DemoCodeBlock,
+  "widget-tabs": DemoWidgetTabs,
 };
 
 const FIRST_LEAF_KEY = "tables";
+const FIRST_UTILS_KEY = "rgbaToHex";
 
 const topTab = ref<TopTab>("docs");
 const activeName = ref(FIRST_LEAF_KEY);
+const activeUtilsName = ref(FIRST_UTILS_KEY);
 const activePage = computed(() => pageMap[activeName.value] ?? DemoBaseTable);
 
 const navOpen = ref(false);
@@ -45,16 +65,25 @@ function switchTopTab(tab: TopTab) {
   compListOpen.value = false;
   if (tab === "docs") {
     activeName.value = FIRST_LEAF_KEY;
+  } else if (tab === "utils") {
+    activeUtilsName.value = FIRST_UTILS_KEY;
   }
 }
 
+function handleUtilsSelect(key: string) {
+  activeUtilsName.value = key;
+  navOpen.value = false;
+}
+
 function handleBottomTab(tab: TopTab) {
-  if (tab === "docs") {
-    if (topTab.value === "docs") {
+  if (tab === "docs" || tab === "utils") {
+    if (topTab.value === tab) {
       compListOpen.value = !compListOpen.value;
     } else {
-      topTab.value = "docs";
-      compListOpen.value = true;
+      topTab.value = tab;
+      requestAnimationFrame(() => {
+        compListOpen.value = true;
+      });
     }
   } else {
     topTab.value = tab;
@@ -83,6 +112,12 @@ watch(topTab, () => {
             组件文档
           </button>
           <button
+            :class="['doc-header__tab', { active: topTab === 'utils' }]"
+            @click="switchTopTab('utils')"
+          >
+            工具函数
+          </button>
+          <button
             :class="['doc-header__tab', { active: topTab === 'config' }]"
             @click="switchTopTab('config')"
           >
@@ -105,7 +140,7 @@ watch(topTab, () => {
           :default-active="activeName"
           class="doc-nav"
           :class="{ 'doc-nav--open': navOpen }"
-          :default-openeds="['crud', 'basic']"
+          :default-openeds="['crud', 'basic', 'visual']"
           @select="handleSelect"
         >
           <el-sub-menu index="crud">
@@ -143,19 +178,192 @@ watch(topTab, () => {
               <el-icon><i class="nav-icon nav-icon--widget" /></el-icon>
               <span>基础组件</span>
             </template>
-            <el-menu-item index="status-tag">
-              <span class="nav-item__name">StatusTag</span>
+            <el-menu-item index="tag">
+              <span class="nav-item__name">Tag</span>
               <span class="nav-item__tag">标签</span>
             </el-menu-item>
-            <el-menu-item index="status-dot">
-              <span class="nav-item__name">StatusDot</span>
+            <el-menu-item index="dot">
+              <span class="nav-item__name">Dot</span>
               <span class="nav-item__tag">圆点</span>
+            </el-menu-item>
+          </el-sub-menu>
+          <el-sub-menu index="visual">
+            <template #title>
+              <el-icon><i class="nav-icon nav-icon--widget" /></el-icon>
+              <span>视觉组件</span>
+            </template>
+            <el-menu-item index="image-3d">
+              <span class="nav-item__name">Image3D</span>
+              <span class="nav-item__tag">透视图</span>
+            </el-menu-item>
+            <el-menu-item index="image-carousel">
+              <span class="nav-item__name">ImageCarousel</span>
+              <span class="nav-item__tag">轮播</span>
+            </el-menu-item>
+            <el-menu-item index="image-pointer">
+              <span class="nav-item__name">ImagePointer</span>
+              <span class="nav-item__tag">指针</span>
+            </el-menu-item>
+            <el-menu-item index="text-erase-area">
+              <span class="nav-item__name">TextEraseArea</span>
+              <span class="nav-item__tag">擦除</span>
+            </el-menu-item>
+            <el-menu-item index="text-overflow-area">
+              <span class="nav-item__name">TextOverflowArea</span>
+              <span class="nav-item__tag">溢出</span>
+            </el-menu-item>
+            <el-menu-item index="canvas-time">
+              <span class="nav-item__name">CanvasTime</span>
+              <span class="nav-item__tag">时钟</span>
+            </el-menu-item>
+            <el-menu-item index="code-block">
+              <span class="nav-item__name">CodeBlock</span>
+              <span class="nav-item__tag">代码块</span>
+            </el-menu-item>
+            <el-menu-item index="widget-tabs">
+              <span class="nav-item__name">WidgetTabs</span>
+              <span class="nav-item__tag">预览切换</span>
             </el-menu-item>
           </el-sub-menu>
         </el-menu>
 
         <div class="doc-content">
           <component :is="activePage" />
+        </div>
+      </template>
+
+      <template v-else-if="topTab === 'utils'">
+        <div class="doc-nav-backdrop" :class="{ visible: navOpen }" @click="navOpen = false" />
+        <el-menu
+          :default-active="activeUtilsName"
+          class="doc-nav"
+          :class="{ 'doc-nav--open': navOpen }"
+          :default-openeds="['color', 'number', 'object', 'array', 'clipboard', 'debounce-group', 'optimize', 'permission', 'typescript']"
+          @select="handleUtilsSelect"
+        >
+          <el-sub-menu index="color">
+            <template #title><span>颜色工具</span></template>
+            <el-menu-item index="rgbaToHex">
+              <span class="nav-item__name">rgbaToHex</span>
+              <span class="nav-item__tag">rgba转hex</span>
+            </el-menu-item>
+            <el-menu-item index="hexToRGBA">
+              <span class="nav-item__name">hexToRGBA</span>
+              <span class="nav-item__tag">hex转rgba</span>
+            </el-menu-item>
+            <el-menu-item index="colorToRGBA">
+              <span class="nav-item__name">colorToRGBA</span>
+              <span class="nav-item__tag">hex转对象</span>
+            </el-menu-item>
+          </el-sub-menu>
+          <el-sub-menu index="number">
+            <template #title><span>数字工具</span></template>
+            <el-menu-item index="getRandom">
+              <span class="nav-item__name">getRandom</span>
+              <span class="nav-item__tag">随机整数</span>
+            </el-menu-item>
+            <el-menu-item index="scaleFormat">
+              <span class="nav-item__name">scaleFormat</span>
+              <span class="nav-item__tag">精度格式化</span>
+            </el-menu-item>
+          </el-sub-menu>
+          <el-sub-menu index="object">
+            <template #title><span>对象工具</span></template>
+            <el-menu-item index="flattenObj">
+              <span class="nav-item__name">flattenObj</span>
+              <span class="nav-item__tag">扁平化</span>
+            </el-menu-item>
+            <el-menu-item index="unFlatten">
+              <span class="nav-item__name">unFlatten</span>
+              <span class="nav-item__tag">还原嵌套</span>
+            </el-menu-item>
+            <el-menu-item index="isObjEqual">
+              <span class="nav-item__name">isObjEqual</span>
+              <span class="nav-item__tag">深度比较</span>
+            </el-menu-item>
+            <el-menu-item index="isObjEmpty">
+              <span class="nav-item__name">isObjEmpty</span>
+              <span class="nav-item__tag">判空</span>
+            </el-menu-item>
+          </el-sub-menu>
+          <el-sub-menu index="array">
+            <template #title><span>数组工具</span></template>
+            <el-menu-item index="flattenTree">
+              <span class="nav-item__name">flattenTree</span>
+              <span class="nav-item__tag">树形展开</span>
+            </el-menu-item>
+            <el-menu-item index="isArrEqual">
+              <span class="nav-item__name">isArrEqual</span>
+              <span class="nav-item__tag">无序比较</span>
+            </el-menu-item>
+          </el-sub-menu>
+          <el-sub-menu index="clipboard">
+            <template #title><span>剪贴板</span></template>
+            <el-menu-item index="copyToClipboard">
+              <span class="nav-item__name">copyToClipboard</span>
+              <span class="nav-item__tag">复制文本</span>
+            </el-menu-item>
+          </el-sub-menu>
+          <el-sub-menu index="debounce-group">
+            <template #title><span>防抖</span></template>
+            <el-menu-item index="debounce">
+              <span class="nav-item__name">debounce</span>
+              <span class="nav-item__tag">延迟执行</span>
+            </el-menu-item>
+            <el-menu-item index="useDebounceRef">
+              <span class="nav-item__name">useDebounceRef</span>
+              <span class="nav-item__tag">防抖ref</span>
+            </el-menu-item>
+          </el-sub-menu>
+          <el-sub-menu index="optimize">
+            <template #title><span>性能优化</span></template>
+            <el-menu-item index="performChunk">
+              <span class="nav-item__name">performChunk</span>
+              <span class="nav-item__tag">分片执行</span>
+            </el-menu-item>
+            <el-menu-item index="concurRequest">
+              <span class="nav-item__name">concurRequest</span>
+              <span class="nav-item__tag">并发控制</span>
+            </el-menu-item>
+          </el-sub-menu>
+          <el-sub-menu index="permission">
+            <template #title><span>权限管理</span></template>
+            <el-menu-item index="usePermission">
+              <span class="nav-item__name">usePermission</span>
+              <span class="nav-item__tag">位运算权限</span>
+            </el-menu-item>
+          </el-sub-menu>
+          <el-sub-menu index="typescript">
+            <template #title><span>类型体操</span></template>
+            <el-menu-item index="getValue">
+              <span class="nav-item__name">getValue</span>
+              <span class="nav-item__tag">getter映射</span>
+            </el-menu-item>
+            <el-menu-item index="setValue">
+              <span class="nav-item__name">setValue</span>
+              <span class="nav-item__tag">setter映射</span>
+            </el-menu-item>
+            <el-menu-item index="getOptional">
+              <span class="nav-item__name">getOptional</span>
+              <span class="nav-item__tag">提取可选</span>
+            </el-menu-item>
+            <el-menu-item index="setOptional">
+              <span class="nav-item__name">setOptional</span>
+              <span class="nav-item__tag">设为可选</span>
+            </el-menu-item>
+            <el-menu-item index="arrayToUnion">
+              <span class="nav-item__name">arrayToUnion</span>
+              <span class="nav-item__tag">数组转联合</span>
+            </el-menu-item>
+            <el-menu-item index="getCompType">
+              <span class="nav-item__name">getCompType</span>
+              <span class="nav-item__tag">组件ref类型</span>
+            </el-menu-item>
+          </el-sub-menu>
+        </el-menu>
+
+        <div class="doc-content">
+          <DemoUtils :active-key="activeUtilsName" />
         </div>
       </template>
 
@@ -189,6 +397,15 @@ watch(topTab, () => {
           <rect x="14" y="14" width="7" height="7" rx="1" />
         </svg>
         <span>组件</span>
+      </button>
+      <button
+        :class="['doc-bottom-tab', { active: topTab === 'utils' }]"
+        @click="handleBottomTab('utils')"
+      >
+        <svg class="doc-bottom-tab__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+        </svg>
+        <span>工具</span>
       </button>
       <button
         :class="['doc-bottom-tab', { active: topTab === 'config' }]"
@@ -246,8 +463,27 @@ watch(topTab, () => {
           <div class="doc-complist__group-title">基础组件</div>
           <button
             v-for="item in [
-              { key: 'status-tag', name: 'StatusTag', tag: '标签' },
-              { key: 'status-dot', name: 'StatusDot', tag: '圆点' },
+              { key: 'tag', name: 'Tag', tag: '标签' },
+              { key: 'dot', name: 'Dot', tag: '圆点' },
+            ]"
+            :key="item.key"
+            :class="['doc-complist__item', { active: activeName === item.key }]"
+            @click="handleSelect(item.key)"
+          >
+            <span class="doc-complist__name">{{ item.name }}</span>
+            <span class="doc-complist__tag">{{ item.tag }}</span>
+          </button>
+          <div class="doc-complist__group-title">视觉组件</div>
+          <button
+            v-for="item in [
+              { key: 'image-3d', name: 'Image3D', tag: '透视图' },
+              { key: 'image-carousel', name: 'ImageCarousel', tag: '轮播' },
+              { key: 'image-pointer', name: 'ImagePointer', tag: '指针' },
+              { key: 'text-erase-area', name: 'TextEraseArea', tag: '擦除' },
+              { key: 'text-overflow-area', name: 'TextOverflowArea', tag: '溢出' },
+              { key: 'canvas-time', name: 'CanvasTime', tag: '时钟' },
+              { key: 'code-block', name: 'CodeBlock', tag: '代码块' },
+              { key: 'widget-tabs', name: 'WidgetTabs', tag: '预览切换' },
             ]"
             :key="item.key"
             :class="['doc-complist__item', { active: activeName === item.key }]"
@@ -266,12 +502,107 @@ watch(topTab, () => {
         @click="compListOpen = false"
       />
     </Transition>
+
+    <!-- 工具函数列表（移动端） -->
+    <Transition name="doc-complist">
+      <div
+        v-if="compListOpen && topTab === 'utils'"
+        class="doc-complist"
+      >
+        <div class="doc-complist__header">
+          <span>选择工具</span>
+          <button class="doc-complist__close" @click="compListOpen = false">✕</button>
+        </div>
+        <div class="doc-complist__body">
+          <div class="doc-complist__group-title">颜色工具</div>
+          <button v-for="item in [
+            { key: 'rgbaToHex', name: 'rgbaToHex', tag: 'rgba转hex' },
+            { key: 'hexToRGBA', name: 'hexToRGBA', tag: 'hex转rgba' },
+            { key: 'colorToRGBA', name: 'colorToRGBA', tag: 'hex转对象' },
+          ]" :key="item.key" :class="['doc-complist__item', { active: activeUtilsName === item.key }]" @click="handleUtilsSelect(item.key); compListOpen = false">
+            <span class="doc-complist__name">{{ item.name }}</span>
+            <span class="doc-complist__tag">{{ item.tag }}</span>
+          </button>
+          <div class="doc-complist__group-title">数字工具</div>
+          <button v-for="item in [
+            { key: 'getRandom', name: 'getRandom', tag: '随机整数' },
+            { key: 'scaleFormat', name: 'scaleFormat', tag: '精度格式化' },
+          ]" :key="item.key" :class="['doc-complist__item', { active: activeUtilsName === item.key }]" @click="handleUtilsSelect(item.key); compListOpen = false">
+            <span class="doc-complist__name">{{ item.name }}</span>
+            <span class="doc-complist__tag">{{ item.tag }}</span>
+          </button>
+          <div class="doc-complist__group-title">对象工具</div>
+          <button v-for="item in [
+            { key: 'flattenObj', name: 'flattenObj', tag: '扁平化' },
+            { key: 'unFlatten', name: 'unFlatten', tag: '还原嵌套' },
+            { key: 'isObjEqual', name: 'isObjEqual', tag: '深度比较' },
+            { key: 'isObjEmpty', name: 'isObjEmpty', tag: '判空' },
+          ]" :key="item.key" :class="['doc-complist__item', { active: activeUtilsName === item.key }]" @click="handleUtilsSelect(item.key); compListOpen = false">
+            <span class="doc-complist__name">{{ item.name }}</span>
+            <span class="doc-complist__tag">{{ item.tag }}</span>
+          </button>
+          <div class="doc-complist__group-title">数组工具</div>
+          <button v-for="item in [
+            { key: 'flattenTree', name: 'flattenTree', tag: '树形展开' },
+            { key: 'isArrEqual', name: 'isArrEqual', tag: '无序比较' },
+          ]" :key="item.key" :class="['doc-complist__item', { active: activeUtilsName === item.key }]" @click="handleUtilsSelect(item.key); compListOpen = false">
+            <span class="doc-complist__name">{{ item.name }}</span>
+            <span class="doc-complist__tag">{{ item.tag }}</span>
+          </button>
+          <div class="doc-complist__group-title">剪贴板</div>
+          <button :class="['doc-complist__item', { active: activeUtilsName === 'copyToClipboard' }]" @click="handleUtilsSelect('copyToClipboard'); compListOpen = false">
+            <span class="doc-complist__name">copyToClipboard</span>
+            <span class="doc-complist__tag">复制文本</span>
+          </button>
+          <div class="doc-complist__group-title">防抖</div>
+          <button v-for="item in [
+            { key: 'debounce', name: 'debounce', tag: '延迟执行' },
+            { key: 'useDebounceRef', name: 'useDebounceRef', tag: '防抖ref' },
+          ]" :key="item.key" :class="['doc-complist__item', { active: activeUtilsName === item.key }]" @click="handleUtilsSelect(item.key); compListOpen = false">
+            <span class="doc-complist__name">{{ item.name }}</span>
+            <span class="doc-complist__tag">{{ item.tag }}</span>
+          </button>
+          <div class="doc-complist__group-title">性能优化</div>
+          <button v-for="item in [
+            { key: 'performChunk', name: 'performChunk', tag: '分片执行' },
+            { key: 'concurRequest', name: 'concurRequest', tag: '并发控制' },
+          ]" :key="item.key" :class="['doc-complist__item', { active: activeUtilsName === item.key }]" @click="handleUtilsSelect(item.key); compListOpen = false">
+            <span class="doc-complist__name">{{ item.name }}</span>
+            <span class="doc-complist__tag">{{ item.tag }}</span>
+          </button>
+          <div class="doc-complist__group-title">权限管理</div>
+          <button :class="['doc-complist__item', { active: activeUtilsName === 'usePermission' }]" @click="handleUtilsSelect('usePermission'); compListOpen = false">
+            <span class="doc-complist__name">usePermission</span>
+            <span class="doc-complist__tag">位运算权限</span>
+          </button>
+          <div class="doc-complist__group-title">类型体操</div>
+          <button v-for="item in [
+            { key: 'getValue', name: 'getValue', tag: 'getter映射' },
+            { key: 'setValue', name: 'setValue', tag: 'setter映射' },
+            { key: 'getOptional', name: 'getOptional', tag: '提取可选' },
+            { key: 'setOptional', name: 'setOptional', tag: '设为可选' },
+            { key: 'arrayToUnion', name: 'arrayToUnion', tag: '数组转联合' },
+            { key: 'getCompType', name: 'getCompType', tag: '组件ref类型' },
+          ]" :key="item.key" :class="['doc-complist__item', { active: activeUtilsName === item.key }]" @click="handleUtilsSelect(item.key); compListOpen = false">
+            <span class="doc-complist__name">{{ item.name }}</span>
+            <span class="doc-complist__tag">{{ item.tag }}</span>
+          </button>
+        </div>
+      </div>
+    </Transition>
+    <Transition name="doc-complist-backdrop">
+      <div
+        v-if="compListOpen && topTab === 'utils'"
+        class="doc-complist-backdrop"
+        @click="compListOpen = false"
+      />
+    </Transition>
   </div>
 </template>
 
 <style scoped lang="scss">
-@use "./demos/variables" as *;
-@use "./demos/el-overrides" as *;
+@use "./style/variables" as *;
+@use "./style/el-overrides" as *;
 
 .doc {
   display: flex;
@@ -499,6 +830,7 @@ watch(topTab, () => {
 
   &--full {
     max-width: 100%;
+    min-width: 0;
   }
 }
 
@@ -506,6 +838,8 @@ watch(topTab, () => {
   background: $doc-bg-card;
   border-radius: $doc-radius-lg;
   padding: $doc-sp-2xl 32px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 // ============================================================
@@ -661,9 +995,10 @@ $bottom-bar-height: 52px;
   .doc-bottom-bar {
     display: flex;
     flex-shrink: 0;
+    position: relative;
     background: $doc-bg-card;
     border-top: 1px solid $doc-border-color;
-    z-index: 100;
+    z-index: 102;
   }
 
   .doc-complist {
@@ -752,14 +1087,16 @@ $bottom-bar-height: 52px;
   .doc-panel {
     padding: $doc-sp-lg;
     border-radius: $doc-radius-md;
+    overflow-x: auto;
   }
 
   .doc-bottom-bar {
     display: flex;
     flex-shrink: 0;
+    position: relative;
     background: $doc-bg-card;
     border-top: 1px solid $doc-border-color;
-    z-index: 100;
+    z-index: 102;
   }
 
   .doc-complist {

@@ -1,12 +1,20 @@
 # 版本变更记录
 
-## v0.8.0（2026-05-27 ~ 2026-05-28）
+## v0.8.0（2026-05-27 ~ 2026-05-29）
 
 ### 组件模块
 
 #### 新增组件
 
 - **BaseCrud**：搜索栏、表格、列设置、高级筛选联动页骨架
+- **CodeBlock**：代码展示 + 一键复制，支持 CSS 变量主题化
+- **WidgetTabs**：预览/代码 Tab 切换容器，内置 CodeBlock
+- **Image3D**：3D 透视图片
+- **ImageCarousel**：图片轮播
+- **ImagePointer**：图片指针切换
+- **TextEraseArea**：文本擦除效果
+- **TextOverflowArea**：文本溢出折叠
+- **CanvasTime**：Canvas 粒子时钟
 
 #### 组件调整
 
@@ -15,6 +23,7 @@
 - **BaseTable**：新增 editColumn 列类型；表格 surface 配色对齐 Element Plus 原生表格
 - **BaseColumnSetting / BaseCrud**：列设置入口改为表格最右 editColumn 列
 - **ApiTable**：类型列颜色跟随主题主色；类型提示问号居中与尺寸统一
+- **Tag**（原 StatusTag）/ **Dot**（原 StatusDot）：移除 Status 前缀，通用化命名
 
 ### 配置模块
 
@@ -27,11 +36,27 @@
 
 ### 工程化
 
-- **演示站菜单适配**：平板 / 移动端改为底部 Tab 栏 + 组件列表浮层，替代侧边栏
-- **DemoWidgetTabs**：演示区预览/代码 Tab（border-card）、highlight.js 高亮、复制按钮
-- **Demo 规范**：特殊说明、最近事件 footer、代码 Tab 约定写入 Cursor 规则
-- **组件目录**：StatusTag / StatusDot 归入 basic；移除无 Demo 的历史组件
-- **类型导出**：字段配置接口重命名为 SearchFieldConfig，避免与组件同名冲突
+#### npm 包构建
+
+- 新增 `vite.lib.config.ts` 多入口构建配置
+- 组件从主入口 `comp-vue-lib` 导出，工具从 `comp-vue-lib/util` 子路径导出
+- `package.json` 配置 `exports` 子路径映射，支持 tree-shaking
+
+#### 目录重构
+
+- `src/components/` → `src/component/`；`src/styles/` → `src/style/`
+- 新增 `src/type/` 集中类型声明；新增 `src/util/` 工具函数模块
+- 配置 `@/` 路径别名，消除多层相对路径
+
+#### Demo 站
+
+- 演示站菜单适配：平板 / 移动端底部 Tab 栏 + 组件列表浮层
+- 新增「工具函数」顶级 Tab，按类别分组展示用法、签名、类型实现
+- 统一代码复制功能，组件文档和工具文档共用 CodeBlock
+
+#### 项目规范
+
+- 新增「组件复用原则」「Demo 文档规范」「npm 包导出规范」
 
 ## v0.7.0（2026-05-23）
 

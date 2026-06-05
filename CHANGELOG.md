@@ -1,6 +1,6 @@
 # 版本变更记录
 
-## v0.9.0（2026-06-02）
+## v0.9.0（2026-06-02 ~ 2026-06-05）
 
 ### 组件模块
 
@@ -12,22 +12,29 @@
 - **TreeTransfer**：树形结构左右穿梭选择
 - **StepWizard**：分步表单向导
 - **ContextMenu**：右键上下文菜单
-- **CountUp**：数字滚动动画
+- **CanvasCountUp**：Canvas 数字滚动动画
 - **HeatmapCalendar**：热力日历
-- **LightboxGallery**：缩略图 + 全屏灯箱预览
+- **ImageLightbox**：缩略图 + 全屏灯箱预览
+
+#### 组件调整
+
+- **CanvasTime**：迁移至 `interaction/`
+- **TextEraseArea / TextOverflowArea**：移除组件及 Demo
 
 ### 工程化
 
 #### Demo 站
 
-- 新增 9 个交互组件独立 Demo 文档页，侧边栏新增「交互组件」分组
+- 新增 9 个交互组件独立 Demo 文档页，侧边栏按功能分类分组
 - 移除「交互演示」聚合 Tab，交互组件统一纳入组件文档
 - `demoCodes.ts` 全部条目补齐 script 数据定义与 template 完整示例
 - `apiTypeHints.ts` 注册交互组件 opaque 类型
 
 #### 项目规范
 
-- **组件一站式创建规范**：新增「交互」组件分类；新增 §6.2.1 强制要求——`demoCodes.ts` 须含 script 数据定义 + template 完整示例；opaque 类型须注册 `apiTypeHints.ts`
+- **组件三分目录**：`basic/` / `crud/` / `interaction/`，新增组件前须确认分类
+- **组件一站式创建规范**：合并进 `project-conventions.mdc`；新增 `doc/组件规则流程图.md`
+- **demoCodes.ts** 须含 script 数据定义 + template 完整示例；opaque 类型须注册 `apiTypeHints.ts`
 
 ## v0.8.0（2026-05-27 ~ 2026-05-29）
 

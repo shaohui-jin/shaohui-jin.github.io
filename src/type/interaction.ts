@@ -90,14 +90,21 @@ export interface ContextMenuEmits {
   (e: "select", item: ContextMenuItem): void;
 }
 
-export interface CountUpProps {
+export interface CanvasTimeProps {
+  /** 粒子颜色 */
+  color?: string;
+  /** 画布背景色 */
+  bgColor?: string;
+}
+
+export interface CanvasCountUpProps {
   /** 目标数值 */
   value: number;
   /** 动画时长（ms） */
   duration?: number;
 }
 
-export interface CountUpEmits {
+export interface CanvasCountUpEmits {
   (e: "finish"): void;
 }
 
@@ -112,18 +119,4 @@ export interface HeatmapCalendarProps {
 
 export interface HeatmapCalendarEmits {
   (e: "cell-click", cell: HeatmapCell): void;
-}
-
-export interface LightboxGalleryProps {
-  /** 图片地址列表 */
-  urls: string[];
-  /** 当前索引（v-model:index） */
-  index?: number;
-}
-
-export interface LightboxGalleryEmits {
-  (e: "update:index", index: number): void;
-  (e: "change", index: number): void;
-  (e: "open", index: number): void;
-  (e: "close"): void;
 }

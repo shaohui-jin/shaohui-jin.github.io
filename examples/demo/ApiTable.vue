@@ -10,10 +10,13 @@ import {
 
 type TableType = "props" | "events" | "slots";
 
-defineProps<{
-  type?: TableType;
-  rows: ApiRow[] | EventRow[] | SlotRow[];
-}>();
+withDefaults(
+  defineProps<{
+    type?: TableType;
+    rows?: ApiRow[] | EventRow[] | SlotRow[];
+  }>(),
+  { rows: () => [] },
+);
 
 const expandedRows = ref<Set<number>>(new Set());
 const isTouchLike = ref(false);

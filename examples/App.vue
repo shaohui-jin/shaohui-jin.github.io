@@ -12,8 +12,6 @@ const DemoDot = defineAsyncComponent(() => import("./demo/dot/DemoDot.vue"));
 const DemoImage3D = defineAsyncComponent(() => import("./demo/image-3d/DemoImage3D.vue"));
 const DemoImageCarousel = defineAsyncComponent(() => import("./demo/image-carousel/DemoImageCarousel.vue"));
 const DemoImagePointer = defineAsyncComponent(() => import("./demo/image-pointer/DemoImagePointer.vue"));
-const DemoTextEraseArea = defineAsyncComponent(() => import("./demo/text-erase-area/DemoTextEraseArea.vue"));
-const DemoTextOverflowArea = defineAsyncComponent(() => import("./demo/text-overflow-area/DemoTextOverflowArea.vue"));
 const DemoCanvasTime = defineAsyncComponent(() => import("./demo/canvas-time/DemoCanvasTime.vue"));
 const DemoCodeBlock = defineAsyncComponent(() => import("./demo/code-block/DemoCodeBlock.vue"));
 const DemoWidgetTabs = defineAsyncComponent(() => import("./demo/widget-tabs/DemoWidgetTabs.vue"));
@@ -23,9 +21,9 @@ const DemoFloatingToolbar = defineAsyncComponent(() => import("./demo/floating-t
 const DemoTreeTransfer = defineAsyncComponent(() => import("./demo/tree-transfer/DemoTreeTransfer.vue"));
 const DemoStepWizard = defineAsyncComponent(() => import("./demo/step-wizard/DemoStepWizard.vue"));
 const DemoContextMenu = defineAsyncComponent(() => import("./demo/context-menu/DemoContextMenu.vue"));
-const DemoCountUp = defineAsyncComponent(() => import("./demo/count-up/DemoCountUp.vue"));
+const DemoImageLightbox = defineAsyncComponent(() => import("./demo/image-lightbox/DemoImageLightbox.vue"));
+const DemoCanvasCountUp = defineAsyncComponent(() => import("./demo/canvas-count-up/DemoCanvasCountUp.vue"));
 const DemoHeatmapCalendar = defineAsyncComponent(() => import("./demo/heatmap-calendar/DemoHeatmapCalendar.vue"));
-const DemoLightboxGallery = defineAsyncComponent(() => import("./demo/lightbox-gallery/DemoLightboxGallery.vue"));
 const DemoUtils = defineAsyncComponent(() => import("./demo/utils/DemoUtils.vue"));
 const DemoConfigProvider = defineAsyncComponent(() => import("./demo/config-provider/DemoConfigProvider.vue"));
 const ChangelogPanel = defineAsyncComponent(() => import("./demo/changelog/ChangelogPanel.vue"));
@@ -44,21 +42,115 @@ const pageMap: Record<string, Component> = {
   "image-3d": DemoImage3D,
   "image-carousel": DemoImageCarousel,
   "image-pointer": DemoImagePointer,
-  "text-erase-area": DemoTextEraseArea,
-  "text-overflow-area": DemoTextOverflowArea,
-  "canvas-time": DemoCanvasTime,
+  "image-lightbox": DemoImageLightbox,
   "code-block": DemoCodeBlock,
   "widget-tabs": DemoWidgetTabs,
+  "canvas-time": DemoCanvasTime,
+  "canvas-count-up": DemoCanvasCountUp,
   "split-pane": DemoSplitPane,
   "drag-sort-list": DemoDragSortList,
   "floating-toolbar": DemoFloatingToolbar,
   "tree-transfer": DemoTreeTransfer,
   "step-wizard": DemoStepWizard,
   "context-menu": DemoContextMenu,
-  "count-up": DemoCountUp,
   "heatmap-calendar": DemoHeatmapCalendar,
-  "lightbox-gallery": DemoLightboxGallery,
 };
+
+/** Demo 侧边栏分组（菜单 tag 与功能分类一致） */
+const docMenuGroups = [
+  {
+    index: "crud",
+    title: "CRUD 组件",
+    accent: "#e6a23c",
+    items: [
+      { key: "tables", name: "BaseTable", tag: "表格" },
+      { key: "base-search", name: "BaseSearch", tag: "搜索" },
+      { key: "base-search-field", name: "BaseSearchField", tag: "字段" },
+      { key: "base-search-drawer", name: "BaseSearchDrawer", tag: "抽屉" },
+      { key: "base-column-setting", name: "BaseColumnSetting", tag: "列设置" },
+      { key: "base-crud", name: "BaseCrud", tag: "联动" },
+    ],
+  },
+  {
+    index: "status",
+    title: "状态标记",
+    accent: "#909399",
+    items: [
+      { key: "tag", name: "Tag", tag: "状态标记" },
+      { key: "dot", name: "Dot", tag: "状态标记" },
+    ],
+  },
+  {
+    index: "image",
+    title: "图片",
+    accent: "#409eff",
+    items: [
+      { key: "image-3d", name: "Image3D", tag: "图片" },
+      { key: "image-carousel", name: "ImageCarousel", tag: "图片" },
+      { key: "image-pointer", name: "ImagePointer", tag: "图片" },
+      { key: "image-lightbox", name: "ImageLightbox", tag: "图片" },
+    ],
+  },
+  {
+    index: "doc",
+    title: "文档",
+    accent: "#626aef",
+    items: [
+      { key: "code-block", name: "CodeBlock", tag: "文档" },
+      { key: "widget-tabs", name: "WidgetTabs", tag: "文档" },
+    ],
+  },
+  {
+    index: "canvas",
+    title: "Canvas",
+    accent: "#f56c6c",
+    items: [
+      { key: "canvas-time", name: "CanvasTime", tag: "Canvas" },
+      { key: "canvas-count-up", name: "CanvasCountUp", tag: "Canvas" },
+    ],
+  },
+  {
+    index: "layout",
+    title: "布局",
+    accent: "#00bcd4",
+    items: [{ key: "split-pane", name: "SplitPane", tag: "布局" }],
+  },
+  {
+    index: "list-op",
+    title: "列表操作",
+    accent: "#ff9800",
+    items: [
+      { key: "drag-sort-list", name: "DragSortList", tag: "列表操作" },
+      { key: "floating-toolbar", name: "FloatingToolbar", tag: "列表操作" },
+    ],
+  },
+  {
+    index: "select",
+    title: "选择",
+    accent: "#9c27b0",
+    items: [{ key: "tree-transfer", name: "TreeTransfer", tag: "选择" }],
+  },
+  {
+    index: "flow",
+    title: "流程",
+    accent: "#3f51b5",
+    items: [{ key: "step-wizard", name: "StepWizard", tag: "流程" }],
+  },
+  {
+    index: "menu",
+    title: "菜单",
+    accent: "#795548",
+    items: [{ key: "context-menu", name: "ContextMenu", tag: "菜单" }],
+  },
+  {
+    index: "viz",
+    title: "数据可视化",
+    accent: "#009688",
+    items: [{ key: "heatmap-calendar", name: "HeatmapCalendar", tag: "数据可视化" }],
+  },
+] as const;
+
+const docMenuDefaultOpeneds = docMenuGroups.map((g) => g.index);
 
 const FIRST_LEAF_KEY = "tables";
 const FIRST_UTILS_KEY = "rgbaToHex";
@@ -158,131 +250,17 @@ watch(topTab, () => {
           :default-active="activeName"
           class="doc-nav"
           :class="{ 'doc-nav--open': navOpen }"
-          :default-openeds="['crud', 'basic', 'visual', 'interaction']"
+          :default-openeds="docMenuDefaultOpeneds"
           @select="handleSelect"
         >
-          <el-sub-menu index="crud">
+          <el-sub-menu v-for="group in docMenuGroups" :key="group.index" :index="group.index">
             <template #title>
-              <el-icon><i class="nav-icon nav-icon--crud" /></el-icon>
-              <span>CRUD 组件</span>
+              <el-icon><i class="nav-icon" :style="{ background: group.accent }" /></el-icon>
+              <span class="nav-group__title" :style="{ color: group.accent }">{{ group.title }}</span>
             </template>
-            <el-menu-item index="tables">
-              <span class="nav-item__name">BaseTable</span>
-              <span class="nav-item__tag">表格</span>
-            </el-menu-item>
-            <el-menu-item index="base-search">
-              <span class="nav-item__name">BaseSearch</span>
-              <span class="nav-item__tag">搜索</span>
-            </el-menu-item>
-            <el-menu-item index="base-search-field">
-              <span class="nav-item__name">BaseSearchField</span>
-              <span class="nav-item__tag">字段</span>
-            </el-menu-item>
-            <el-menu-item index="base-search-drawer">
-              <span class="nav-item__name">BaseSearchDrawer</span>
-              <span class="nav-item__tag">抽屉</span>
-            </el-menu-item>
-            <el-menu-item index="base-column-setting">
-              <span class="nav-item__name">BaseColumnSetting</span>
-              <span class="nav-item__tag">列设置</span>
-            </el-menu-item>
-            <el-menu-item index="base-crud">
-              <span class="nav-item__name">BaseCrud</span>
-              <span class="nav-item__tag">联动</span>
-            </el-menu-item>
-          </el-sub-menu>
-          <el-sub-menu index="basic">
-            <template #title>
-              <el-icon><i class="nav-icon nav-icon--widget" /></el-icon>
-              <span>基础组件</span>
-            </template>
-            <el-menu-item index="tag">
-              <span class="nav-item__name">Tag</span>
-              <span class="nav-item__tag">标签</span>
-            </el-menu-item>
-            <el-menu-item index="dot">
-              <span class="nav-item__name">Dot</span>
-              <span class="nav-item__tag">圆点</span>
-            </el-menu-item>
-          </el-sub-menu>
-          <el-sub-menu index="visual">
-            <template #title>
-              <el-icon><i class="nav-icon nav-icon--widget" /></el-icon>
-              <span>视觉组件</span>
-            </template>
-            <el-menu-item index="image-3d">
-              <span class="nav-item__name">Image3D</span>
-              <span class="nav-item__tag">透视图</span>
-            </el-menu-item>
-            <el-menu-item index="image-carousel">
-              <span class="nav-item__name">ImageCarousel</span>
-              <span class="nav-item__tag">轮播</span>
-            </el-menu-item>
-            <el-menu-item index="image-pointer">
-              <span class="nav-item__name">ImagePointer</span>
-              <span class="nav-item__tag">指针</span>
-            </el-menu-item>
-            <el-menu-item index="text-erase-area">
-              <span class="nav-item__name">TextEraseArea</span>
-              <span class="nav-item__tag">擦除</span>
-            </el-menu-item>
-            <el-menu-item index="text-overflow-area">
-              <span class="nav-item__name">TextOverflowArea</span>
-              <span class="nav-item__tag">溢出</span>
-            </el-menu-item>
-            <el-menu-item index="canvas-time">
-              <span class="nav-item__name">CanvasTime</span>
-              <span class="nav-item__tag">时钟</span>
-            </el-menu-item>
-            <el-menu-item index="code-block">
-              <span class="nav-item__name">CodeBlock</span>
-              <span class="nav-item__tag">代码块</span>
-            </el-menu-item>
-            <el-menu-item index="widget-tabs">
-              <span class="nav-item__name">WidgetTabs</span>
-              <span class="nav-item__tag">预览切换</span>
-            </el-menu-item>
-          </el-sub-menu>
-          <el-sub-menu index="interaction">
-            <template #title>
-              <el-icon><i class="nav-icon nav-icon--widget" /></el-icon>
-              <span>交互组件</span>
-            </template>
-            <el-menu-item index="split-pane">
-              <span class="nav-item__name">SplitPane</span>
-              <span class="nav-item__tag">分割</span>
-            </el-menu-item>
-            <el-menu-item index="drag-sort-list">
-              <span class="nav-item__name">DragSortList</span>
-              <span class="nav-item__tag">排序</span>
-            </el-menu-item>
-            <el-menu-item index="floating-toolbar">
-              <span class="nav-item__name">FloatingToolbar</span>
-              <span class="nav-item__tag">工具栏</span>
-            </el-menu-item>
-            <el-menu-item index="tree-transfer">
-              <span class="nav-item__name">TreeTransfer</span>
-              <span class="nav-item__tag">穿梭</span>
-            </el-menu-item>
-            <el-menu-item index="step-wizard">
-              <span class="nav-item__name">StepWizard</span>
-              <span class="nav-item__tag">向导</span>
-            </el-menu-item>
-            <el-menu-item index="context-menu">
-              <span class="nav-item__name">ContextMenu</span>
-              <span class="nav-item__tag">右键</span>
-            </el-menu-item>
-            <el-menu-item index="count-up">
-              <span class="nav-item__name">CountUp</span>
-              <span class="nav-item__tag">数字</span>
-            </el-menu-item>
-            <el-menu-item index="heatmap-calendar">
-              <span class="nav-item__name">HeatmapCalendar</span>
-              <span class="nav-item__tag">热力</span>
-            </el-menu-item>
-            <el-menu-item index="lightbox-gallery">
-              <span class="nav-item__name">LightboxGallery</span>
-              <span class="nav-item__tag">灯箱</span>
+            <el-menu-item v-for="item in group.items" :key="item.key" :index="item.key">
+              <span class="nav-item__name">{{ item.name }}</span>
+              <span class="nav-item__tag">{{ item.tag }}</span>
             </el-menu-item>
           </el-sub-menu>
         </el-menu>
@@ -503,75 +481,18 @@ watch(topTab, () => {
           <button class="doc-complist__close" @click="compListOpen = false">✕</button>
         </div>
         <div class="doc-complist__body">
-          <div class="doc-complist__group-title">CRUD 组件</div>
-          <button
-            v-for="item in [
-              { key: 'tables', name: 'BaseTable', tag: '表格' },
-              { key: 'base-search', name: 'BaseSearch', tag: '搜索' },
-              { key: 'base-search-field', name: 'BaseSearchField', tag: '字段' },
-              { key: 'base-search-drawer', name: 'BaseSearchDrawer', tag: '抽屉' },
-              { key: 'base-column-setting', name: 'BaseColumnSetting', tag: '列设置' },
-              { key: 'base-crud', name: 'BaseCrud', tag: '联动' },
-            ]"
-            :key="item.key"
-            :class="['doc-complist__item', { active: activeName === item.key }]"
-            @click="handleSelect(item.key)"
-          >
-            <span class="doc-complist__name">{{ item.name }}</span>
-            <span class="doc-complist__tag">{{ item.tag }}</span>
-          </button>
-          <div class="doc-complist__group-title">基础组件</div>
-          <button
-            v-for="item in [
-              { key: 'tag', name: 'Tag', tag: '标签' },
-              { key: 'dot', name: 'Dot', tag: '圆点' },
-            ]"
-            :key="item.key"
-            :class="['doc-complist__item', { active: activeName === item.key }]"
-            @click="handleSelect(item.key)"
-          >
-            <span class="doc-complist__name">{{ item.name }}</span>
-            <span class="doc-complist__tag">{{ item.tag }}</span>
-          </button>
-          <div class="doc-complist__group-title">视觉组件</div>
-          <button
-            v-for="item in [
-              { key: 'image-3d', name: 'Image3D', tag: '透视图' },
-              { key: 'image-carousel', name: 'ImageCarousel', tag: '轮播' },
-              { key: 'image-pointer', name: 'ImagePointer', tag: '指针' },
-              { key: 'text-erase-area', name: 'TextEraseArea', tag: '擦除' },
-              { key: 'text-overflow-area', name: 'TextOverflowArea', tag: '溢出' },
-              { key: 'canvas-time', name: 'CanvasTime', tag: '时钟' },
-              { key: 'code-block', name: 'CodeBlock', tag: '代码块' },
-              { key: 'widget-tabs', name: 'WidgetTabs', tag: '预览切换' },
-            ]"
-            :key="item.key"
-            :class="['doc-complist__item', { active: activeName === item.key }]"
-            @click="handleSelect(item.key)"
-          >
-            <span class="doc-complist__name">{{ item.name }}</span>
-            <span class="doc-complist__tag">{{ item.tag }}</span>
-          </button>
-          <div class="doc-complist__group-title">交互组件</div>
-          <button
-            v-for="item in [
-              { key: 'split-pane', name: 'SplitPane', tag: '分割' },
-              { key: 'drag-sort-list', name: 'DragSortList', tag: '排序' },
-              { key: 'floating-toolbar', name: 'FloatingToolbar', tag: '工具栏' },
-              { key: 'tree-transfer', name: 'TreeTransfer', tag: '穿梭' },
-              { key: 'step-wizard', name: 'StepWizard', tag: '向导' },
-              { key: 'context-menu', name: 'ContextMenu', tag: '右键' },
-              { key: 'count-up', name: 'CountUp', tag: '数字' },
-              { key: 'heatmap-calendar', name: 'HeatmapCalendar', tag: '热力' },
-              { key: 'lightbox-gallery', name: 'LightboxGallery', tag: '灯箱' },
-            ]"
-            :key="item.key"
-            :class="['doc-complist__item', { active: activeName === item.key }]"
-            @click="handleSelect(item.key)"
-          >
-            <span class="doc-complist__name">{{ item.name }}</span>
-            <span class="doc-complist__tag">{{ item.tag }}</span>
-          </button>
+          <template v-for="group in docMenuGroups" :key="group.index">
+            <div class="doc-complist__group-title" :style="{ color: group.accent }">{{ group.title }}</div>
+            <button
+              v-for="item in group.items"
+              :key="item.key"
+              :class="['doc-complist__item', { active: activeName === item.key }]"
+              @click="handleSelect(item.key)"
+            >
+              <span class="doc-complist__name">{{ item.name }}</span>
+              <span class="doc-complist__tag">{{ item.tag }}</span>
+            </button>
+          </template>
         </div>
       </div>
     </Transition>
@@ -867,14 +788,10 @@ watch(topTab, () => {
   width: 16px;
   height: 16px;
   border-radius: $doc-radius-sm;
+}
 
-  &--crud {
-    background: $doc-color-warning;
-  }
-
-  &--widget {
-    background: $doc-color-success;
-  }
+.nav-group__title {
+  font-weight: 600;
 }
 
 .nav-item__name {

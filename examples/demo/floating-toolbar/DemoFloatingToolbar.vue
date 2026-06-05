@@ -50,14 +50,14 @@ const api: ComponentApi = {
   <DemoWidgetTabs :code="demoCodes.floatingToolbar">
     <div class="float-toolbar-demo">
       <label class="float-toolbar-demo__all">
-        <input v-model="allChecked" type="checkbox" /> 全选
+        <el-checkbox v-model="allChecked">全选</el-checkbox>
       </label>
       <div
         v-for="row in rows"
         :key="row.id"
         class="float-toolbar-demo__row"
       >
-        <input v-model="row.checked" type="checkbox" />
+        <el-checkbox v-model="row.checked" />
         <span>{{ row.name }}</span>
       </div>
       <FloatingToolbar :count="selectedCount" @action="onAction">
@@ -84,6 +84,7 @@ const api: ComponentApi = {
 
 <style scoped lang="scss">
 @use "../../style/demo";
+@use "../../style/variables" as *;
 
 .float-toolbar-demo {
   position: relative;
@@ -92,10 +93,8 @@ const api: ComponentApi = {
   &__all {
     display: flex;
     align-items: center;
-    gap: 8px;
     margin-bottom: 8px;
     font-size: 13px;
-    cursor: pointer;
   }
 
   &__row {
@@ -104,7 +103,7 @@ const api: ComponentApi = {
     gap: 8px;
     padding: 10px 12px;
     margin-bottom: 6px;
-    background: #fafafa;
+    background: var(--comp-bg-subtle, #{$doc-bg-subtle});
     border-radius: 6px;
     font-size: 13px;
   }

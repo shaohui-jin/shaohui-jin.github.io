@@ -85,48 +85,19 @@ export interface ImagePointerEmits {
   (e: "update:index", index: number): void;
 }
 
-// --- TextEraseArea ---
-export interface TextEraseAreaProps {
-  /** 文本内容 */
-  content: string;
-  /** 动画时长（秒） */
-  duration?: number;
-  /** 延迟开始（秒） */
-  delay?: number;
-  /** 是否自动播放 */
-  autoStart?: boolean;
+// --- ImageLightbox ---
+export interface ImageLightboxProps {
+  /** 图片地址列表 */
+  urls: string[];
+  /** 当前索引（v-model:index） */
+  index?: number;
 }
 
-export interface TextEraseAreaEmits {
-  /** 动画开始 */
-  (e: "start"): void;
-  /** 动画结束 */
-  (e: "end"): void;
-}
-
-export interface TextEraseAreaExpose {
-  /** 开始/重播动画 */
-  play: () => void;
-  /** 重置动画 */
-  reset: () => void;
-}
-
-// --- TextOverflowArea ---
-export interface TextOverflowAreaProps {
-  /** 容器高度（px） */
-  height?: number;
-  /** 内边距（px） */
-  padding?: number;
-  /** 文本内容 */
-  content: string;
-}
-
-// --- CanvasTime ---
-export interface CanvasTimeProps {
-  /** 粒子颜色 */
-  color?: string;
-  /** 画布背景色 */
-  bgColor?: string;
+export interface ImageLightboxEmits {
+  (e: "update:index", index: number): void;
+  (e: "change", index: number): void;
+  (e: "open", index: number): void;
+  (e: "close"): void;
 }
 
 // --- CodeBlock ---

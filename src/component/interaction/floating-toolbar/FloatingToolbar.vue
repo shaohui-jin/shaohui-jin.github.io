@@ -21,6 +21,8 @@ function onAction(action: string) {
 </template>
 
 <style scoped lang="scss">
+@use "@/style/variables" as *;
+
 .float-toolbar {
   position: absolute;
   bottom: 0;
@@ -30,10 +32,11 @@ function onAction(action: string) {
   align-items: center;
   gap: 12px;
   padding: 10px 16px;
-  background: #303133;
-  color: #fff;
-  border-radius: 8px;
-  font-size: 13px;
+  background: color-mix(in srgb, $lib-text-primary 88%, $lib-bg-card);
+  color: $lib-bg-card;
+  border: 1px solid color-mix(in srgb, $lib-border-color 60%, transparent);
+  border-radius: $lib-radius-md;
+  font-size: $lib-font-size-sm;
   box-shadow: 0 4px 16px rgb(0 0 0 / 20%);
   z-index: 10;
 

@@ -2,7 +2,7 @@
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import { colorToRGBA } from "@/util/color";
 import { getRandom } from "@/util/number";
-import type { CanvasTimeProps } from "@/type/basic";
+import type { CanvasTimeProps } from "@/type/interaction";
 
 defineOptions({ name: "CanvasTime" });
 

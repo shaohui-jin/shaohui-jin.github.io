@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, onBeforeUnmount } from "vue";
-import type { CountUpProps, CountUpEmits } from "@/type/interaction";
+import type { CanvasCountUpProps, CanvasCountUpEmits } from "@/type/interaction";
 
-defineOptions({ name: "CountUp" });
+defineOptions({ name: "CanvasCountUp" });
 
-const props = withDefaults(defineProps<CountUpProps>(), {
+const props = withDefaults(defineProps<CanvasCountUpProps>(), {
   duration: 2000,
 });
 
-const emit = defineEmits<CountUpEmits>();
+const emit = defineEmits<CanvasCountUpEmits>();
 
 const display = ref(0);
 let startTime = 0;
@@ -45,14 +45,14 @@ defineExpose({ restart: start });
 </script>
 
 <template>
-  <div class="count-up">
-    <div class="count-up__value">{{ display.toLocaleString() }}</div>
+  <div class="canvas-count-up">
+    <div class="canvas-count-up__value">{{ display.toLocaleString() }}</div>
     <slot />
   </div>
 </template>
 
 <style scoped lang="scss">
-.count-up {
+.canvas-count-up {
   &__value {
     font-size: 36px;
     font-weight: 700;

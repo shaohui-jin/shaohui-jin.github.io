@@ -2,7 +2,7 @@ export type {
   TagType, TagProps, DotProps,
   ImageCarouselProps, ImageCarouselEmits, ImageCarouselExpose,
   ImagePointerProps, ImagePointerEmits,
-  TextEraseAreaProps, TextEraseAreaEmits, TextEraseAreaExpose,
+  ImageLightboxProps, ImageLightboxEmits,
   CodeBlockProps, WidgetTabsProps,
 } from "./basic";
 
@@ -36,7 +36,7 @@ export type {
   TreeTransferNode, TreeTransferProps, TreeTransferEmits,
   StepWizardStep, StepWizardProps, StepWizardEmits,
   ContextMenuItem, ContextMenuProps, ContextMenuEmits,
-  CountUpProps, CountUpEmits,
+  CanvasTimeProps,
+  CanvasCountUpProps, CanvasCountUpEmits,
   HeatmapCell, HeatmapCalendarProps, HeatmapCalendarEmits,
-  LightboxGalleryProps, LightboxGalleryEmits,
 } from "./interaction";

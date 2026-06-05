@@ -23,13 +23,15 @@ alwaysApply: true
 ```
 src/
   component/           ← Vue 组件源码
-    basic/             ← 基础组件（Tag、Dot、CodeBlock、WidgetTabs 等）
+    basic/             ← 基础组件（Tag、Dot、图片类、CodeBlock 等简易组件）
     crud/              ← CRUD 组件（BaseTable、BaseSearch 等）
-  config/              ← 配置注入系统
+    interaction/       ← 高交互组件（SplitPane、DragSortList 等）
+  config/              ← 配置注入系统（ConfigProvider 等）
   style/               ← SCSS 变量 + TS 颜色默认值
   type/                ← 类型声明（所有组件类型的唯一源头）
     basic.ts           ← 基础组件类型
     crud.ts            ← CRUD 组件类型
+    interaction.ts     ← 交互组件类型
     index.ts           ← 统一 re-export
   util/                ← 工具函数
   index.ts             ← 库入口
@@ -53,6 +55,36 @@ examples/
     demoCodes.ts
     demoCodeHighlight.ts
 ```
+
+## 组件分类（全局）
+
+`src/component/` 下当前为以下三个子目录：
+
+| 分类 | 目录 | 适用场景 | Demo 菜单分组 |
+|------|------|----------|--------------|
+| **基础** | `basic/` | 简易 UI、状态展示、图片/文字/Canvas 展示、文档辅助（CodeBlock、WidgetTabs） | 「基础组件」「视觉组件」 |
+| **CRUD** | `crud/` | 搜索、表格、列设置、CRUD 联动等表单/列表业务 | 「CRUD 组件」 |
+| **交互** | `interaction/` | 非基础、高交互 UI（拖拽、穿梭、向导、右键菜单、动画数字、热力图、灯箱等） | 「交互组件」 |
+
+**硬约束：**
+
+- 新增组件前**必须先向开发者确认**属于哪一类；分类不明确时必须询问，不得自行推断或默认归入 `interaction/`
+- 若判断组件**不适合**上文表格所列 `component/` 子目录中的任何一个，**必须暂停并询问开发者**：是否新增 `component/` 子目录、目录名称、以及该目录用于存放什么类型的组件；**未经确认不得自行创建新目录**
+- **经开发者确认新增 `component/` 子目录后**，须同步更新：
+  1. 本节「组件分类（全局）」表格
+  2. 「组件一站式创建规范」第一节分类表
+  3. 新建 `src/type/{category}.ts`（类型声明），并在 `src/type/index.ts` 追加 re-export
+  4. `src/component/index.ts` 增加该分类的 export 注释区块
+  5. `src/index.ts` 追加具名导出、`export type` 及 `components` 数组注册（该分类首个对外组件时）
+  6. 若新目录对应新的 Demo 菜单分组，更新 `examples/App.vue` 新增 `el-sub-menu` 及菜单项
+  7. `doc/组件规则流程图.md` 同步更新流程图
+  - 此后硬约束以上述更新后的目录列表为准
+  - `doc/架构设计.md`、`CHANGELOG.md` **不在此流程自动更新**，仅当开发者明确要求记录文档/变更时再维护
+- CRUD 父组件的内部子组件（如 `base-table/modes/CellSwitch.vue`）默认放在父组件子目录，**不单独导出**
+- 若某实现**可以**作为通用小组件单独使用：先查 `basic/` 是否已有同类；**没有则询问开发者**是否抽离到 `basic/` 并对外导出
+- 若**不能**独立使用（仅服务当前大业务组件）：留在父组件内（如 `base-table/modes/*`），**不导出、不写 Demo 菜单**
+- 大业务组件**只对外导出业务门面**（如 `BaseTable`），内部多种实现不单独导出
+- 无 Demo 的组件不得对外发布（不导出、不写菜单）
 
 ## 路径引用规范
 
@@ -81,13 +113,6 @@ examples/
 - 预览/代码切换容器统一使用组件库的 `WidgetTabs` 组件（默认 `flush: true`）
 - `examples/demo/DemoCodeBlock.vue` 和 `DemoWidgetTabs.vue` 是 Demo 站的薄包装层
 - 新增 Demo 辅助组件前，先检查 `src/component/basic/` 下是否已有可复用的组件
-
-## Demo 文档规范
-
-- 每个组件的 Demo 页统一使用 `DemoWidgetTabs` 包裹，展示「预览」和「代码」两个 Tab
-- 「代码」Tab 的内容必须是预览区的真实源代码，不允许放通用示例或占位代码
-- Demo 页结构：标题描述 → DemoWidgetTabs（可多个场景） → API 参数表
-- 工具函数 Demo 统一使用 `CodeBlock` 展示代码，同样保持一致的复制功能
 
 ## npm 包导出规范
 
@@ -131,6 +156,232 @@ import "comp-vue-lib/style.css";
 
 确保交互元素在触屏设备上可用（点击区域不小于 32×32px），布局在窄屏下不溢出。
 
+---
+
+## 组件一站式创建规范
+
+> **适用前提**：新增或修改 `src/component/` 下组件、同步 Demo 文档、更新 `examples/App.vue` 菜单时，必须完整遵循本节。
+
+- **新增**顶层对外组件：流程为 **先确认分类 → 再创建代码 → 最后同步 Demo + 导出**
+- **修改**已有顶层组件（修 bug、调样式/逻辑、API 小改）：**跳过分类询问**，仍须遵守代码规范、三端适配；若 Props/Events 变更则同步 Demo
+
+### 一、创建前：确认组件分类（仅新增顶层组件）
+
+参照上文「组件分类（全局）」表格。**必须先向开发者确认**组件属于哪一类；仅在需求已明确指定分类时方可直接执行。表格未覆盖的目录须先按全局硬约束完成新增目录确认与规则同步。
+
+| 分类 | 目录 | 类型文件 | 命名前缀示例 |
+|------|------|----------|-------------|
+| **CRUD** | `src/component/crud/` | `src/type/crud.ts` | `BaseTable`、`BaseSearch` |
+| **基础** | `src/component/basic/` | `src/type/basic.ts` | `Tag`、`Dot`、`ImageCarousel` |
+| **交互** | `src/component/interaction/` | `src/type/interaction.ts` | `SplitPane`、`DragSortList` |
+
+若表格所列目录均不适合，按上文「组件分类（全局）」硬约束询问开发者；确认新增目录后须回写全局分类表、本节分类表，并按全局硬约束完成类型文件与 Demo 菜单同步。
+
+### 二、目录与文件结构
+
+#### CRUD 组件
+
+```
+src/component/crud/
+└── base-xxx/                    # kebab-case，语义化
+    ├── BaseXxx.vue              # PascalCase，与导出名一致
+    └── ...                      # 子模块按需：modes/ utils/ theme/
+```
+
+- 可被多个 CRUD 组件复用的子组件：同级新建目录，如 `base-search-field/BaseSearchField.vue`
+- 仅某一组件内部使用：放在父组件子目录，如 `base-table/modes/CellSwitch.vue`；能否抽离到 `basic/` 见全局硬约束（可独立使用则询问，不可则内部不导出）
+
+#### 基础组件
+
+```
+src/component/basic/
+└── tag/                         # kebab-case
+    └── Tag.vue                  # PascalCase
+```
+
+#### 交互组件
+
+```
+src/component/interaction/
+└── split-pane/                  # kebab-case
+    └── SplitPane.vue            # PascalCase
+```
+
+#### 命名对照
+
+| 项 | 规范 | 示例 |
+|----|------|------|
+| 文件夹 | kebab-case，带业务前缀 | `base-search-field`、`image-carousel` |
+| Vue 文件 | PascalCase = 组件名 | `BaseSearchField.vue` |
+| 类型文件 | 统一放 `src/type/` | `basic.ts`、`crud.ts`、`interaction.ts` |
+| 组合式函数 | camelCase + `use` 前缀 | `useBaseTableSelection.ts` |
+| 工具函数 | camelCase | `column.ts`、`canvasDraw.ts` |
+| Demo 页 | `Demo{ComponentName}.vue` | `DemoBaseSearchField.vue` |
+| defineOptions name | 与导出名一致 | `{ name: "BaseSearchField" }` |
+
+#### 禁止
+
+- 泛化文件名：`utils.ts`、`temp.vue`、`blank.vue`
+- 硬编码颜色（组件内用 `src/style/variables.scss` 的 `$lib-*`）
+- 未经确认自行新增 `component/` 子目录或 npm 依赖
+
+### 三、代码模板与实现约束
+
+编写或修改组件代码时，须同时遵守：**路径引用规范**、**代码风格**、**三端适配**、**组件复用原则**（禁止重复实现已有 `CodeBlock` / `WidgetTabs` 等）。
+
+```vue
+<script setup lang="ts">
+import type { XxxProps, XxxEmits } from "@/type/crud"; // 或 @/type/basic、@/type/interaction
+
+defineOptions({ name: "Xxx" });
+
+const props = withDefaults(defineProps<XxxProps>(), { /* 默认值 */ });
+const emit = defineEmits<XxxEmits>();
+</script>
+```
+
+- Props / Emits 类型声明在 `src/type/basic.ts`、`src/type/crud.ts` 或 `src/type/interaction.ts`，通过 `@/type/` 引入
+- 注释优先中文（公共 API 的 JSDoc 除外）
+
+### 四、导出与注册（对外发布的顶层组件）
+
+1. **`src/component/index.ts`** — 按分类注释分组导出
+2. **`src/type/{category}.ts`** — 新增类型声明
+3. **`src/index.ts`** — 具名导出组件 + `export type { XxxProps, XxxEmits }`
+4. **`src/index.ts` 的 `components` 数组** — 加入 `install()` 注册
+5. 大业务组件的内部实现（如 `base-table/modes/*`）**不在此列表注册**
+6. `doc/架构设计.md` — **仅当开发者明确要求更新文档时**维护
+
+### 五、创建后检查清单
+
+- [ ] 分类目录正确（`basic/` / `crud/` / `interaction/` 或已确认的特殊路径）
+- [ ] 命名符合上表
+- [ ] 已从 `src/index.ts` 导出
+- [ ] 已创建 Demo 页并注册菜单（见下文第六节）
+- [ ] 三端断点适配（`$doc-bp-tablet` / `$doc-bp-mobile`）
+- [ ] 未引入无 Demo 的对外组件
+
+### 六、Demo 文档自动生成规范
+
+**组件代码完成后，必须同步创建 Demo 文档页。**
+
+#### 6.1 文件与导航
+
+- 文档页：`examples/demo/{component-name}/Demo{ComponentName}.vue`
+- 在 `examples/App.vue` 中：
+  - `pageMap` 增加路由 key → Demo 组件
+  - 对应 `el-sub-menu` 下增加 `el-menu-item`（CRUD / 基础 / 视觉 / 交互 分组与组件分类一致）
+- 菜单 `index` 用 kebab-case，如 `base-search-field`
+
+#### 6.2 页面结构（固定顺序）
+
+```vue
+<!-- 1. 页头 -->
+<div class="doc-content__header"><h2>组件名</h2><p>一句话说明</p></div>
+
+<!-- 2. 演示区：DemoWidgetTabs（预览 / 代码切换，BaseTable Demo 除外） -->
+<DemoWidgetTabs :code="demoCodes.xxx">
+  <!-- 预览内容 -->
+</DemoWidgetTabs>
+
+<!-- 3. API 区 api-section + ApiTable -->
+<div class="api-section">
+  <h3 class="api-section__title">组件名 Props</h3>
+  <ApiTable type="props" :rows="api.props" />
+</div>
+
+<!-- 4. 特殊说明（有 api.notes 时） -->
+<div v-if="api.notes?.length" class="api-section">
+  <h3 class="api-section__title">特殊说明</h3>
+  <ul class="api-notes-list">
+    <li v-for="(note, idx) in api.notes" :key="idx">{{ note }}</li>
+  </ul>
+</div>
+```
+
+- 样式：`@use "../../style/variables" as *;` + `@use "../../style/demo";`
+- 禁止硬编码文档色值；类型标签色由 `demo.scss` 的 `.api-type` 跟随 theme 主色
+- 补充说明统一标题为 **特殊说明**，列表使用 `api-notes-list`
+
+**演示区布局（DemoWidgetTabs，BaseTable 多模式 Demo 除外）**
+
+| 文件 | 职责 |
+|------|------|
+| `DemoWidgetTabs.vue` | 演示卡片容器：EP Tabs + 预览/代码 + 复制 |
+| `demoCodes.ts` | 各组件示例代码字符串，**必须含 script 数据定义 + template** |
+| `apiTypeHints.ts` | opaque 类型 `?` 提示注册 |
+| `demoCodeHighlight.ts` | highlight.js 封装 |
+
+#### 6.2.1 demoCodes 与 apiTypeHints（新增组件必做）
+
+**`demoCodes.ts`**
+
+- 每个新组件必须在 `demoCodes.ts` 新增 camelCase 条目
+- 条目格式为完整 SFC 片段：`<script setup lang="ts">` + `<template>`
+- **禁止**只写 `<template>` 片段而缺少 script 中的数据定义
+
+**`apiTypeHints.ts`**
+
+- Props / Events 中出现 **opaque 类型名**时，必须在 `examples/type/apiTypeHints.ts` 注册
+- 字面量联合类型写完整即可，无需注册
+
+#### 6.3 Tab 与容器
+
+- 必须使用 `DemoWidgetTabs.vue`，内部为 Element Plus **`el-tabs` + `type="border-card"`**
+- **禁止**自定义 Tab 按钮、禁止裸 `widget-card` 包一层
+- **唯一例外**：`DemoBaseTable.vue` 多模式表格 Demo 不使用 DemoWidgetTabs
+
+**预览 Tab 三段结构**
+
+1. **顶部**：EP Tab 标签栏（预览 / 代码）
+2. **中部**：组件预览；表格 / BaseCrud 等全宽贴边时加 **`flush`**
+3. **底部**（可选）：`#footer` 插槽放「最近事件」
+
+**代码 Tab**
+
+- 高亮：`highlight.js`（`demoCodeHighlight.ts`），语言 `xml`
+- **hljs token 样式必须写在 `DemoWidgetTabs.vue` 的非 scoped `<style>` 块**
+- 复制按钮：代码块右上角绝对定位浮层
+
+**事件反馈（最近事件）**
+
+- 有事件监听时，统一 `lastEvent` + `#footer` 插槽 + `.widget-hint`
+- **禁止**放在中部预览区
+
+#### 6.4 API 表格
+
+- **必须**使用 `ApiTable.vue`，禁止手写 API 表格
+- Props / Events / Slots 定义在 `<script setup>` 的 `ComponentApi` 或 `ApiRow[]`
+
+#### 6.5 类型列写法
+
+| 场景 | 写法 | 是否显示 `?` |
+|------|------|-------------|
+| 字面量枚举 | `'"success" \| "warning" \| "info" \| "danger"'` | 否 |
+| 字面量联合 | `'"left" \| "center" \| "right"'` | 否 |
+| 基础类型 | `string` / `boolean` / `number` | 否 |
+| 仅类型名、看不出具体值 | `BaseTableMode` / `DragSortItem[]` | 是（自动） |
+
+#### 6.6 Demo 检查清单
+
+- [ ] `Demo{ComponentName}.vue` 已创建
+- [ ] `App.vue` 菜单与 pageMap 已注册
+- [ ] 演示区使用 `DemoWidgetTabs`（BaseTable 除外），`demoCodes.ts` 已注册对应条目
+- [ ] 有事件反馈时用 `#footer` + `widget-hint`
+- [ ] 使用 `ApiTable` 渲染 API
+- [ ] 新 opaque 类型已注册 `apiTypeHints.ts`
+- [ ] 演示区三端适配
+
+---
+
+## Cursor 规则维护
+
+- 规则唯一源文件：`.cursor/rules/project-conventions.mdc`（分类目录列表写在本文件「组件分类（全局）」表格中，**无单独机器可读配置文件**）
+- 修改该规则文件后，须同步更新 `doc/组件规则流程图.md`
+- `doc/架构设计.md`、`CHANGELOG.md` 仅在开发者明确要求时更新，不随组件/规则改动自动写入
+
+---
+
 ## CHANGELOG 维护
 
 当用户要求记录变更时，按以下格式更新 `CHANGELOG.md`。三级层级结构：
@@ -139,25 +390,7 @@ import "comp-vue-lib/style.css";
 - **二级**：操作类型（`#### 新增组件`、`#### 组件调整`、`#### 新增配置`、`#### 配置调整` 等）
 - **三级**：具体条目，同一对象的多项改动合并为一条
 
-如果某个层级没有内容则不展示。示例：
-
-```markdown
-## vX.Y.Z（YYYY-MM-DD 或 YYYY-MM-DD ~ YYYY-MM-DD）
-
-### 组件模块
-
-#### 新增组件
-- **ChangelogPanel**：变更记录时间线面板，支持版本折叠展开
-
-#### 组件调整
-- **BaseTable**：统一五种模式列宽计算；新增 hover 交互
-- **SearchBar**：修复清空按钮不触发事件的问题
-
-### 配置模块
-
-#### 新增配置
-- **Cursor 规则**：新增项目约定规则文件
-```
+如果某个层级没有内容则不展示。
 
 条目精简规则：
 - 只记录"做了什么"，不记录"怎么实现的"
@@ -191,25 +424,7 @@ type(scope): 一句话概括
 
 **scope** 取值：模块名（如 `config`、`table`、`search`、`demo`、`build`），可省略
 
-**body** 按模块分类组织（组件模块、配置模块、工程化等），每条以 `- ` 开头，同类合并。遵循 CHANGELOG 精简规则——只记录做了什么，不记录怎么实现的。
-
-示例：
-
-```
-feat(config): 配置系统重构为保存模式，全局主题适配
-
-配置模块
-- 移除 updateConfig/resetConfig，新增 saveConfig
-- 配置页改为手动保存，移除 watch 自动生效
-
-组件调整
-- 侧边栏菜单跟随主题变化
-- 配置页新增移动端适配
-
-工程化
-- Stylelint 新增 Vue 伪类白名单
-- 代码格式化
-```
+**body** 按模块分类组织（组件模块、配置模块、工程化等），每条以 `- ` 开头，同类合并。
 
 ## 架构文档维护
 

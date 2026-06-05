@@ -4,6 +4,6 @@ export { default as FloatingToolbar } from "./floating-toolbar/FloatingToolbar.v
 export { default as TreeTransfer } from "./tree-transfer/TreeTransfer.vue";
 export { default as StepWizard } from "./step-wizard/StepWizard.vue";
 export { default as ContextMenu } from "./context-menu/ContextMenu.vue";
-export { default as CountUp } from "./count-up/CountUp.vue";
+export { default as CanvasTime } from "./canvas-time/CanvasTime.vue";
+export { default as CanvasCountUp } from "./canvas-count-up/CanvasCountUp.vue";
 export { default as HeatmapCalendar } from "./heatmap-calendar/HeatmapCalendar.vue";
-export { default as LightboxGallery } from "./lightbox-gallery/LightboxGallery.vue";

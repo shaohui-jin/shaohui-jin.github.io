@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { LightboxGallery } from "comp-vue-lib";
+import { ImageLightbox } from "comp-vue-lib";
 import type { ComponentApi } from "../../type/types";
 import ApiTable from "../ApiTable.vue";
 import DemoWidgetTabs from "../DemoWidgetTabs.vue";
@@ -44,12 +44,12 @@ const api: ComponentApi = {
 
 <template>
   <div class="doc-content__header">
-    <h2>LightboxGallery 灯箱画廊</h2>
+    <h2>ImageLightbox 图片灯箱</h2>
     <p>缩略图网格 + 全屏灯箱预览，支持键盘左右切换与 Esc 关闭</p>
   </div>
 
-  <DemoWidgetTabs :code="demoCodes.lightboxGallery">
-    <LightboxGallery
+  <DemoWidgetTabs :code="demoCodes.imageLightbox">
+    <ImageLightbox
       v-model:index="currentIndex"
       :urls="urls"
       @change="onChange"
@@ -60,12 +60,12 @@ const api: ComponentApi = {
   </DemoWidgetTabs>
 
   <div class="api-section">
-    <h3 class="api-section__title">LightboxGallery Props</h3>
+    <h3 class="api-section__title">ImageLightbox Props</h3>
     <ApiTable type="props" :rows="api.props" />
   </div>
 
   <div class="api-section">
-    <h3 class="api-section__title">LightboxGallery Events</h3>
+    <h3 class="api-section__title">ImageLightbox Events</h3>
     <ApiTable type="events" :rows="api.events" />
   </div>
 </template>

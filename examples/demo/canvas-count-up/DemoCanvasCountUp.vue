@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { CountUp } from "comp-vue-lib";
+import { CanvasCountUp } from "comp-vue-lib";
 import type { ComponentApi } from "../../type/types";
 import ApiTable from "../ApiTable.vue";
 import DemoWidgetTabs from "../DemoWidgetTabs.vue";
 import { demoCodes } from "../demoCodes";
 
-const countUpRef = ref<InstanceType<typeof CountUp>>();
+const countUpRef = ref<InstanceType<typeof CanvasCountUp>>();
 const eventLog = ref("—");
 
 function onFinish() {
@@ -34,30 +34,30 @@ const api: ComponentApi = {
 
 <template>
   <div class="doc-content__header">
-    <h2>CountUp 数字滚动</h2>
+    <h2>CanvasCountUp 数字滚动</h2>
     <p>数字递增动画组件，适用于数据大屏、统计卡片等场景</p>
   </div>
 
-  <DemoWidgetTabs :code="demoCodes.countUp">
-    <div class="count-up-demo">
-      <CountUp ref="countUpRef" :value="98765" :duration="2000" @finish="onFinish">
-        <div class="count-up-demo__meta">
-          <span class="count-up-demo__trend">↑ 12.5%</span>
-          <span class="count-up-demo__label">总访问量</span>
+  <DemoWidgetTabs :code="demoCodes.canvasCountUp">
+    <div class="canvas-count-up-demo">
+      <CanvasCountUp ref="countUpRef" :value="98765" :duration="2000" @finish="onFinish">
+        <div class="canvas-count-up-demo__meta">
+          <span class="canvas-count-up-demo__trend">↑ 12.5%</span>
+          <span class="canvas-count-up-demo__label">总访问量</span>
         </div>
-      </CountUp>
-      <el-button size="small" class="count-up-demo__replay" @click="replay">重播</el-button>
+      </CanvasCountUp>
+      <el-button size="small" class="canvas-count-up-demo__replay" @click="replay">重播</el-button>
     </div>
     <p class="widget-hint">最近事件：{{ eventLog }}</p>
   </DemoWidgetTabs>
 
   <div class="api-section">
-    <h3 class="api-section__title">CountUp Props</h3>
+    <h3 class="api-section__title">CanvasCountUp Props</h3>
     <ApiTable type="props" :rows="api.props" />
   </div>
 
   <div class="api-section">
-    <h3 class="api-section__title">CountUp Events</h3>
+    <h3 class="api-section__title">CanvasCountUp Events</h3>
     <ApiTable type="events" :rows="api.events" />
     <ul v-if="api.notes?.length" class="api-notes-list">
       <li v-for="note in api.notes" :key="note">{{ note }}</li>
@@ -68,7 +68,7 @@ const api: ComponentApi = {
 <style scoped lang="scss">
 @use "../../style/demo";
 
-.count-up-demo {
+.canvas-count-up-demo {
   text-align: center;
   padding: 20px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -90,7 +90,7 @@ const api: ComponentApi = {
     margin-top: 12px;
   }
 
-  :deep(.count-up__value) {
+  :deep(.canvas-count-up__value) {
     color: #fff;
   }
 }

@@ -4,9 +4,7 @@ export { default as Dot } from "./basic/dot/Dot.vue";
 export { default as Image3D } from "./basic/image-3d/Image3D.vue";
 export { default as ImageCarousel } from "./basic/image-carousel/ImageCarousel.vue";
 export { default as ImagePointer } from "./basic/image-pointer/ImagePointer.vue";
-export { default as TextEraseArea } from "./basic/text-erase-area/TextEraseArea.vue";
-export { default as TextOverflowArea } from "./basic/text-overflow-area/TextOverflowArea.vue";
-export { default as CanvasTime } from "./basic/canvas-time/CanvasTime.vue";
+export { default as ImageLightbox } from "./basic/image-lightbox/ImageLightbox.vue";
 export { default as CodeBlock } from "./basic/code-block/CodeBlock.vue";
 export { default as WidgetTabs } from "./basic/widget-tabs/WidgetTabs.vue";
 
@@ -18,9 +16,9 @@ export {
   TreeTransfer,
   StepWizard,
   ContextMenu,
-  CountUp,
+  CanvasTime,
+  CanvasCountUp,
   HeatmapCalendar,
-  LightboxGallery,
 } from "./interaction";
 
 // CRUD 组件

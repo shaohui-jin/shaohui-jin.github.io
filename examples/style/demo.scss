@@ -82,6 +82,29 @@
   color: $doc-text-secondary;
 }
 
+// 演示区浅色衬底（跟随主题 token，暗色模式下自动变深）
+.demo-surface {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  background: $doc-bg-subtle;
+  border-radius: $doc-radius-lg;
+  overflow: hidden;
+
+  &__hint {
+    padding: 0 $doc-sp-lg $doc-sp-lg;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: $doc-sp-md;
+    padding: 0 $doc-sp-lg $doc-sp-lg;
+    flex-wrap: wrap;
+  }
+}
+
 .demo-subsection__title {
   margin: $doc-sp-2xl 0 $doc-sp-md;
   font-size: $doc-fs-base;

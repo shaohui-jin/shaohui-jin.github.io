@@ -37,12 +37,14 @@ async function copyCode(text: string) {
 </template>
 
 <style scoped lang="scss">
+@use "@/style/variables" as *;
+
 .code-block {
-  --cb-bg: var(--code-block-bg, #f5f7fa);
-  --cb-text: var(--code-block-text, #1f2328);
-  --cb-radius: var(--code-block-radius, 4px);
+  --cb-bg: var(--code-block-bg, var(--comp-bg-subtle, transparent));
+  --cb-text: var(--code-block-text, var(--comp-text-primary, #1f2328));
+  --cb-radius: var(--code-block-radius, #{$lib-radius-sm});
   --cb-font: var(--code-block-font, "SFMono-Regular", consolas, "Liberation Mono", menlo, monospace);
-  --cb-font-size: var(--code-block-font-size, 13px);
+  --cb-font-size: var(--code-block-font-size, #{$lib-font-size-sm});
 
   margin: 0;
   padding: 12px 16px;
@@ -68,7 +70,7 @@ async function copyCode(text: string) {
   z-index: 1;
   min-height: 32px;
   padding: 4px 8px;
-  color: var(--code-block-copy-color, #606266);
+  color: var(--code-block-copy-color, var(--comp-text-regular, #606266));
   background: color-mix(in srgb, var(--cb-bg) 92%, transparent);
   backdrop-filter: blur(4px);
 
@@ -97,7 +99,7 @@ async function copyCode(text: string) {
 }
 
 .code-block .hljs-attr {
-  color: var(--code-block-text, #1f2328);
+  color: var(--code-block-text, var(--comp-text-primary, #1f2328));
 }
 
 .code-block .hljs-string {
@@ -109,7 +111,13 @@ async function copyCode(text: string) {
 }
 
 .code-block .hljs-comment {
-  color: var(--code-block-comment, #909399);
+  color: var(--code-block-comment, var(--comp-text-secondary, #909399));
+}
+
+.code-block :deep(.hljs),
+.code-block :deep(code.hljs) {
+  background: transparent;
+  color: inherit;
 }
 
 .code-block .hljs-number {

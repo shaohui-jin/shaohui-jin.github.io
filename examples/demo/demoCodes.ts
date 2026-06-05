@@ -366,36 +366,6 @@ function onLeave() {
   />
 </template>`,
 
-  textEraseArea: `<script setup lang="ts">
-import { TextEraseArea } from "comp-vue-lib";
-
-const content =
-  "这是一段演示文本，文本擦除区域组件会从左到右逐渐擦除显示内容。";
-
-function onStart() {
-  console.log("start");
-}
-
-function onEnd() {
-  console.log("end");
-}
-</script>
-
-<template>
-  <TextEraseArea :content="content" @start="onStart" @end="onEnd" />
-</template>`,
-
-  textOverflowArea: `<script setup lang="ts">
-import { TextOverflowArea } from "comp-vue-lib";
-
-const content =
-  "这是一段很长的文本内容，TextOverflowArea 组件会在固定高度内显示文本，超出部分隐藏。";
-</script>
-
-<template>
-  <TextOverflowArea :content="content" :height="100" />
-</template>`,
-
   canvasTime: `<script setup lang="ts">
 import { CanvasTime } from "comp-vue-lib";
 </script>
@@ -580,11 +550,11 @@ function onSelect(item: ContextMenuItem) {
   </ContextMenu>
 </template>`,
 
-  countUp: `<script setup lang="ts">
+  canvasCountUp: `<script setup lang="ts">
 import { ref } from "vue";
-import { CountUp } from "comp-vue-lib";
+import { CanvasCountUp } from "comp-vue-lib";
 
-const countUpRef = ref<InstanceType<typeof CountUp>>();
+const countUpRef = ref<InstanceType<typeof CanvasCountUp>>();
 
 function onFinish() {
   console.log("animation done");
@@ -592,12 +562,12 @@ function onFinish() {
 </script>
 
 <template>
-  <CountUp ref="countUpRef" :value="98765" :duration="2000" @finish="onFinish">
-    <div class="count-up-demo__meta">
-      <span class="count-up-demo__trend">↑ 12.5%</span>
-      <span class="count-up-demo__label">总访问量</span>
+  <CanvasCountUp ref="countUpRef" :value="98765" :duration="2000" @finish="onFinish">
+    <div class="canvas-count-up-demo__meta">
+      <span class="canvas-count-up-demo__trend">↑ 12.5%</span>
+      <span class="canvas-count-up-demo__label">总访问量</span>
     </div>
-  </CountUp>
+  </CanvasCountUp>
   <el-button @click="countUpRef?.restart()">重播</el-button>
 </template>`,
 
@@ -619,9 +589,9 @@ function onCellClick(cell: HeatmapCell) {
   <HeatmapCalendar :data="heatmapData" @cell-click="onCellClick" />
 </template>`,
 
-  lightboxGallery: `<script setup lang="ts">
+  imageLightbox: `<script setup lang="ts">
 import { ref } from "vue";
-import { LightboxGallery } from "comp-vue-lib";
+import { ImageLightbox } from "comp-vue-lib";
 
 const urls = [
   "https://picsum.photos/seed/lb1/800/600",
@@ -638,7 +608,7 @@ function onChange(index: number) {
 </script>
 
 <template>
-  <LightboxGallery
+  <ImageLightbox
     v-model:index="currentIndex"
     :urls="urls"
     @change="onChange"

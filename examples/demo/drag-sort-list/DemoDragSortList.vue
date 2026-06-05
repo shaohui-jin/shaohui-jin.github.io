@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { DragSortList } from "comp-vue-lib";
+import type { DragSortItem } from "comp-vue-lib/type";
 import type { ComponentApi } from "../../type/types";
 import ApiTable from "../ApiTable.vue";
 import DemoWidgetTabs from "../DemoWidgetTabs.vue";
@@ -16,7 +17,7 @@ const items = ref([
 
 const eventLog = ref("—");
 
-function onChange(list: typeof items.value) {
+function onChange(list: DragSortItem[]) {
   eventLog.value = `change → 顺序: ${list.map((i) => i.label).join("、")}`;
 }
 

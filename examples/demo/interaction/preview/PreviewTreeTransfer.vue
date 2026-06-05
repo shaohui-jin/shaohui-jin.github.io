@@ -62,6 +62,10 @@ function toLeft() {
   rightChecked.value = rightChecked.value.filter((id) => !remove.has(id));
   leftChecked.value = [];
 }
+
+function onLeftCheck(_: unknown, { checkedKeys }: { checkedKeys: string[] }) {
+  leftChecked.value = checkedKeys;
+}
 </script>
 
 <template>
@@ -73,7 +77,7 @@ function toLeft() {
         show-checkbox
         node-key="id"
         :default-checked-keys="leftChecked"
-        @check="(_: unknown, { checkedKeys }: { checkedKeys: string[] }) => leftChecked = checkedKeys"
+        @check="onLeftCheck"
       />
     </div>
     <div class="tree-transfer__btns">

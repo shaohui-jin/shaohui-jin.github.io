@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, onBeforeUnmount } from "vue";
-import type { LightboxGalleryProps, LightboxGalleryEmits } from "@/type/interaction";
+import type { ImageLightboxProps, ImageLightboxEmits } from "@/type/basic";
 
-defineOptions({ name: "LightboxGallery" });
+defineOptions({ name: "ImageLightbox" });
 
-const props = withDefaults(defineProps<LightboxGalleryProps>(), {
+const props = withDefaults(defineProps<ImageLightboxProps>(), {
   index: 0,
 });
 
-const emit = defineEmits<LightboxGalleryEmits>();
+const emit = defineEmits<ImageLightboxEmits>();
 
 const open = ref(false);
 const innerIndex = ref(props.index);
@@ -54,8 +54,8 @@ defineExpose({ open: show, close });
 </script>
 
 <template>
-  <div class="lightbox-gallery">
-    <div class="lightbox-gallery__thumbs">
+  <div class="image-lightbox">
+    <div class="image-lightbox__thumbs">
       <img
         v-for="(url, i) in urls"
         :key="url"
@@ -65,13 +65,13 @@ defineExpose({ open: show, close });
       />
     </div>
     <Teleport to="body">
-      <Transition name="lb-fade">
-        <div v-if="open" class="lightbox-gallery__overlay" @click.self="close">
-          <button class="lightbox-gallery__close" @click="close">✕</button>
-          <button class="lightbox-gallery__nav lightbox-gallery__nav--prev" @click="prev">‹</button>
-          <img :src="urls[innerIndex]" class="lightbox-gallery__img" />
-          <button class="lightbox-gallery__nav lightbox-gallery__nav--next" @click="next">›</button>
-          <span class="lightbox-gallery__counter">{{ innerIndex + 1 }} / {{ urls.length }}</span>
+      <Transition name="image-lightbox-fade">
+        <div v-if="open" class="image-lightbox__overlay" @click.self="close">
+          <button class="image-lightbox__close" @click="close">✕</button>
+          <button class="image-lightbox__nav image-lightbox__nav--prev" @click="prev">‹</button>
+          <img :src="urls[innerIndex]" class="image-lightbox__img" alt="" />
+          <button class="image-lightbox__nav image-lightbox__nav--next" @click="next">›</button>
+          <span class="image-lightbox__counter">{{ innerIndex + 1 }} / {{ urls.length }}</span>
         </div>
       </Transition>
     </Teleport>
@@ -79,7 +79,7 @@ defineExpose({ open: show, close });
 </template>
 
 <style scoped lang="scss">
-.lightbox-gallery {
+.image-lightbox {
   &__thumbs {
     display: flex;
     flex-wrap: wrap;
@@ -152,9 +152,9 @@ defineExpose({ open: show, close });
   }
 }
 
-.lb-fade-enter-active,
-.lb-fade-leave-active { transition: opacity 0.25s; }
+.image-lightbox-fade-enter-active,
+.image-lightbox-fade-leave-active { transition: opacity 0.25s; }
 
-.lb-fade-enter-from,
-.lb-fade-leave-to { opacity: 0; }
+.image-lightbox-fade-enter-from,
+.image-lightbox-fade-leave-to { opacity: 0; }
 </style>

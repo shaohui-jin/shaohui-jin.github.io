@@ -9,7 +9,9 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
-      "comp-vue-lib": ["./src/index.ts"]
+      "comp-vue-lib": ["./src/index.ts"],
+      "comp-vue-lib/type": ["./src/type/index.ts"],
+      "comp-vue-lib/util": ["./src/util/index.ts"]
     }
   },
   "include": [

@@ -27,8 +27,10 @@ const DemoHeatmapCalendar = defineAsyncComponent(() => import("./demo/heatmap-ca
 const DemoUtils = defineAsyncComponent(() => import("./demo/utils/DemoUtils.vue"));
 const DemoConfigProvider = defineAsyncComponent(() => import("./demo/config-provider/DemoConfigProvider.vue"));
 const ChangelogPanel = defineAsyncComponent(() => import("./demo/changelog/ChangelogPanel.vue"));
+import DemoJsDocEditor from "./demo/js-doc-editor/DemoJsDocEditor.vue";
+import DemoWorkflowDesigner from "./demo/workflow-designer/DemoWorkflowDesigner.vue";
 
-type TopTab = "docs" | "utils" | "config" | "changelog";
+type TopTab = "docs" | "utils" | "config" | "js-doc-editor" | "workflow-designer" | "changelog";
 
 const pageMap: Record<string, Component> = {
   tables: DemoBaseTable,
@@ -234,6 +236,18 @@ watch(topTab, () => {
             配置系统
           </button>
           <button
+            :class="['doc-header__tab', { active: topTab === 'js-doc-editor' }]"
+            @click="switchTopTab('js-doc-editor')"
+          >
+            JsDoc 编辑器
+          </button>
+          <button
+            :class="['doc-header__tab', { active: topTab === 'workflow-designer' }]"
+            @click="switchTopTab('workflow-designer')"
+          >
+            规则编排
+          </button>
+          <button
             :class="['doc-header__tab', { active: topTab === 'changelog' }]"
             @click="switchTopTab('changelog')"
           >
@@ -413,6 +427,18 @@ watch(topTab, () => {
         </div>
       </template>
 
+      <template v-else-if="topTab === 'js-doc-editor'">
+        <div class="doc-content doc-content--full doc-content--rule">
+          <DemoJsDocEditor />
+        </div>
+      </template>
+
+      <template v-else-if="topTab === 'workflow-designer'">
+        <div class="doc-content doc-content--full doc-content--rule">
+          <DemoWorkflowDesigner />
+        </div>
+      </template>
+
       <template v-else-if="topTab === 'changelog'">
         <div class="doc-content doc-content--full">
           <div class="doc-panel">
@@ -454,6 +480,29 @@ watch(topTab, () => {
           <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
         </svg>
         <span>配置</span>
+      </button>
+      <button
+        :class="['doc-bottom-tab', { active: topTab === 'js-doc-editor' }]"
+        @click="handleBottomTab('js-doc-editor')"
+      >
+        <svg class="doc-bottom-tab__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M16 18l6-6-6-6" />
+          <path d="M8 6l-6 6 6 6" />
+        </svg>
+        <span>JsDoc</span>
+      </button>
+      <button
+        :class="['doc-bottom-tab', { active: topTab === 'workflow-designer' }]"
+        @click="handleBottomTab('workflow-designer')"
+      >
+        <svg class="doc-bottom-tab__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7" rx="1" />
+          <rect x="14" y="3" width="7" height="7" rx="1" />
+          <path d="M6.5 17.5h11" />
+          <path d="M6.5 14.5h7" />
+          <path d="M10.5 10.5v7" />
+        </svg>
+        <span>编排</span>
       </button>
       <button
         :class="['doc-bottom-tab', { active: topTab === 'changelog' }]"
@@ -829,6 +878,14 @@ watch(topTab, () => {
     max-width: 100%;
     min-width: 0;
   }
+
+  &--rule {
+    padding: 12px;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
 }
 
 .doc-panel {
@@ -846,15 +903,23 @@ $bottom-bar-height: 52px;
 
 .doc-bottom-bar {
   display: none;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .doc-bottom-tab {
-  flex: 1;
+  flex: 1 0 auto;
+  min-width: 52px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  padding: 6px 0 8px;
+  padding: 6px 6px 8px;
   border: none;
   background: transparent;
   cursor: pointer;

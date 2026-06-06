@@ -1,0 +1,3 @@
+export const DEVICE_PIXEL_RATIO_STEP = 20
+export const MAX_DEVICE_PIXEL_RATIO = 3
+export const MIN_DEVICE_PIXEL_RATIO = 0.2

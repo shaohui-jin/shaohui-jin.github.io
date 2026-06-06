@@ -6,11 +6,12 @@
 
 #### Monorepo 改造
 
-- 采用 pnpm workspace + Turborepo 编排，根仓库 `my-comp` 仅负责脚本与规范
+- 采用 pnpm workspace + Turborepo 编排，根仓库仅负责脚本与规范
 - 源码拆分为 `jsh-core`（配置 + SCSS 变量）、`jsh-comp`（组件 + 类型）、`jsh-tool`（工具函数）三个包
 - `comp-vue-lib` 更名为 `jsh-comp`，工具函数独立为 `jsh-tool`，不再通过 `jsh-comp/util` 转发
 - `examples/` 升级为独立 workspace 包，构建产物仍输出至 `dist-playground/`
 - GitHub Actions 升级 checkout / setup-node / pnpm 至 v4，修复依赖安装顺序并启用 `frozen-lockfile`
+- 仓库迁移至 `shaohui-jin.github.io`，演示站部署路径从 `/my-comp` 调整为根路径 `/`
 
 #### 项目规范
 

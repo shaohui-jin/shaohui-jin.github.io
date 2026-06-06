@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.lib.json",
+  "compilerOptions": {
+    "composite": true,
+    "tsBuildInfoFile": "./node_modules/.cache/tsconfig.app.tsbuildinfo",
+    "noEmit": true
+  },
+  "include": [
+    "env.d.ts",
+    "src/**/*.ts",
+    "src/**/*.vue"
+  ],
+  "exclude": []
+}

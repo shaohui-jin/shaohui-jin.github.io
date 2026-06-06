@@ -1,0 +1,4 @@
+export const NODE_CONFIG_WIDTH = 300
+export const NODE_CONFIG_TITLE_HEIGHT = 36
+export const NODE_CONFIG_BASE_HEIGHT = 164
+export const NODE_CONFIG_MARGIN = 18

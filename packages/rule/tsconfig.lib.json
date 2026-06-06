@@ -1,0 +1,27 @@
+{
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
+  "compilerOptions": {
+    "composite": true,
+    "tsBuildInfoFile": "./node_modules/.cache/tsconfig.lib.tsbuildinfo",
+    "strict": false,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "verbatimModuleSyntax": false,
+    "skipLibCheck": true,
+    "lib": ["ES2021", "DOM", "DOM.Iterable"],
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/internal/*"]
+    }
+  },
+  "include": [
+    "env.d.ts",
+    "src/index.ts",
+    "src/component/**/*.vue",
+    "src/component/**/*.ts",
+    "src/internal/**/*.ts",
+    "src/internal/**/*.vue"
+  ],
+  "exclude": ["src/dev/**"]
+}

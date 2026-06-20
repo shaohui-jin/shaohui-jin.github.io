@@ -132,9 +132,13 @@ function resolveFirstLevelRandomColor(key: string): string {
               <template #title>
                 <span
                   class="doc-nav__group"
-                  :style="{ color: resolveFirstLevelRandomColor(`${topTab}-group-${group.key}`) }"
+                  :style="{ color: group.accent ?? resolveFirstLevelRandomColor(`${topTab}-group-${group.key}`) }"
                 >
-                  {{ group.title }}
+                  <span
+                    class="doc-nav__group-marker"
+                    :style="{ backgroundColor: group.accent ?? resolveFirstLevelRandomColor(`${topTab}-group-${group.key}`) }"
+                  />
+                  <span>{{ group.title }}</span>
                 </span>
               </template>
               <el-menu-item v-for="item in group.items" :key="item.key" :index="item.key">
@@ -149,7 +153,11 @@ function resolveFirstLevelRandomColor(key: string): string {
                 class="doc-nav__item-name doc-nav__item-name--flat"
                 :style="{ color: resolveFirstLevelRandomColor(`${topTab}-flat-${item.key}`) }"
               >
-                {{ item.label }}
+                <span
+                  class="doc-nav__group-marker"
+                  :style="{ backgroundColor: resolveFirstLevelRandomColor(`${topTab}-flat-${item.key}`) }"
+                />
+                <span>{{ item.label }}</span>
               </span>
               <span class="doc-nav__item-tag">{{ item.tag }}</span>
             </el-menu-item>
@@ -318,7 +326,17 @@ function resolveFirstLevelRandomColor(key: string): string {
 }
 
 .doc-nav__group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   font-weight: 600;
+}
+
+.doc-nav__group-marker {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
 }
 
 .doc-nav__item-name {
@@ -326,6 +344,9 @@ function resolveFirstLevelRandomColor(key: string): string {
 }
 
 .doc-nav__item-name--flat {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   font-weight: 600;
   font-size: 13px;
 }

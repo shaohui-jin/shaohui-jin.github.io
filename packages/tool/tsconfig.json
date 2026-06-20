@@ -8,7 +8,6 @@
       "@/*": ["src/*"],
       "jsh-core": ["../core/src/index.ts"],
       "jsh-core/*": ["../core/src/*"],
-      "jsh-comp": ["../comp/dist/index.d.ts"],
       "jsh-comp/doc": ["../comp/src/doc/index.ts"],
       "jsh-comp/doc/style/*": ["../comp/src/doc/style/*"]
     }

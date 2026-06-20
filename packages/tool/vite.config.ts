@@ -20,6 +20,7 @@ export default defineConfig({
     dts({
       tsconfigPath: "./tsconfig.json",
       outDir: "dist",
+      include: utilEntries.map((name) => `src/${name}.ts`),
       staticImport: true,
       insertTypesEntry: true,
     }),

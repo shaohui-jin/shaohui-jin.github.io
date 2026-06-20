@@ -1,0 +1,33 @@
+@use "variables" as *;
+
+@mixin el-menu-nav {
+  --el-menu-bg-color: #{$doc-bg-card};
+  --el-menu-text-color: #{$doc-text-regular};
+  --el-menu-hover-bg-color: #{$doc-bg-subtle};
+  --el-menu-hover-text-color: #{$doc-color-primary};
+  --el-menu-active-color: #{$doc-color-primary};
+
+  :deep(.el-menu-item) {
+    border-left: 3px solid transparent;
+
+    &.is-active {
+      color: $doc-color-primary;
+      background: rgba($doc-color-primary, 0.06);
+      border-left-color: $doc-color-primary;
+    }
+  }
+}
+
+@mixin el-tabs-border-card {
+  border-radius: $doc-radius-lg;
+  overflow: hidden;
+
+  :deep(.el-tabs__header) {
+    background: $doc-bg-card;
+    margin: 0;
+  }
+
+  :deep(.el-tabs__content) {
+    padding: 0;
+  }
+}

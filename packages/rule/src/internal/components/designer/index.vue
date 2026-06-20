@@ -1239,6 +1239,7 @@ function directContectNode(node: BaseFunctionNodeType, data: any) {
  * 替换节点选中逻辑，选中节点时 emit('show-attr-panel',  nodeData )
  */
 function onNodeSelected(nodeData: WorkflowNode | null) {
+  selectedNodeData.value = nodeData
   emit('show-attr-panel', nodeData)
 }
 
@@ -1551,15 +1552,15 @@ function findUpstreamNonConditionNodes(nodeId: string, workflowData: any): strin
 
     .workflow-actions {
       position: absolute;
-      right: 10px;
-      top: 10px;
+      left: 10px;
+      bottom: 10px;
       display: flex;
       gap: 4px;
       z-index: 100;
       padding: 4px;
       border-radius: $lib-radius-sm;
       flex-direction: column;
-      align-items: end;
+      align-items: flex-start;
       color: $lib-text-secondary;
       opacity: 0.3;
 

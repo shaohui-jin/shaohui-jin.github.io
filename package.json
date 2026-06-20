@@ -4,10 +4,10 @@
   "private": true,
   "packageManager": "pnpm@10.13.1",
   "scripts": {
-    "dev": "turbo dev --filter=examples",
+    "dev": "turbo dev --filter=playground",
     "build": "turbo build",
-    "build:playground": "turbo build --filter=examples",
-    "preview": "turbo preview --filter=examples",
+    "build:playground": "turbo build --filter=playground",
+    "preview": "turbo preview --filter=playground",
     "typecheck": "turbo typecheck",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

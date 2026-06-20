@@ -1,20 +1,27 @@
 <template>
-  <!-- 自定义属性面板抽屉 -->
-  <div class="attr-panel-drawer" :class="{ 'drawer-open': visible }">
-    <!-- 抽屉头部 -->
+  <el-drawer
+    :model-value="visible"
+    direction="rtl"
+    size="500px"
+    :with-header="false"
+    :teleported="false"
+    :modal="true"
+    :close-on-click-modal="true"
+    class="attr-panel-drawer"
+    @close="handleClose"
+  >
     <div class="drawer-header">
       <div class="drawer-title-container">
         <div class="drawer-title">
           <template v-if="nodeData">
             <span class="node-id">{{ nodeData?.id || '' }}</span>
             <div class="node-title-container" @click="startEditTitle">
-              <p class="node-title" v-if="props.disabled">{{ nodeData?.title || '节点名称' }}</p>
+              <p v-if="props.disabled" class="node-title">{{ nodeData?.title || '节点名称' }}</p>
               <template v-else-if="!isEditingTitle">
                 <el-tooltip class="box-item" effect="dark" content="单击编辑标题" placement="top">
                   <p class="node-title">{{ nodeData?.title || '节点名称' }}</p>
                 </el-tooltip>
               </template>
-              <!-- <el-input v-model="input" placeholder="Please input" /> -->
               <el-input
                 v-else
                 ref="titleInputRef"
@@ -44,7 +51,6 @@
       </div>
     </div>
 
-    <!-- 抽屉内容 -->
     <div class="drawer-content">
       <component
         v-if="currentPanelComponent"
@@ -57,7 +63,7 @@
         @update:nodeBaseData="handleNodeBaseDataUpdate"
       />
     </div>
-  </div>
+  </el-drawer>
 </template>
 
 <script setup lang="ts">
@@ -190,44 +196,24 @@ function handleNodeBaseDataUpdate(nodeId: string) {
 @use "jsh-core/style/variables" as *;
 /* 自定义抽屉样式 */
 .attr-panel-drawer {
-  position: absolute;
-  top: 60px;
-  right: -500px;
-  width: 500px;
-  height: calc(100% - 70px);
-  background: var(--el-bg-color);
-  box-shadow: -2px 0 8px rgb(60 121 180 / 12%);
-  z-index: 2001;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  transform: translateX(0);
-  will-change: right, transform;
-  border-radius: 12px;
+  :deep(.el-drawer) {
+    background: var(--el-bg-color);
+  }
+
+  :deep(.el-drawer__body) {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+  }
 }
 
-.attr-panel-drawer.drawer-open {
-  right: 10px; /* 打开时滑入屏幕 */
-  transform: translateX(0);
-}
-
-/* 抽屉内容动画 */
 .drawer-content {
   flex: 1 1 0;
-  //width: 100%;
   overflow: hidden;
   padding: 0 16px;
   background: var(--el-bg-color);
-  opacity: 0;
-  transform: translateX(20px);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  transition-delay: 0.1s;
-}
-
-.drawer-open .drawer-content {
-  opacity: 1;
-  transform: translateX(0);
 }
 
 /* 抽屉头部样式 */

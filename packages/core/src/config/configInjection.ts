@@ -42,13 +42,12 @@ function writeToStorage(config: LibConfig, key?: string): void {
 /** 深度合并用户配置与默认值 */
 function resolveConfig(userConfig?: LibConfig): ResolvedLibConfig {
   const theme = { ...defaultLibConfig.theme, ...userConfig?.theme };
-  const table = { ...defaultLibConfig.table, ...userConfig?.table };
-  return { theme, table };
+  return { theme };
 }
 
 /** 将 resolved config 映射为 CSS 自定义属性名/值 */
 function configToCssVars(config: ResolvedLibConfig): Record<string, string> {
-  const { theme, table } = config;
+  const { theme } = config;
   return {
     // ── 组件库自有变量 ──
     "--comp-color-primary": theme.colorPrimary,
@@ -74,13 +73,6 @@ function configToCssVars(config: ResolvedLibConfig): Record<string, string> {
 
     "--comp-radius-sm": `${theme.radiusSm}px`,
     "--comp-radius-md": `${theme.radiusMd}px`,
-
-    "--comp-table-row-height": `${table.rowHeight}px`,
-    "--comp-table-header-height": `${table.headerHeight}px`,
-    "--comp-table-font-size-cell": `${table.fontSizeCell}px`,
-    "--comp-table-font-size-empty": `${table.fontSizeEmpty}px`,
-    "--comp-table-header-font-weight": String(table.headerFontWeight),
-    "--comp-table-cell-font-weight": String(table.cellFontWeight),
 
     // ── Element Plus 全局变量同步 ──
     "--el-color-primary": theme.colorPrimary,
@@ -133,9 +125,7 @@ export function createCompLib(userConfig?: LibConfig, persist?: PersistOptions) 
   const base = resolveConfig(userConfig);
 
   const stored = persist?.enabled ? readFromStorage(storageKey) : undefined;
-  const initial: ResolvedLibConfig = stored
-    ? { theme: { ...base.theme, ...stored.theme }, table: { ...base.table, ...stored.table } }
-    : base;
+  const initial: ResolvedLibConfig = stored ? { theme: { ...base.theme, ...stored.theme } } : base;
 
   const resolved = reactive(initial) as ResolvedLibConfig;
 
@@ -153,14 +143,13 @@ export function createCompLib(userConfig?: LibConfig, persist?: PersistOptions) 
     /** 保存配置：同步更新内存 + localStorage + CSS 变量，切换页面即可见 */
     saveConfig(newConfig: LibConfig) {
       if (newConfig.theme) Object.assign(resolved.theme, newConfig.theme);
-      if (newConfig.table) Object.assign(resolved.table, newConfig.table);
 
       if (typeof document !== "undefined") {
         applyCssVars(resolved);
       }
 
       if (persist?.enabled) {
-        writeToStorage({ theme: { ...resolved.theme }, table: { ...resolved.table } }, storageKey);
+        writeToStorage({ theme: { ...resolved.theme } }, storageKey);
       }
     },
 

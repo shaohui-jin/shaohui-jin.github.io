@@ -3,7 +3,7 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", "../dist-playground/**"]
+      "outputs": ["dist/**", "../../dist-playground/**"]
     },
     "dev": {
       "cache": false,

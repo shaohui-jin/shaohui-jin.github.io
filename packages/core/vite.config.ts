@@ -23,9 +23,15 @@ export default defineConfig({
     outDir: "dist",
     emptyOutDir: true,
     lib: {
-      entry: resolve(__dirname, "src/index.ts"),
+      entry: {
+        index: resolve(__dirname, "src/index.ts"),
+        "doc/index": resolve(__dirname, "src/doc/index.ts"),
+      },
       formats: ["es", "cjs"],
-      fileName: (format) => (format === "es" ? "index.mjs" : "index.js"),
+      fileName: (format, entryName) => {
+        const ext = format === "es" ? "mjs" : "js";
+        return `${entryName}.${ext}`;
+      },
     },
     rollupOptions: {
       external: ["vue", /^vue\//, "element-plus", /^element-plus\//],

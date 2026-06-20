@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { tableLayoutDefaults, tableSurfaceCssVars } from "./theme/tableSurface";
+import { tableSurfaceCssVars } from "./theme/tableSurface";
 import { useLibConfig } from "jsh-core";
 import type { LibConfig } from "jsh-core";
 import type { BaseTableProps, BaseTableEmits } from "@/type/crud";
@@ -17,8 +17,8 @@ const props = withDefaults(defineProps<BaseTableProps & { theme?: LibConfig }>()
   rowKey: "id",
   loading: false,
   emptyText: "暂无数据",
-  rowHeight: tableLayoutDefaults.rowHeight,
-  headerHeight: tableLayoutDefaults.headerHeight,
+  rowHeight: 36,
+  headerHeight: 40,
   maxPrerenderPixels: 12_000_000,
   skiaWasmBaseUrl: undefined,
   theme: undefined,

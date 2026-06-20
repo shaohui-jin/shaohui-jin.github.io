@@ -1,0 +1,113 @@
+@use "variables" as *;
+
+.doc-content__header {
+  margin-bottom: $doc-sp-xl;
+
+  h2 {
+    margin: 0 0 6px;
+    font-size: $doc-fs-xl;
+    font-weight: 600;
+    color: $doc-text-heading;
+  }
+
+  p {
+    margin: 0;
+    font-size: $doc-fs-base;
+    color: $doc-text-secondary;
+  }
+}
+
+.widget-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $doc-sp-sm;
+  align-items: center;
+}
+
+.widget-hint {
+  margin: $doc-sp-md 0 0;
+  font-size: $doc-fs-sm;
+  color: $doc-text-secondary;
+}
+
+.demo-code-panel {
+  background: $doc-bg-card;
+  border: 1px solid $doc-border-color;
+  border-radius: $doc-radius-lg;
+  overflow: hidden;
+  box-shadow: $doc-shadow-lg;
+  padding: $doc-sp-md $doc-sp-lg;
+}
+
+.api-section {
+  margin-top: $doc-sp-2xl;
+  background: $doc-bg-card;
+  border: 1px solid $doc-border-color;
+  border-radius: $doc-radius-lg;
+  padding: $doc-sp-xl;
+  box-shadow:
+    0 2px 8px rgb(0 0 0 / 6%),
+    0 0 1px rgb(0 0 0 / 4%);
+}
+
+.api-section__title {
+  margin: 0 0 $doc-sp-md;
+  font-size: $doc-fs-md;
+  font-weight: 600;
+  color: $doc-text-heading;
+}
+
+.api-section__hint {
+  margin: 0 0 $doc-sp-md;
+  font-size: $doc-fs-sm;
+  color: $doc-text-secondary;
+  line-height: 1.6;
+}
+
+.api-table-wrap {
+  overflow-x: auto;
+}
+
+.api-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: $doc-fs-sm;
+  line-height: 1.6;
+
+  th,
+  td {
+    padding: $doc-sp-sm $doc-sp-md;
+    text-align: left;
+    border-bottom: 1px solid $doc-border-light;
+    vertical-align: top;
+  }
+
+  thead th {
+    background: $doc-bg-subtle;
+    font-weight: 600;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+}
+
+.api-type {
+  color: $doc-color-primary !important;
+  background: color-mix(in srgb, $doc-color-primary 12%, transparent) !important;
+}
+
+.api-type-cell {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+
+.api-notes-list {
+  margin: 0;
+  padding-left: $doc-sp-xl;
+  font-size: $doc-fs-sm;
+  line-height: 1.8;
+  color: $doc-text-regular;
+}

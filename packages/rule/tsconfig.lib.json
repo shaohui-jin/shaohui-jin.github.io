@@ -17,11 +17,8 @@
   },
   "include": [
     "env.d.ts",
-    "src/index.ts",
-    "src/component/**/*.vue",
-    "src/component/**/*.ts",
-    "src/internal/**/*.ts",
-    "src/internal/**/*.vue"
+    "src/**/*.ts",
+    "src/**/*.vue"
   ],
   "exclude": ["src/dev/**"]
 }

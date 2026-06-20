@@ -1,7 +1,6 @@
 import { Keyboard } from '@antv/x6'
 import type { Graph } from '@antv/x6'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { createNewNode } from '@/utils/factory/NodeFactory'
 import { type WorkflowData } from '@/types/workflow'
 import type { GroupNodeManager } from '@/utils/manager/GroupNodeManager'
 import { unref, Ref } from 'vue'
@@ -25,7 +24,6 @@ type KeyboardPlugin = {
   emit: EmitFn
 }
 
-let copiedNodeData: any[] = []
 let collapse = false
 
 /** 画布键盘操作标识（batch、日志、配置等） */
@@ -75,9 +73,22 @@ const toBindKey = (binding: KeyboardBinding): string | string[] => {
   return typeof binding === 'string' ? binding : [...binding]
 }
 
-/** 当前选中的节点（不含边） */
-const getSelectedNodes = (graph: Graph): any[] => {
-  return graph.getSelectedCells().filter((c: any) => c.isNode && c.isNode()) as any[]
+/** 当前选中的节点（不含边）；若 selection 为空则回退到属性面板当前节点 */
+const getSelectedNodes = (graph: Graph, selectedNodeData?: Ref<any>): any[] => {
+  const selectedNodes = graph
+    .getSelectedCells()
+    .filter((c: any) => c.isNode && c.isNode()) as any[]
+
+  if (selectedNodes.length > 0) return selectedNodes
+
+  const fallbackNodeId = selectedNodeData?.value?.id
+  if (!fallbackNodeId) return []
+
+  const fallbackCell = graph.getCellById(fallbackNodeId) as any
+  if (fallbackCell?.isNode?.()) {
+    return [fallbackCell]
+  }
+  return []
 }
 
 /** 清空画布数据与视图（不弹确认；供快捷键清空、导入前复用） */
@@ -232,46 +243,42 @@ export function registerKeyboardPlugins({
   })
 
   // ctrl+c / cmd+c — 复制节点
-  graph.bindKey(toBindKey(KeyboardKey[KEYBOARD.COPY]), () => {
-    const nodes = getSelectedNodes(graph)
+  graph.bindKey(toBindKey(KeyboardKey[KEYBOARD.COPY]), e => {
+    e.preventDefault()
+    const nodes = getSelectedNodes(graph, selectedNodeData)
     if (nodes.length === 0) {
       ElMessage.warning('请先选择要复制的节点')
       return
     }
-    copiedNodeData = nodes.map((node: any) => ({
-      ...(node.data || {}),
-      pos: { x: node.getPosition().x, y: node.getPosition().y }
-    }))
+    graph.copy(nodes)
     ElMessage.success(`成功复制 ${nodes.length} 个节点`)
   })
 
   // ctrl+v / cmd+v — 粘贴节点
-  graph.bindKey(toBindKey(KeyboardKey[KEYBOARD.PASTE]), () => {
-    if (copiedNodeData.length === 0) {
+  graph.bindKey(toBindKey(KeyboardKey[KEYBOARD.PASTE]), e => {
+    e.preventDefault()
+    const pastedCells = graph.paste({ offset: 40 }) as any[]
+    if (!pastedCells.length) {
       ElMessage.warning('剪贴板为空')
       return
     }
-    graph.startBatch('keyboard-paste')
-    for (const nodeData of copiedNodeData) {
-      try {
-        graph.addNode(createNewNode(nodeData) as any)
-      } catch (e) {
-        console.warn('重新生成节点失败:', e)
-      }
-    }
-    graph.stopBatch('keyboard-paste')
-    ElMessage.success('粘贴成功')
+    graph.cleanSelection?.()
+    pastedCells.forEach(cell => {
+      if (cell.isNode?.()) graph.select(cell)
+    })
+    setTimeout(() => syncPositionsFromGraph(graph, workflowData), 80)
+    ElMessage.success(`粘贴成功（${pastedCells.length}）`)
   })
 
   // g — 分组
   graph.bindKey(toBindKey(KeyboardKey[KEYBOARD.GROUP]), () => {
-    groupManager.createGroup(getSelectedNodes(graph))
+    groupManager.createGroup(getSelectedNodes(graph, selectedNodeData))
   })
 
   // ctrl+g — 取消分组
   graph.bindKey(toBindKey(KeyboardKey[KEYBOARD.UNGROUP]), e => {
     e.preventDefault()
-    const node = getSelectedNodes(graph)[0]
+    const node = getSelectedNodes(graph, selectedNodeData)[0]
     if (!node) {
       ElMessage.warning('请先选中分组节点')
       return

@@ -57,7 +57,8 @@
       "import": "./dist/typescript.mjs",
       "require": "./dist/typescript.js",
       "types": "./dist/typescript.d.ts"
-    }
+    },
+    "./doc": "./src/doc/index.ts"
   },
   "scripts": {
     "build": "tsc --noEmit && vite build",

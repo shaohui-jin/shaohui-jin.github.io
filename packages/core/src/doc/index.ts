@@ -1,0 +1,1 @@
+export { CoreDocRegistrar } from "./CoreDocRegistrar";

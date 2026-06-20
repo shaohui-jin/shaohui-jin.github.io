@@ -29,15 +29,4 @@ export const defaultLibConfig: ResolvedLibConfig = {
     radiusSm: 3,
     radiusMd: 6,
   },
-
-  table: {
-    rowHeight: 36,
-    headerHeight: 40,
-    fontSizeCell: 13,
-    fontSizeEmpty: 14,
-    headerFontWeight: 600,
-    cellFontWeight: 400,
-    minColumnWidth: 64,
-    defaultColumnWidth: 120,
-  },
 };

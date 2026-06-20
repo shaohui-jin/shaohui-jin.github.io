@@ -18,7 +18,7 @@
   "sideEffects": ["**/*.css", "**/*.scss"],
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc --noEmit -p tsconfig.lib.json && vite build --config vite.lib.config.ts && node scripts/generate-types.mjs",
+    "build": "vue-tsc --noEmit -p tsconfig.lib.json && vite build --config vite.lib.config.ts",
     "typecheck": "vue-tsc -b",
     "typecheck:strict-null": "vue-tsc --noEmit -p tsconfig.strict.json"
   },

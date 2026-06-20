@@ -17,6 +17,7 @@
   <el-drawer
     v-model="visible"
     title="测试"
+    :teleported="false"
     :before-close="closeDrawer"
     :close-on-press-escape="false"
     :close-on-click-modal="true"

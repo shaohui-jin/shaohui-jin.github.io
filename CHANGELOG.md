@@ -1,5 +1,36 @@
 # 版本变更记录
 
+## v1.1.0（2026-06-19 ~ 2026-06-20）
+
+### 组件模块
+
+#### 组件调整
+
+- **BaseTable**：表格布局默认值回收至组件内部，取消对全局 table 配置的依赖
+
+### 规则模块
+
+#### 模块调整
+
+- **jsh-rule**：移除 JsDoc 编辑器链路，仅保留 Workflow Designer 并统一抽屉交互与复制粘贴快捷键行为
+
+### 配置模块
+
+#### 配置调整
+
+- **jsh-core 配置系统**：全局配置收敛为主题配置，配置演示页改为真实 BaseTable 预览并简化应用操作
+
+### 工程化
+
+#### 架构调整
+
+- 演示壳应用迁移为 `packages/playground`，并通过 `RouteRegistry + BaseRouteRegistrar` 聚合 `jsh-comp/jsh-tool/jsh-core/jsh-rule/jsh-blog` 路由
+- 补齐文档子路径导出能力（`jsh-comp/doc`、`jsh-tool/doc`），`jsh-rule` 类型产物改为 `vite-plugin-dts` 统一生成
+
+#### 文档更新
+
+- 同步更新 `project-conventions.mdc`、`doc/组件规则流程图.md`、`doc/架构设计.md` 以匹配最新模块边界与注册规范
+
 ## v1.0.0（2026-06-06）
 
 ### 工程化

@@ -1,0 +1,63 @@
+// ============================================================
+// 演示站点设计令牌
+// 颜色继承自组件库公共变量（src/styles/variables.scss）
+// 此文件仅补充 Demo 页面特有的布局、字体、间距等变量
+// ============================================================
+@use "../../core/src/style/variables" as lib;
+
+// -- 文字色（继承组件库） --
+$doc-text-heading: lib.$lib-text-heading;
+$doc-text-primary: lib.$lib-text-primary;
+$doc-text-regular: lib.$lib-text-regular;
+$doc-text-secondary: lib.$lib-text-secondary;
+
+// -- 背景色（继承组件库） --
+$doc-bg-page: lib.$lib-bg-page;
+$doc-bg-card: lib.$lib-bg-card;
+$doc-bg-subtle: lib.$lib-bg-subtle;
+$doc-bg-muted: lib.$lib-bg-muted;
+$doc-bg-hover: lib.$lib-bg-subtle;
+
+// -- 边框色（继承组件库） --
+$doc-border-color: lib.$lib-border-color;
+$doc-border-light: lib.$lib-border-color;
+
+// -- 功能色（继承组件库） --
+$doc-color-primary: lib.$lib-color-primary;
+$doc-color-success: lib.$lib-color-success;
+$doc-color-warning: lib.$lib-color-warning;
+
+// -- 字体族（继承组件库） --
+$doc-font-family: lib.$lib-font-family;
+$doc-font-mono: "SFMono-Regular", consolas, "Liberation Mono", menlo, monospace;
+
+// -- 字号 --
+$doc-fs-xs: 12px;
+$doc-fs-sm: 13px;
+$doc-fs-base: 14px;
+$doc-fs-md: 15px;
+$doc-fs-lg: 17px;
+$doc-fs-xl: 20px;
+
+// -- 间距（用于 padding / margin / gap） --
+$doc-sp-xs: 4px;
+$doc-sp-sm: 8px;
+$doc-sp-md: 12px;
+$doc-sp-lg: 16px;
+$doc-sp-xl: 20px;
+$doc-sp-2xl: 24px;
+
+// -- 圆角 --
+$doc-radius-sm: 3px;
+$doc-radius-md: 6px;
+$doc-radius-lg: 8px;
+$doc-radius-pill: 10px;
+
+// -- 阴影 --
+$doc-shadow-sm: 0 1px 4px rgb(0 0 0 / 4%);
+$doc-shadow-md: 0 1px 6px rgb(0 0 0 / 4%);
+$doc-shadow-lg: 0 2px 12px rgb(0 0 0 / 5%);
+
+// -- 响应式断点 --
+$doc-bp-mobile: 768px;
+$doc-bp-tablet: 1024px;

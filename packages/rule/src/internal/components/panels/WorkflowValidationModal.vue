@@ -1,52 +1,48 @@
 <template>
-  <div v-if="visible" class="workflow-validation-panel">
-    <div class="panel-header">
-      <div class="panel-title">检查判断 ({{ totalErrorCount }})</div>
-      <el-button 
-        type="text" 
-        class="close-btn"
-        @click="handleClose"
-      >
-        <el-icon><Close /></el-icon>
-      </el-button>
-    </div>
-    
-    <div class="validation-content">
-      <!-- 提示信息 -->
-      <div class="validation-tip">
-        发布前请确保所有问题已解决
+  <el-drawer
+    :model-value="visible"
+    direction="rtl"
+    size="360px"
+    :with-header="false"
+    :teleported="false"
+    :modal="true"
+    :close-on-click-modal="true"
+    class="workflow-validation-drawer"
+    @close="handleClose"
+  >
+    <div class="workflow-validation-panel">
+      <div class="panel-header">
+        <div class="panel-title">检查判断 ({{ totalErrorCount }})</div>
+        <el-button type="text" class="close-btn" @click="handleClose">
+          <el-icon><Close /></el-icon>
+        </el-button>
       </div>
-      
-             <!-- 错误列表 -->
-       <div class="error-list" :class="{ 'has-scrollbar': hasScrollbar }">
-         <div
-           v-for="(errorGroup, index) in groupedErrors"
-           :key="index"
-           class="error-group-container"
-           @click="handleErrorItemClick(errorGroup.nodeId)"
-         >
-           <!-- 错误组标题 -->
-           <div class="error-group-title">
-             {{ errorGroup.nodeId }}：{{ errorGroup.nodeTitle }}
-           </div>
-           
-           <!-- 错误项列表 -->
-           <div class="error-items">
-             <div
-               v-for="(error, errorIndex) in errorGroup.errors"
-               :key="errorIndex"
-               class="error-item"
-             >
-               <el-icon class="error-icon">
-                 <CircleCloseFilled />
-               </el-icon>
-               <span class="error-text">{{ error }}</span>
-             </div>
-           </div>
-         </div>
-       </div>
+
+      <div class="validation-content">
+        <div class="validation-tip">发布前请确保所有问题已解决</div>
+
+        <div ref="errorListRef" class="error-list" :class="{ 'has-scrollbar': hasScrollbar }">
+          <div
+            v-for="(errorGroup, index) in groupedErrors"
+            :key="index"
+            class="error-group-container"
+            @click="handleErrorItemClick(errorGroup.nodeId)"
+          >
+            <div class="error-group-title">{{ errorGroup.nodeId }}：{{ errorGroup.nodeTitle }}</div>
+
+            <div class="error-items">
+              <div v-for="(error, errorIndex) in errorGroup.errors" :key="errorIndex" class="error-item">
+                <el-icon class="error-icon">
+                  <CircleCloseFilled />
+                </el-icon>
+                <span class="error-text">{{ error }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
+  </el-drawer>
 </template>
 
 <script setup lang="ts">
@@ -84,8 +80,8 @@ const emit = defineEmits<{
 /**
  * 组件状态
  */
-const dialogVisible = ref(false)
 const hasScrollbar = ref(false)
+const errorListRef = ref<HTMLElement | null>(null)
 
 /**
  * 监听visible属性变化
@@ -93,24 +89,13 @@ const hasScrollbar = ref(false)
 watch(
   () => props.visible,
   (newVisible) => {
-    dialogVisible.value = newVisible
     if (newVisible) {
-      // 弹窗显示后检查是否需要滚动条
       nextTick(() => {
         checkScrollbar()
       })
     }
   }
 )
-
-/**
- * 监听弹窗显示状态变化
- */
-watch(dialogVisible, (newVisible) => {
-  if (!newVisible) {
-    emit('close')
-  }
-})
 
 /**
  * 计算总错误数量
@@ -141,7 +126,7 @@ const groupedErrors = computed(() => {
  * 检查是否需要滚动条
  */
 const checkScrollbar = () => {
-  const errorList = document.querySelector('.error-list')
+  const errorList = errorListRef.value
   if (errorList) {
     hasScrollbar.value = errorList.scrollHeight > 600
   }
@@ -158,7 +143,6 @@ const handleErrorItemClick = (nodeId: string) => {
  * 处理关闭弹窗
  */
 const handleClose = () => {
-  dialogVisible.value = false
   emit('close')
 }
 
@@ -168,19 +152,23 @@ const handleClose = () => {
 <style scoped lang="scss">
 @use "jsh-core/style/variables" as *;
 
+.workflow-validation-drawer {
+  :deep(.el-drawer) {
+    background: $lib-bg-card;
+  }
+
+  :deep(.el-drawer__body) {
+    padding: 0;
+    height: 100%;
+  }
+}
+
 .workflow-validation-panel {
-  position: absolute;
-  right: 0;
-  top: 60px;
-  width: 350px;
-  height: calc(100% - 60px);
+  width: 100%;
+  height: 100%;
   background: $lib-bg-card;
-  border-left: 1px solid $lib-border-color;
-  box-shadow: -2px 0 8px rgb(0 0 0 / 10%);
-  z-index: 1000;
   display: flex;
   flex-direction: column;
-  border-radius: $lib-radius-md;
   overflow: hidden;
 }
 

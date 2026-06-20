@@ -36,29 +36,25 @@ packages/
     src/index.ts       ← 组件库主入口（re-export jsh-core 配置 API）
   tool/                ← jsh-tool：工具函数
     src/
-examples/              ← 演示站（独立 workspace 包）
+  rule/                ← jsh-rule：规则画布（Workflow Designer）
+    src/
+  blog/                ← jsh-blog：Markdown 内容路由
+    src/
+  playground/          ← 演示壳应用（路由聚合 + 文档渲染）
+    src/
 pnpm-workspace.yaml
 turbo.json
 package.json           ← 根编排（private）
 ```
 
-`examples/` 下按职责分离：
+`packages/playground/` 下按职责分离：
 
 ```
-examples/
+packages/playground/
   App.vue              ← 演示站入口
   style/               ← 演示站 SCSS（variables、demo、el-overrides 等）
-  type/                ← 演示站类型（ApiRow、apiTypeHints 等）
-  demo/                ← 组件 Demo 页
-    base-table/        ← 每个组件独立子目录
-    base-search/
-    config-provider/
-    ...
-    ApiTable.vue       ← 共享 Demo 辅助组件
-    DemoCodeBlock.vue  ← 代码展示 + 复制（通用）
-    DemoWidgetTabs.vue ← 预览/代码 Tab 切换
-    demoCodes.ts
-    demoCodeHighlight.ts
+  route/               ← 顶层 Tab / 分组 / 页面聚合
+  doc-render/          ← Markdown 页面渲染
 ```
 
 ## 组件分类（全局）
@@ -81,7 +77,7 @@ examples/
   3. 新建 `packages/comp/src/type/{category}.ts`（类型声明），并在 `packages/comp/src/type/index.ts` 追加 re-export
   4. `packages/comp/src/component/index.ts` 增加该分类的 export 注释区块
   5. `packages/comp/src/index.ts` 追加具名导出、`export type` 及 `components` 数组注册（该分类首个对外组件时）
-  6. 若新目录对应新的 Demo 菜单分组，更新 `examples/App.vue` 新增 `el-sub-menu` 及菜单项
+  6. 若新目录对应新的 Demo 菜单分组，更新 `packages/comp/src/doc/CompDocRegistrar.ts`（分组）与 `packages/playground/App.vue`（展示）
   7. `doc/组件规则流程图.md` 同步更新流程图
   - 此后硬约束以上述更新后的目录列表为准
   - `doc/架构设计.md`、`CHANGELOG.md` **不在此流程自动更新**，仅当开发者明确要求记录文档/变更时再维护
@@ -94,11 +90,17 @@ examples/
 ## 路径引用规范
 
 - **包内**（`packages/comp`、`packages/core`）：使用 `@/` alias（`@` 指向该包 `src/`）
-- **跨包**：使用 workspace 包名 `jsh-comp`、`jsh-core`、`jsh-tool`（禁止 `../../../`）
+- **跨包**：使用 workspace 包名 `jsh-comp`、`jsh-core`、`jsh-tool`、`jsh-rule`、`jsh-blog`（禁止 `../../../`）
 - 同目录内用 `./` 相对引用
-- SCSS：`packages/comp` 内 `@use "@/style/variables"`；`examples` 通过 sass `loadPaths` 继承 `jsh-core` 变量
-- `examples/` 引用组件库使用 `jsh-comp` / `jsh-core` / `jsh-tool`
+- SCSS：`packages/comp` 内 `@use "@/style/variables"`；`packages/playground` 通过 sass `loadPaths` 继承 `jsh-core` 变量
+- `packages/playground` 引用组件库使用 `jsh-comp` / `jsh-core` / `jsh-tool` / `jsh-rule` / `jsh-blog`
 - 唯一例外：`node_modules` 运行时资源引用和项目根文件（如 `CHANGELOG.md`）
+
+## 路由注册规范
+
+- 需要在 `packages/playground` 展示页面的模块，必须通过继承 `jsh-core` 的 `BaseRouteRegistrar` 提供注册器
+- 模块对外统一导出 `*RouteRegistrar`，壳应用只做聚合（`packages/playground/route/moduleRegistrars.ts`），不复制业务模块的路由定义
+- `RouteRegistry` 注册阶段会校验注册器是否为 `BaseRouteRegistrar` 实例，非基类实例不予注册
 
 ## 代码风格
 
@@ -116,7 +118,7 @@ examples/
 - 相同功能/UI 不允许重复实现，必须提取为通用组件复用
 - 代码展示 + 复制功能统一使用组件库的 `CodeBlock` 组件，不要自行实现复制逻辑
 - 预览/代码切换容器统一使用组件库的 `WidgetTabs` 组件（默认 `flush: true`）
-- `examples/demo/DemoCodeBlock.vue` 和 `DemoWidgetTabs.vue` 是 Demo 站的薄包装层
+- `packages/comp/src/doc/demo/DemoCodeBlock.vue` 和 `DemoWidgetTabs.vue` 是 Demo 站的薄包装层
 - 新增 Demo 辅助组件前，先检查 `packages/comp/src/component/basic/` 下是否已有可复用的组件
 
 ## npm 包导出规范
@@ -168,7 +170,7 @@ import "jsh-comp/style.css";
 
 ## 组件一站式创建规范
 
-> **适用前提**：新增或修改 `packages/comp/src/component/` 下组件、同步 Demo 文档、更新 `examples/App.vue` 菜单时，必须完整遵循本节。
+> **适用前提**：新增或修改 `packages/comp/src/component/` 下组件、同步 Demo 文档、更新 `packages/comp/src/doc/CompDocRegistrar.ts` 路由时，必须完整遵循本节。
 
 - **新增**顶层对外组件：流程为 **先确认分类 → 再创建代码 → 最后同步 Demo + 导出**
 - **修改**已有顶层组件（修 bug、调样式/逻辑、API 小改）：**跳过分类询问**，仍须遵守代码规范、三端适配；若 Props/Events 变更则同步 Demo
@@ -275,11 +277,11 @@ const emit = defineEmits<XxxEmits>();
 
 #### 6.1 文件与导航
 
-- 文档页：`examples/demo/{component-name}/Demo{ComponentName}.vue`
-- 在 `examples/App.vue` 中：
-  - `pageMap` 增加路由 key → Demo 组件
-  - 对应 `el-sub-menu` 下增加 `el-menu-item`（CRUD / 基础 / 视觉 / 交互 分组与组件分类一致）
-- 菜单 `index` 用 kebab-case，如 `base-search-field`
+- 文档页：`packages/comp/src/doc/demo/{component-name}/Demo{ComponentName}.vue`
+- 在 `packages/comp/src/doc/CompDocRegistrar.ts` 中：
+  - `docLoaders` 增加路由 key → Demo 组件
+  - `docRouteMeta` 增加菜单项（CRUD / 基础 / 视觉 / 交互 分组与组件分类一致）
+- 路由 key 用 kebab-case，如 `base-search-field`
 
 #### 6.2 页面结构（固定顺序）
 
@@ -307,7 +309,7 @@ const emit = defineEmits<XxxEmits>();
 </div>
 ```
 
-- 样式：`@use "../../style/variables" as *;` + `@use "../../style/demo";`
+- 样式：`@use "../style/variables" as *;` + `@use "../style/demo";`
 - 禁止硬编码文档色值；类型标签色由 `demo.scss` 的 `.api-type` 跟随 theme 主色
 - 补充说明统一标题为 **特殊说明**，列表使用 `api-notes-list`
 
@@ -330,7 +332,7 @@ const emit = defineEmits<XxxEmits>();
 
 **`apiTypeHints.ts`**
 
-- Props / Events 中出现 **opaque 类型名**时，必须在 `examples/type/apiTypeHints.ts` 注册
+- Props / Events 中出现 **opaque 类型名**时，必须在 `packages/comp/src/doc/type/apiTypeHints.ts` 注册
 - 字面量联合类型写完整即可，无需注册
 
 #### 6.3 Tab 与容器
@@ -373,7 +375,7 @@ const emit = defineEmits<XxxEmits>();
 #### 6.6 Demo 检查清单
 
 - [ ] `Demo{ComponentName}.vue` 已创建
-- [ ] `App.vue` 菜单与 pageMap 已注册
+- [ ] `CompDocRegistrar` 路由与分组已注册
 - [ ] 演示区使用 `DemoWidgetTabs`（BaseTable 除外），`demoCodes.ts` 已注册对应条目
 - [ ] 有事件反馈时用 `#footer` + `widget-hint`
 - [ ] 使用 `ApiTable` 渲染 API

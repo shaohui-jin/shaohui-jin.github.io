@@ -1,2 +1,3 @@
-export { default as JsDocEditor } from "./component/js-doc-editor/JsDocEditor.vue";
-export { default as WorkflowDesigner } from "./component/workflow-designer/WorkflowDesigner.vue";
+export { default as WorkflowDesigner } from "./page/RuleWorkflowPage.vue";
+export { default as RuleWorkflowDesignerCore } from "./component/workflow-designer/WorkflowDesigner.vue";
+export { RuleRouteRegistrar } from "./route/RuleRouteRegistrar";

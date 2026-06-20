@@ -63,7 +63,6 @@ export {
 export type {
   LibConfig,
   LibThemeConfig,
-  LibTableConfig,
   ResolvedLibConfig,
   PersistOptions,
 } from "jsh-core";

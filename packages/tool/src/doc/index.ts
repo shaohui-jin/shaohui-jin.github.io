@@ -1,0 +1,1 @@
+export { ToolDocRegistrar } from "./ToolDocRegistrar";

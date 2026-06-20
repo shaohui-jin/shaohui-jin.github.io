@@ -10,21 +10,18 @@ defineOptions({ name: "ConfigProvider" });
 
 const props = defineProps<{
   theme?: LibConfig["theme"];
-  table?: LibConfig["table"];
 }>();
 
 const parent = inject<ResolvedLibConfig>(LIB_CONFIG_KEY, defaultLibConfig);
 
 const merged = reactive<ResolvedLibConfig>({
   theme: { ...parent.theme, ...props.theme },
-  table: { ...parent.table, ...props.table },
 });
 
 watch(
-  [() => props.theme, () => props.table, () => ({ ...parent.theme }), () => ({ ...parent.table })],
+  [() => props.theme, () => ({ ...parent.theme })],
   () => {
     Object.assign(merged.theme, parent.theme, props.theme);
-    Object.assign(merged.table, parent.table, props.table);
   },
   { deep: true },
 );

@@ -13,6 +13,11 @@
       "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
+    "./doc": {
+      "import": "./dist/doc/index.mjs",
+      "require": "./dist/doc/index.js",
+      "types": "./dist/doc/index.d.ts"
+    },
     "./style/variables.scss": "./src/style/variables.scss",
     "./style/*": "./src/style/*"
   },

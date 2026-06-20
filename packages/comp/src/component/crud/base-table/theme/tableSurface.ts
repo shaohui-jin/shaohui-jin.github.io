@@ -9,15 +9,22 @@ export const TABLE_TOOLTIP_POPPER_CLASS = "crud-base-table-tooltip";
 
 /**
  * 五种 BaseTable 模式共用的布局默认值（行高、列宽与 BaseTable props 默认一致）。
- * @deprecated 使用 config.table 代替
  */
 export const tableLayoutDefaults = {
-  rowHeight: defaultLibConfig.table.rowHeight,
-  headerHeight: defaultLibConfig.table.headerHeight,
-  minColumnWidth: defaultLibConfig.table.minColumnWidth,
-  defaultColumnWidth: defaultLibConfig.table.defaultColumnWidth,
+  rowHeight: 36,
+  headerHeight: 40,
+  minColumnWidth: 64,
+  defaultColumnWidth: 120,
   selectionColumnWidth: 40,
   indexColumnWidth: 52,
+} as const;
+
+/** BaseTable 字体相关默认值（不再走全局配置） */
+const tableTypographyDefaults = {
+  headerFontWeight: 600,
+  cellFontWeight: 400,
+  fontSizeCell: 13,
+  fontSizeEmpty: 14,
 } as const;
 
 /**
@@ -46,7 +53,7 @@ export interface TableSurfaceConfig {
 
 /** 从 ResolvedLibConfig 派生 table 绘制所需的 surface 配置 */
 export function getTableSurface(config: ResolvedLibConfig = defaultLibConfig): TableSurfaceConfig {
-  const { theme, table } = config;
+  const { theme } = config;
   return {
     surfaceBg: theme.bgCard,
     headerBg: theme.bgPage,
@@ -60,10 +67,10 @@ export function getTableSurface(config: ResolvedLibConfig = defaultLibConfig): T
     checkboxBorder: theme.borderMedium,
     checkboxCheckedBg: theme.colorPrimary,
     fontFamily: theme.fontFamily,
-    headerFontWeight: table.headerFontWeight,
-    cellFontWeight: table.cellFontWeight,
-    fontSizeCell: table.fontSizeCell,
-    fontSizeEmpty: table.fontSizeEmpty,
+    headerFontWeight: tableTypographyDefaults.headerFontWeight,
+    cellFontWeight: tableTypographyDefaults.cellFontWeight,
+    fontSizeCell: tableTypographyDefaults.fontSizeCell,
+    fontSizeEmpty: tableTypographyDefaults.fontSizeEmpty,
     neutralLamp: "rgba(203, 206, 212, 1)",
   };
 }
@@ -104,8 +111,8 @@ export function tableSurfaceCssVars(
   headerHeight?: number,
 ): Record<string, string> {
   const t = getTableSurface(config);
-  const rh = rowHeight ?? config.table.rowHeight;
-  const hh = headerHeight ?? config.table.headerHeight;
+  const rh = rowHeight ?? tableLayoutDefaults.rowHeight;
+  const hh = headerHeight ?? tableLayoutDefaults.headerHeight;
   return {
     "--crud-bt-surface-bg": t.surfaceBg,
     "--crud-bt-header-bg": t.headerBg,

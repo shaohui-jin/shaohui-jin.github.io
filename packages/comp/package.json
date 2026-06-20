@@ -23,6 +23,8 @@
       "require": "./dist/type/*.js",
       "types": "./dist/type/*.d.ts"
     },
+    "./doc": "./src/doc/index.ts",
+    "./doc/style/*": "./src/doc/style/*",
     "./style.css": "./dist/style.css"
   },
   "sideEffects": ["**/*.css", "**/*.scss"],

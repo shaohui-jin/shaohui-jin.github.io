@@ -24,13 +24,11 @@ export function useLibConfig(
     if (!overrides) {
       return {
         theme: { ...base.theme },
-        table: { ...base.table },
       };
     }
 
     return {
       theme: { ...base.theme, ...overrides.theme },
-      table: { ...base.table, ...overrides.table },
     };
   });
 

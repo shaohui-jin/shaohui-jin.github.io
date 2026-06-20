@@ -7,7 +7,12 @@
     "jsxImportSource": "vue",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "jsh-comp": ["src/index.ts"],
+      "jsh-comp/type": ["src/type/index.ts"],
+      "jsh-comp/type/*": ["src/type/*"],
+      "jsh-comp/doc": ["src/doc/index.ts"],
+      "jsh-comp/doc/style/*": ["src/doc/style/*"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "env.d.ts"]

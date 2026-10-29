@@ -10,12 +10,14 @@
     "typecheck": "vue-tsc -b --noEmit"
   },
   "dependencies": {
+    "@vue/repl": "^4.7.2",
     "jsh-blog": "workspace:*",
     "jsh-comp": "workspace:*",
     "jsh-core": "workspace:*",
     "jsh-rule": "workspace:*",
     "jsh-tool": "workspace:*",
-    "markdown-it": "^14.2.0"
+    "markdown-it": "^14.2.0",
+    "mermaid": "^12.2.0"
   },
   "devDependencies": {
     "@element-plus/icons-vue": "^2.3.2",

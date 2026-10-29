@@ -4,6 +4,7 @@ import "element-plus/dist/index.css";
 import { createCompLib, elementPlusLocale } from "jsh-core";
 import { BaseTable } from "jsh-comp";
 import "jsh-rule/style.css";
+import "highlight.js/styles/github.css";
 import App from "./App.vue";
 
 const lib = createCompLib({}, { enabled: true, key: "comp-lib-demo" });

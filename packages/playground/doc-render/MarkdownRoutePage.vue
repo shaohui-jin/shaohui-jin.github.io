@@ -15,13 +15,15 @@ defineProps<{
 </template>
 
 <style scoped lang="scss">
+@use "../style/variables" as *;
+
 .markdown-route-page {
   max-width: 880px;
 }
 
 .markdown-route-page__meta {
-  margin-bottom: 12px;
-  font-size: 12px;
+  margin-bottom: $doc-sp-md;
+  font-size: $doc-fs-xs;
   opacity: 0.7;
 }
 </style>

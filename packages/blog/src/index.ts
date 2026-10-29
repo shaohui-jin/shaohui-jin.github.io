@@ -1,3 +1,3 @@
 export { BlogRouteRegistrar } from "./route/BlogRouteRegistrar";
-export { blogDocConfigs } from "./content";
-export type { BlogDocConfig } from "./content";
+export { blogDocConfigs, blogGroups } from "./content";
+export type { BlogDocConfig, BlogDocTier, BlogGroupConfig, BlogGroupKey } from "./content";

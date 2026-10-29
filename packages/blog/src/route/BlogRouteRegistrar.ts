@@ -1,13 +1,13 @@
 import { BaseRouteRegistrar } from "jsh-core";
 import type { TopTabMeta } from "jsh-core";
-import { blogDocConfigs } from "../content";
+import { blogDocConfigs, blogGroups } from "../content";
 
 const blogTopTab: TopTabMeta = {
   key: "blog",
   label: "博客",
   mode: "menu",
   order: 70,
-  description: "Markdown 内容与迁移文档",
+  description: "历史博客内容",
 };
 
 export class BlogRouteRegistrar extends BaseRouteRegistrar {
@@ -15,22 +15,16 @@ export class BlogRouteRegistrar extends BaseRouteRegistrar {
 
   register(registry: import("jsh-core").RouteRegistry): void {
     this.registerTopTabs(registry, [blogTopTab]);
-    this.registerGroups(registry, [
-      {
+    this.registerGroups(
+      registry,
+      blogGroups.map((group) => ({
         tabKey: "blog",
-        key: "overview",
-        title: "概览",
-        accent: "#3f51b5",
-        order: 10,
-      },
-      {
-        tabKey: "blog",
-        key: "migration",
-        title: "迁移",
-        accent: "#009688",
-        order: 20,
-      },
-    ]);
+        key: group.key,
+        title: group.title,
+        accent: group.accent,
+        order: group.order,
+      })),
+    );
     this.registerRoutes(registry, [
       ...blogDocConfigs.map((doc) => ({
         key: doc.key,

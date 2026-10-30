@@ -1,0 +1,818 @@
+// ============================================================
+// 门户首页样式
+// ------------------------------------------------------------
+// 说明：
+// · 颜色 / 圆角 / 字号全部走 variables.scss 里的 $doc-* 令牌，
+//   这些令牌本身是 var(--comp-*, fallback)，所以系统主题切换后
+//   首页会自动跟着变，不需要在这里再写一套主题分支。
+// · 间距统一走下面 :root 里的 --sp-* 刻度，页面只认 6 个语义变量。
+// · 全局类名统一以 home- 开头，避免和文档页的 .card / .section 撞车。
+// ============================================================
+@use "../../style/variables" as *;
+
+// 首页自己开一份 border-box。
+// 站点没有全局 reset，Element Plus 只在自己的组件上处理 box-sizing，
+// 而首页的 max-width + padding 组合必须按 border-box 算才能和设计稿对上
+// （否则 .home-body 会比 hero 内层宽出两侧 padding）。
+.doc-content--home,
+.doc-content--home *,
+.doc-content--home *::before,
+.doc-content--home *::after {
+  box-sizing: border-box;
+}
+
+:root {
+  /* ── 间距刻度 ── */
+  --sp-1: #{$doc-sp-1};
+  --sp-2: #{$doc-sp-2};
+  --sp-3: #{$doc-sp-3};
+  --sp-4: #{$doc-sp-4};
+  --sp-5: #{$doc-sp-5};
+  --sp-6: #{$doc-sp-6};
+  --sp-7: #{$doc-sp-7};
+  --sp-8: #{$doc-sp-8};
+  --sp-9: #{$doc-sp-9};
+  --sp-10: #{$doc-sp-10};
+
+  /* ── 语义化间距：整页只用这 7 个 ── */
+  --home-max: 1120px;
+  --home-pad-x: var(--sp-6); /* 左右留白 24 */
+  // hero → 首块要承接整屏大图的收尾，留白比区块之间大一档
+  --home-gap-hero: var(--sp-10); /* hero → 首块 80 */
+  --home-gap-section: var(--sp-9); /* 区块之间 64 */
+  --home-gap-head: var(--sp-6); /* 区块头 → 内容 24 */
+  --home-gap-card: var(--sp-4); /* 卡片之间 16 */
+  --home-pad-card: var(--sp-5); /* 卡片内边距 20 */
+}
+
+// ============================================================
+// HERO
+// ------------------------------------------------------------
+// 高度用 height:100% 而不是 calc(100vh - 60px)：
+// .doc-main 是 flex 容器，.doc-content 被 stretch 后高度
+// 已经等于「视口 − 顶栏 − 移动端底栏」，百分比继承即可，
+// 这样移动端底栏出现时不需要再改一次高度。
+// ============================================================
+.home-hero {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  height: 100%;
+  min-height: 520px;
+  overflow: hidden;
+  background-color: #e8eef5;
+  background-image: var(--home-hero-image);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+// 双层遮罩 —— 文案底部对齐后，压暗下半部而不是左半边：
+// · 照片主体在上半部，保持原样不压暗
+// · 下半部从 22% 处开始加深，到 100% 时 78%，给文字扎实的底色
+// · 左侧再补一层轻度横向渐变，避免文字左缘压在过亮的天光上
+// 注意：这张照片左侧与下半部本身接近纯白，遮罩一旦过重会把细节
+// 压成一片平灰（看起来像图片没铺满），所以强度要克制。
+.home-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      90deg,
+      rgb(15 23 42 / 46%) 0%,
+      rgb(15 23 42 / 20%) 32%,
+      rgb(15 23 42 / 0%) 54%
+    ),
+    linear-gradient(
+      180deg,
+      rgb(15 23 42 / 8%) 0%,
+      rgb(15 23 42 / 0%) 22%,
+      rgb(15 23 42 / 58%) 68%,
+      rgb(15 23 42 / 78%) 100%
+    );
+}
+
+.home-hero__inner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: var(--home-max);
+  margin: 0 auto;
+  // 留出 14vh 让文案不贴视口下沿
+  padding: 0 var(--home-pad-x) clamp(48px, 14vh, 160px);
+}
+
+.home-hero__logo {
+  width: 104px;
+  height: 104px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 10px 28px rgb(15 23 42 / 26%);
+}
+
+.home-hero__title {
+  margin: var(--sp-6) 0 0;
+  font-size: clamp(26px, 3.6vw, 40px);
+  font-weight: 600;
+  line-height: 1.32;
+  letter-spacing: 0.04em;
+  color: #fff;
+  text-shadow: 0 2px 18px rgb(15 23 42 / 50%);
+}
+
+.home-hero__subtitle {
+  margin: var(--sp-3) 0 0;
+  font-size: $doc-fs-md;
+  letter-spacing: 0.08em;
+  color: rgb(255 255 255 / 90%);
+  text-shadow: 0 1px 10px rgb(15 23 42 / 45%);
+
+  span {
+    display: inline-block;
+  }
+
+  i {
+    margin: 0 var(--sp-3);
+    font-style: normal;
+    color: rgb(255 255 255 / 42%);
+  }
+}
+
+.home-hero__meta {
+  margin: var(--sp-5) 0 0;
+  font-size: $doc-fs-sm;
+  letter-spacing: 0.06em;
+  color: rgb(255 255 255 / 66%);
+
+  b {
+    font-weight: 600;
+    color: rgb(255 255 255 / 92%);
+    font-variant-numeric: tabular-nums;
+  }
+
+  i {
+    margin: 0 var(--sp-2);
+    font-style: normal;
+    color: rgb(255 255 255 / 30%);
+  }
+}
+
+// 滚动提示只留一个箭头，不再和文案抢注意力
+.home-hero__scroll {
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  bottom: var(--sp-6);
+  transform: translateX(-50%);
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: rgb(255 255 255 / 72%);
+  cursor: pointer;
+  transition: color 0.2s, background-color 0.2s;
+
+  &:hover {
+    color: #fff;
+    background: rgb(255 255 255 / 12%);
+  }
+
+  svg {
+    animation: home-hero-hint 2.4s ease-in-out infinite;
+  }
+}
+
+@keyframes home-hero-hint {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.6;
+  }
+
+  50% {
+    transform: translateY(4px);
+    opacity: 1;
+  }
+}
+
+// ============================================================
+// 通用区块
+// ============================================================
+.home-body {
+  max-width: var(--home-max);
+  margin: 0 auto;
+  padding: var(--home-gap-hero) var(--home-pad-x) 0;
+}
+
+.home-section {
+  margin-bottom: var(--home-gap-section);
+
+  &:last-of-type {
+    margin-bottom: 0;
+  }
+}
+
+.home-section__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  margin-bottom: var(--home-gap-head);
+}
+
+.home-section__title {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0;
+  font-size: $doc-fs-lg;
+  font-weight: 600;
+  line-height: 1.4;
+  color: $doc-text-heading;
+
+  &::before {
+    content: "";
+    flex: none;
+    width: 3px;
+    height: 16px;
+    border-radius: 2px;
+    background: $doc-color-primary;
+    transition: background-color 0.2s;
+  }
+}
+
+.home-section__desc {
+  margin: 6px 0 0;
+  // 3px 竖条 + 8px 间距，与标题文字左对齐
+  padding-left: 11px;
+  font-size: $doc-fs-sm;
+  line-height: 1.5;
+  color: $doc-text-secondary;
+}
+
+.home-section__more {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: 0 0 2px;
+  border: none;
+  background: transparent;
+  font-size: $doc-fs-sm;
+  color: $doc-text-secondary;
+  cursor: pointer;
+  transition: color 0.2s;
+
+  &:hover {
+    color: $doc-color-primary;
+  }
+}
+
+// 通用卡片
+.home-card {
+  background: $doc-bg-card;
+  border: 1px solid $doc-border-color;
+  border-radius: $doc-radius-card;
+  box-shadow: $doc-shadow-md;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s,
+    background-color 0.2s;
+}
+
+a.home-card,
+button.home-card {
+  display: flex;
+  flex-direction: column;
+  color: inherit;
+  text-decoration: none;
+
+  &:hover {
+    border-color: $doc-color-primary;
+    box-shadow: $doc-shadow-lg;
+    transform: translateY(-1px);
+  }
+}
+
+// ============================================================
+// 关于我
+// ============================================================
+.home-profile {
+  display: grid;
+  grid-template-columns: 88px 1fr auto;
+  align-items: center;
+  gap: var(--sp-6);
+  padding: var(--sp-6);
+  background: $doc-bg-card;
+  border: 1px solid $doc-border-color;
+  border-radius: $doc-radius-card;
+  box-shadow: $doc-shadow-md;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+// 底层渐变 + 文字兜底，GIF 加载失败也不会塌成空白
+.home-profile__avatar {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 88px;
+  height: 88px;
+  overflow: hidden;
+  border: 1px solid $doc-border-color;
+  border-radius: 50%;
+  font-size: 28px;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, #{$doc-color-primary}, #{$doc-color-success});
+
+  img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.home-profile__main {
+  min-width: 0;
+}
+
+.home-profile__name-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.home-profile__name {
+  margin: 0;
+  font-size: $doc-fs-xl;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: $doc-text-heading;
+}
+
+.home-profile__role {
+  padding: 1px var(--sp-2);
+  font-size: $doc-fs-xs;
+  color: $doc-color-primary;
+  background: color-mix(in srgb, #{$doc-color-primary} 10%, transparent);
+  border-radius: $doc-radius-tag;
+}
+
+.home-profile__bio {
+  margin: var(--sp-2) 0 0;
+  font-size: $doc-fs-base;
+  line-height: 1.7;
+  color: $doc-text-regular;
+}
+
+.home-profile__socials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+}
+
+.home-social {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  font-size: $doc-fs-xs;
+  color: $doc-text-regular;
+  text-decoration: none;
+  background: $doc-bg-subtle;
+  border: 1px solid $doc-border-color;
+  border-radius: 999px;
+  transition: color 0.2s, border-color 0.2s, background-color 0.2s;
+
+  &:hover {
+    color: $doc-color-primary;
+    border-color: $doc-color-primary;
+    background: color-mix(in srgb, #{$doc-color-primary} 6%, transparent);
+  }
+}
+
+.home-profile__aside {
+  flex: none;
+  padding-left: var(--sp-6);
+  border-left: 1px solid $doc-border-color;
+  text-align: right;
+}
+
+.home-profile__aside-label {
+  display: block;
+  font-size: $doc-fs-xs;
+  letter-spacing: 0.06em;
+  color: $doc-text-secondary;
+}
+
+.home-profile__aside-value {
+  display: block;
+  margin-top: 2px;
+  font-size: $doc-fs-base;
+  font-weight: 600;
+  color: $doc-text-primary;
+  font-variant-numeric: tabular-nums;
+}
+
+.home-profile__aside-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  margin-top: var(--sp-3);
+  font-size: $doc-fs-xs;
+  color: $doc-text-secondary;
+  text-decoration: none;
+  transition: color 0.2s;
+
+  &:hover {
+    color: $doc-color-primary;
+  }
+}
+
+// ============================================================
+// 个人项目
+// ============================================================
+.home-projects {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--home-gap-card);
+}
+
+.home-project {
+  padding: var(--home-pad-card);
+  min-height: 148px;
+}
+
+.home-project__top {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-width: 0;
+}
+
+.home-project__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: $doc-radius-inner;
+  color: var(--accent, #{$doc-color-primary});
+  background: color-mix(in srgb, var(--accent, #{$doc-color-primary}) 12%, transparent);
+}
+
+.home-project__name {
+  font-size: $doc-fs-md;
+  font-weight: 600;
+  line-height: 1.4;
+  color: $doc-text-heading;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home-project__desc {
+  margin: var(--sp-3) 0 0;
+  font-size: $doc-fs-sm;
+  line-height: 1.65;
+  color: $doc-text-regular;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.home-project__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  margin-top: auto;
+  padding-top: var(--sp-4);
+}
+
+.home-project__host {
+  font-size: $doc-fs-xs;
+  color: $doc-text-secondary;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home-project__go {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: $doc-fs-xs;
+  color: $doc-text-secondary;
+  transition: color 0.2s;
+}
+
+.home-project:hover .home-project__go {
+  color: $doc-color-primary;
+}
+
+// 更多项目：虚线 + 置灰，与「敬请期待」同一套占位语言
+.home-project--more {
+  border-style: dashed;
+  background: $doc-bg-subtle;
+  box-shadow: none;
+
+  .home-project__name {
+    color: $doc-text-regular;
+  }
+
+  &:hover {
+    border-color: $doc-text-secondary;
+    box-shadow: none;
+    transform: none;
+  }
+
+  &:hover .home-project__go {
+    color: $doc-text-secondary;
+  }
+}
+
+// ============================================================
+// 最新文章
+// ============================================================
+.home-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-4);
+}
+
+.home-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border: 1px solid $doc-border-color;
+  border-radius: 999px;
+  background: $doc-bg-card;
+  font-size: $doc-fs-xs;
+  color: $doc-text-regular;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s, background-color 0.2s;
+
+  &:hover {
+    color: $doc-color-primary;
+    border-color: $doc-color-primary;
+  }
+
+  &.is-active {
+    color: #fff;
+    background: $doc-color-primary;
+    border-color: $doc-color-primary;
+  }
+
+  // 分组筛选片：点状标识，避免整片染色过重
+  &--group::before {
+    content: "";
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    margin-right: 6px;
+    border-radius: 50%;
+    background: var(--accent, #{$doc-text-secondary});
+    vertical-align: 1px;
+  }
+}
+
+.home-articles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--home-gap-card);
+}
+
+.home-article {
+  padding: var(--home-pad-card);
+  min-height: 156px;
+}
+
+.home-article__tag {
+  align-self: flex-start;
+  padding: 1px var(--sp-2);
+  font-size: $doc-fs-xs;
+  line-height: 1.6;
+  color: var(--accent, #{$doc-color-primary});
+  background: color-mix(in srgb, var(--accent, #{$doc-color-primary}) 10%, transparent);
+  border-radius: $doc-radius-tag;
+}
+
+.home-article__title {
+  margin: var(--sp-3) 0 0;
+  font-size: $doc-fs-base;
+  font-weight: 600;
+  line-height: 1.5;
+  color: $doc-text-heading;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  transition: color 0.2s;
+}
+
+.home-article:hover .home-article__title {
+  color: $doc-color-primary;
+}
+
+.home-article__excerpt {
+  margin: var(--sp-2) 0 0;
+  font-size: $doc-fs-sm;
+  line-height: 1.65;
+  color: $doc-text-secondary;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.home-article__date {
+  margin-top: auto;
+  padding-top: var(--sp-3);
+  font-size: $doc-fs-xs;
+  color: $doc-text-secondary;
+  font-variant-numeric: tabular-nums;
+}
+
+.home-articles__empty {
+  grid-column: 1 / -1;
+  padding: var(--sp-8) 0;
+  text-align: center;
+  font-size: $doc-fs-sm;
+  color: $doc-text-secondary;
+}
+
+// ============================================================
+// 页脚
+// ============================================================
+.home-footer {
+  padding: var(--home-gap-section) var(--home-pad-x) var(--sp-8);
+  text-align: center;
+  font-size: $doc-fs-xs;
+  letter-spacing: 0.06em;
+  color: $doc-text-secondary;
+}
+
+.home-footer__line {
+  width: 40px;
+  height: 1px;
+  margin: 0 auto var(--sp-4);
+  background: $doc-border-medium;
+}
+
+.home-footer__sep {
+  margin: 0 var(--sp-2);
+  color: $doc-border-medium;
+}
+
+// ============================================================
+// 三端适配
+// · ≥1025px  PC     —— 常规字号
+// · 769~1024 平板   —— 收紧留白与栅格
+// · ≤768     手机   —— 单列，hero 降低最小高度
+// ============================================================
+@media (max-width: $doc-bp-tablet) {
+  :root {
+    --home-pad-x: var(--sp-5); /* 20 */
+    --home-gap-hero: var(--sp-9); /* 64 */
+    --home-gap-section: var(--sp-8); /* 48 */
+    --home-pad-card: var(--sp-4); /* 16 */
+  }
+
+  .home-profile {
+    grid-template-columns: 72px 1fr;
+    gap: var(--sp-4);
+    padding: var(--sp-5);
+    // 两行布局后头像若仍垂直居中会漂到中部，改顶部对齐
+    align-items: start;
+  }
+
+  .home-profile__avatar {
+    width: 72px;
+    height: 72px;
+    font-size: 24px;
+  }
+
+  .home-profile__aside {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: var(--sp-4);
+    padding-left: 0;
+    padding-top: var(--sp-4);
+    border-left: none;
+    border-top: 1px solid $doc-border-color;
+    text-align: left;
+  }
+
+  .home-profile__aside-link {
+    margin-top: 0;
+  }
+
+  .home-projects,
+  .home-articles {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: $doc-bp-mobile) {
+  :root {
+    --home-pad-x: var(--sp-4); /* 16 */
+    // 单列布局内容密度高，48 已是下限；hero 那档也一并收平，免得首块被推太远
+    --home-gap-hero: var(--sp-8); /* 48 */
+    --home-gap-section: var(--sp-8); /* 48 */
+  }
+
+  .home-hero {
+    min-height: 420px;
+  }
+
+  // 窄屏文字铺满宽度，横向渐变失效，改为纯纵向压暗
+  .home-hero::before {
+    background: linear-gradient(
+      180deg,
+      rgb(15 23 42 / 6%) 0%,
+      rgb(15 23 42 / 10%) 30%,
+      rgb(15 23 42 / 62%) 68%,
+      rgb(15 23 42 / 82%) 100%
+    );
+  }
+
+  .home-hero__inner {
+    padding: 0 var(--home-pad-x) clamp(32px, 10vh, 96px);
+  }
+
+  .home-hero__logo {
+    width: 76px;
+    height: 76px;
+  }
+
+  .home-hero__title {
+    margin-top: var(--sp-4);
+  }
+
+  .home-hero__subtitle {
+    font-size: $doc-fs-base;
+    letter-spacing: 0.04em;
+
+    i {
+      display: none;
+    }
+
+    span {
+      display: block;
+    }
+  }
+
+  .home-hero__meta {
+    margin-top: var(--sp-4);
+  }
+
+  .home-hero__scroll {
+    display: none;
+  }
+
+  .home-section__head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--sp-2);
+  }
+
+  .home-projects,
+  .home-articles {
+    grid-template-columns: 1fr;
+  }
+
+  .home-project,
+  .home-article {
+    min-height: 0;
+  }
+
+  .home-profile {
+    grid-template-columns: 56px 1fr;
+    padding: var(--sp-4);
+  }
+
+  .home-profile__avatar {
+    width: 56px;
+    height: 56px;
+    font-size: 20px;
+  }
+
+  .home-profile__name {
+    font-size: $doc-fs-lg;
+  }
+
+  .home-profile__name-row {
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+  }
+}

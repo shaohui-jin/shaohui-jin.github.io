@@ -10,6 +10,8 @@ export class CoreDocRegistrar extends BaseRouteRegistrar {
         label: "系统",
         mode: "menu",
         order: 999,
+        // 主题配置 / 变更记录改由门户首页右上角入口进入，不再占顶部导航位
+        hidden: true,
       },
     ]);
 

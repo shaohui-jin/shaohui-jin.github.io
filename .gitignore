@@ -10,7 +10,10 @@ dist-playground
 !.vscode/settings.json
 coverage
 *.tsbuildinfo
+# Vite 加载 TS 配置时在配置旁生成的临时副本，改一次 vite.config.ts 就多一个
+*.timestamp-*.mjs
 .env
 .env.*
 /.turbo/
 /.turbo/cache/
+/.workbuddy-ai/

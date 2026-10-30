@@ -1,104 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import changelogRaw from "../../../../CHANGELOG.md?raw";
-
-interface ChangeItem {
-  label: string;
-  text: string;
-}
-
-interface ChangeGroup {
-  type: string;
-  items: ChangeItem[];
-}
-
-interface ChangeModule {
-  name: string;
-  groups: ChangeGroup[];
-}
-
-interface VersionBlock {
-  version: string;
-  date: string;
-  modules: ChangeModule[];
-}
-
-function getGroupColor(type: string): string {
-  if (type.includes("新增")) return "#10b981";
-  if (type.includes("调整") || type.includes("修改")) return "#4366f1";
-  if (type.includes("修复")) return "#f59e0b";
-  if (type.includes("移除") || type.includes("删除")) return "#ef4444";
-  return "#94a3b8";
-}
-
-function parseChangelog(raw: string): VersionBlock[] {
-  const blocks: VersionBlock[] = [];
-  const lines = raw.split("\n");
-  let ver: VersionBlock | null = null;
-  let mod: ChangeModule | null = null;
-  let grp: ChangeGroup | null = null;
-
-  for (const line of lines) {
-    const vMatch = line.match(/^## (v[\d.]+)(?:[（(](.+?)[）)])?/);
-    if (vMatch) {
-      ver = { version: vMatch[1], date: vMatch[2] ?? "", modules: [] };
-      blocks.push(ver);
-      mod = null;
-      grp = null;
-      continue;
-    }
-    if (!ver) continue;
-
-    const h3 = line.match(/^### (.+)/);
-    if (h3) {
-      mod = { name: h3[1], groups: [] };
-      ver.modules.push(mod);
-      grp = null;
-      continue;
-    }
-
-    const h4 = line.match(/^#### (.+)/);
-    if (h4 && mod) {
-      grp = { type: h4[1], items: [] };
-      mod.groups.push(grp);
-      continue;
-    }
-
-    const itemMatch = line.match(/^- \*\*(.+?)\*\*[：:](.+)/);
-    if (itemMatch) {
-      const item = { label: itemMatch[1], text: itemMatch[2].trim() };
-      if (grp) {
-        grp.items.push(item);
-      } else if (mod) {
-        if (!mod.groups.length) mod.groups.push({ type: "", items: [] });
-        mod.groups[mod.groups.length - 1].items.push(item);
-      }
-      continue;
-    }
-
-    const plainItem = line.match(/^- (.+)/);
-    if (plainItem && !plainItem[1].startsWith("*")) {
-      const item = { label: "", text: plainItem[1].trim() };
-      if (grp) grp.items.push(item);
-      else if (mod) {
-        if (!mod.groups.length) mod.groups.push({ type: "", items: [] });
-        mod.groups[mod.groups.length - 1].items.push(item);
-      }
-      continue;
-    }
-
-    const subItem = line.match(/^\s+- (.+)/);
-    if (subItem) {
-      const target = grp ?? mod?.groups[mod.groups.length - 1];
-      if (target && target.items.length > 0) {
-        const last = target.items[target.items.length - 1];
-        last.text += `；${subItem[1].trim()}`;
-      }
-    }
-  }
-
-  return blocks;
-}
+import { getGroupColor, parseChangelog, splitInlineCode } from "./changelog";
 
 const versions = computed(() => parseChangelog(changelogRaw));
 const expandedIdx = ref(0);
@@ -130,13 +33,15 @@ function toggleVersion(idx: number) {
                 </div>
                 <div class="cl__items">
                   <div v-for="(item, i) in g.items" :key="i" class="cl__item">
-                    <span
-                      class="cl__item-bullet"
-                      :style="{ background: getGroupColor(g.type) }"
-                    />
+                    <span class="cl__item-bullet" :style="{ background: getGroupColor(g.type) }" />
                     <div class="cl__item-content">
                       <code v-if="item.label" class="cl__tag">{{ item.label }}</code>
-                      <span>{{ item.text }}</span>
+                      <span>
+                        <template v-for="(seg, si) in splitInlineCode(item.text)" :key="si">
+                          <code v-if="seg.code" class="cl__code">{{ seg.text }}</code>
+                          <template v-else>{{ seg.text }}</template>
+                        </template>
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -323,6 +228,16 @@ function toggleVersion(idx: number) {
   padding: 1px 6px;
   border-radius: $doc-radius-sm;
   margin-right: 4px;
+}
+
+// 正文里的行内代码：比标签弱一档，不抢主色
+.cl__code {
+  font-family: $doc-font-mono;
+  font-size: $doc-fs-xs;
+  color: $doc-text-regular;
+  background: rgba($doc-text-secondary, 0.1);
+  padding: 1px 4px;
+  border-radius: $doc-radius-sm;
 }
 
 // --- Transitions ---

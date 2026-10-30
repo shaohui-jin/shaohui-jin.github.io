@@ -73,6 +73,7 @@ function configToCssVars(config: ResolvedLibConfig): Record<string, string> {
 
     "--comp-radius-sm": `${theme.radiusSm}px`,
     "--comp-radius-md": `${theme.radiusMd}px`,
+    "--comp-radius-lg": `${theme.radiusLg}px`,
 
     // ── Element Plus 全局变量同步 ──
     "--el-color-primary": theme.colorPrimary,

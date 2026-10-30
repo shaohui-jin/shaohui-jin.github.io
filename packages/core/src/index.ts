@@ -3,13 +3,19 @@ export { default as ConfigProvider } from "./config/ConfigProvider.vue";
 export { elementPlusLocale } from "./config/elementPlusLocale";
 export { useLibConfig } from "./config/useLibConfig";
 export { defaultLibConfig } from "./config/configDefaults";
+export { themePresets, themePresetSwatches, primarySwatches } from "./config/themePresets";
+export type { ThemePresetKey } from "./config/themePresets";
 export { BaseRouteRegistrar, RouteRegistry } from "./route";
 export { CoreDocRegistrar } from "./doc";
+export { getGroupColor, parseChangelog, splitInlineCode, summarizeVersion } from "./doc/changelog";
 export type {
-  LibConfig,
-  LibThemeConfig,
-  ResolvedLibConfig,
-} from "./config/configTypes";
+  ChangeGroup,
+  ChangeItem,
+  ChangeModule,
+  TextSegment,
+  VersionBlock,
+} from "./doc/changelog";
+export type { LibConfig, LibThemeConfig, ResolvedLibConfig } from "./config/configTypes";
 export type { PersistOptions } from "./config/configInjection";
 export type {
   RouteComponentModule,

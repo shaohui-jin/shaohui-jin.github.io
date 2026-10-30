@@ -10,6 +10,11 @@ export interface TopTabMeta {
   mode: "menu" | "single";
   order?: number;
   description?: string;
+  /**
+   * 不在顶部导航中展示，但路由仍然可访问。
+   * 用于「主题配置 / 变更记录」这类从右上角入口进入的页面。
+   */
+  hidden?: boolean;
 }
 
 export interface RouteGroupMeta {

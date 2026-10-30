@@ -2,7 +2,8 @@
 import { ref, computed, reactive, inject } from "vue";
 import ConfigProvider from "../config/ConfigProvider.vue";
 import type { LibConfig, ResolvedLibConfig } from "../config/configTypes";
-import { defaultLibConfig } from "../config/configDefaults";
+import { themePresets } from "../config/themePresets";
+import type { ThemePresetKey } from "../config/themePresets";
 
 const lib = inject<{ saveConfig: (c: LibConfig) => void; config: ResolvedLibConfig }>("compLib")!;
 
@@ -25,6 +26,7 @@ const themeForm = reactive({
   fontSizeSm: lib.config.theme.fontSizeSm,
   radiusSm: lib.config.theme.radiusSm,
   radiusMd: lib.config.theme.radiusMd,
+  radiusLg: lib.config.theme.radiusLg,
 });
 
 const baseTableComponent = "BaseTable";
@@ -42,76 +44,15 @@ function handleSave() {
   }, 2000);
 }
 
-// --- 预设方案 ---
+// --- 预设方案（与首页主题浮层共用 core/config/themePresets） ---
 function applyPreset(preset: Partial<typeof themeForm>) {
   Object.assign(themeForm, preset);
 }
 
-const presets = {
-  default: () => {
-    Object.assign(themeForm, defaultLibConfig.theme);
-  },
-  light: () =>
-    applyPreset({
-      colorPrimary: "#3370ff",
-      colorSuccess: "#00b42a",
-      colorWarning: "#ff7d00",
-      textHeading: "#1d2129",
-      textPrimary: "#303133",
-      textRegular: "#606266",
-      textSecondary: "#909399",
-      bgPage: "#f5f7fa",
-      bgCard: "#ffffff",
-      bgSubtle: "#fafbfc",
-      bgMuted: "#f4f4f5",
-      borderColor: "#ebeef5",
-      borderMedium: "#dcdfe6",
-      fontSizeBase: 14,
-      fontSizeSm: 13,
-      radiusSm: 4,
-      radiusMd: 8,
-    }),
-  purple: () =>
-    applyPreset({
-      colorPrimary: "#6366f1",
-      colorSuccess: "#10b981",
-      colorWarning: "#f59e0b",
-      textHeading: "#1e1b4b",
-      textPrimary: "#312e81",
-      textRegular: "#4338ca",
-      textSecondary: "#6366f1",
-      bgPage: "#f5f3ff",
-      bgCard: "#ffffff",
-      bgSubtle: "#eef2ff",
-      bgMuted: "#e0e7ff",
-      borderColor: "#e0e7ff",
-      borderMedium: "#c7d2fe",
-      fontSizeBase: 14,
-      fontSizeSm: 13,
-      radiusSm: 4,
-      radiusMd: 8,
-    }),
-  dark: () =>
-    applyPreset({
-      colorPrimary: "#7aa2f7",
-      colorSuccess: "#9ece6a",
-      colorWarning: "#e0af68",
-      textHeading: "#a9b1d6",
-      textPrimary: "#9aa5ce",
-      textRegular: "#787c99",
-      textSecondary: "#565a6e",
-      bgPage: "#1a1b26",
-      bgCard: "#24283b",
-      bgSubtle: "#1f2335",
-      bgMuted: "#343a52",
-      borderColor: "#3b4261",
-      borderMedium: "#4e5579",
-      fontSizeBase: 14,
-      fontSizeSm: 13,
-      radiusSm: 4,
-      radiusMd: 8,
-    }),
-};
+// 包一层函数，模板里 `v-for="(fn, key) in presets"` + `@click="fn()"` 保持不变
+const presets = Object.fromEntries(
+  Object.entries(themePresets).map(([key, preset]) => [key, () => applyPreset(preset)]),
+) as Record<ThemePresetKey, () => void>;
 
 const tableData = [
   { id: 1, name: "张三", status: "active", email: "zhangsan@example.com", dept: "技术部" },

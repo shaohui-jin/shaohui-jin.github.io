@@ -21,5 +21,10 @@
       "jsh-core/doc": ["../core/src/doc/index.ts"]
     }
   },
-  "include": ["**/*.ts", "**/*.vue", "env.d.ts"]
+  "include": ["**/*.ts", "**/*.vue", "env.d.ts"],
+  // vite.config.ts 是 node 侧代码（node:fs / node:path / IncomingMessage），
+  // 本文件继承的是 @vue/tsconfig/tsconfig.dom.json，lib 只有 DOM 且没装
+  // @types/node，硬塞进来必然报 TS2307。node 侧配置统一由根目录
+  // tsconfig.node.json 覆盖，这里排除掉，免得 `pnpm build` 卡在类型检查。
+  "exclude": ["vite.config.ts", "node_modules", "dist"]
 }

@@ -29,6 +29,8 @@ export interface LibThemeConfig {
 
   radiusSm: number;
   radiusMd: number;
+  /** 大圆角（px）—— 卡片 / 浮层面板使用 */
+  radiusLg: number;
 }
 
 /** 消费者传入的完整配置（所有字段均为可选） */

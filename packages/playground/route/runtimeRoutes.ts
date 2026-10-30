@@ -19,7 +19,10 @@ export interface RouteViewGroup extends RouteGroupMeta {
 }
 
 export interface PlaygroundNavigation {
+  /** 全量模块（含 hidden），用于按 key 解析路由 */
   topTabs: TopTabMeta[];
+  /** 参与导航渲染的模块（已过滤 hidden） */
+  navTabs: TopTabMeta[];
   tabRoutes: Record<string, RouteViewItem[]>;
   tabGroups: Record<string, RouteViewGroup[]>;
   initialTabKey: string;
@@ -43,9 +46,7 @@ for (const tab of snapshot.topTabs) {
       label: route.label,
       tag: route.tag,
       groupKey: route.groupKey,
-      component: isMarkdownRoute
-        ? MarkdownRoutePage
-        : defineAsyncComponent(route.loader!),
+      component: isMarkdownRoute ? MarkdownRoutePage : defineAsyncComponent(route.loader!),
       props: isMarkdownRoute
         ? {
             source: route.markdownSource,
@@ -72,14 +73,27 @@ for (const tab of snapshot.topTabs) {
   initialRouteByTab[tab.key] = groups[0]?.items[0]?.key ?? views[0]?.key ?? "";
 }
 
+/**
+ * 顶部导航实际渲染的模块。
+ *
+ * `system` 这类 hidden tab 只是从导航里藏起来，路由本身仍然可用，
+ * 由首页右上角的主题 / 日志入口或「打开完整配置」进入。
+ */
+const navTabs = snapshot.topTabs.filter((tab) => !tab.hidden);
+
 export const playgroundNavigation: PlaygroundNavigation = {
   topTabs: snapshot.topTabs,
+  navTabs,
   tabRoutes,
   tabGroups,
-  initialTabKey: snapshot.topTabs[0]?.key ?? "",
+  initialTabKey: navTabs[0]?.key ?? snapshot.topTabs[0]?.key ?? "",
   initialRouteByTab,
 };
 
 export function resolveRouteView(tabKey: string, routeKey: string): RouteViewItem | undefined {
   return playgroundNavigation.tabRoutes[tabKey]?.find((item) => item.key === routeKey);
+}
+
+export function resolveTabMeta(tabKey: string): TopTabMeta | undefined {
+  return playgroundNavigation.topTabs.find((tab) => tab.key === tabKey);
 }

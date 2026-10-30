@@ -28,5 +28,6 @@ export const defaultLibConfig: ResolvedLibConfig = {
 
     radiusSm: 3,
     radiusMd: 6,
+    radiusLg: 8,
   },
 };

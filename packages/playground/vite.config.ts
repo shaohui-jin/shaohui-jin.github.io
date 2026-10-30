@@ -42,6 +42,36 @@ function copySkiaAssets(): import("vite").Plugin {
   };
 }
 
+/**
+ * GitHub Pages 的 history 路由兜底。
+ *
+ * 它是纯静态托管，没有 Nginx 那种 `try_files $uri $uri/ /index.html`，
+ * 直接访问 `/blog/blog-xxx` 会落到 GitHub 的 404 页。把 index.html
+ * 复制一份成 404.html：GitHub Pages 对未知路径返回它，而它本身就是
+ * 完整的 SPA，浏览器照常执行，App 读 location.pathname 就能还原路由。
+ *
+ * 相比 rafgraph 那套「404.html 跳转到 /?/xxx 再由 index.html 还原」，
+ * 少一次重定向：URL 不变、不闪、也没有 `?/` 这种脏形态。
+ * 代价只有一个 —— 响应状态码仍是 404（搜索引擎会当死链，个人站无所谓）。
+ */
+function copyIndexTo404(): import("vite").Plugin {
+  // 读实际配置而不是写死 dist-playground：这样 `vite build --outDir xxx`
+  // 临时换个产物目录时，404.html 也能跟着落到对的地方
+  let outDir = "";
+  return {
+    name: "copy-index-to-404",
+    apply: "build",
+    configResolved(config) {
+      outDir = resolve(config.root, config.build.outDir);
+    },
+    closeBundle() {
+      const index = resolve(outDir, "index.html");
+      if (!existsSync(index)) return;
+      copyFileSync(index, resolve(outDir, "404.html"));
+    },
+  };
+}
+
 /** 在 dev 模式下为 rule 包的 public 静态资源提供服务 */
 function rulePublicServe(): import("vite").Plugin {
   const rulePublic = fileURLToPath(new URL("../rule/public", import.meta.url));
@@ -123,6 +153,7 @@ export default defineConfig({
     ruleDevResolver(),
     vue(),
     copySkiaAssets(),
+    copyIndexTo404(),
     monacoEditorPlugin({
       languageWorkers: ["editorWorkerService", "json", "typescript", "html", "css"],
     }),
@@ -141,18 +172,54 @@ export default defineConfig({
   ],
   resolve: {
     alias: [
-      { find: "jsh-comp/doc/style", replacement: fileURLToPath(new URL("../comp/src/doc/style", import.meta.url)) },
-      { find: "jsh-comp/doc", replacement: fileURLToPath(new URL("../comp/src/doc/index.ts", import.meta.url)) },
-      { find: "jsh-comp/type", replacement: fileURLToPath(new URL("../comp/src/type/index.ts", import.meta.url)) },
-      { find: "jsh-comp", replacement: fileURLToPath(new URL("../comp/src/index.ts", import.meta.url)) },
-      { find: "jsh-tool/doc", replacement: fileURLToPath(new URL("../tool/src/doc/index.ts", import.meta.url)) },
-      { find: "jsh-blog", replacement: fileURLToPath(new URL("../blog/src/index.ts", import.meta.url)) },
-      { find: "jsh-core/style", replacement: fileURLToPath(new URL("../core/src/style", import.meta.url)) },
-      { find: "jsh-core/doc", replacement: fileURLToPath(new URL("../core/src/doc/index.ts", import.meta.url)) },
-      { find: "jsh-core", replacement: fileURLToPath(new URL("../core/src/index.ts", import.meta.url)) },
-      { find: "jsh-tool/color", replacement: fileURLToPath(new URL("../tool/src/color.ts", import.meta.url)) },
-      { find: "jsh-tool/number", replacement: fileURLToPath(new URL("../tool/src/number.ts", import.meta.url)) },
-      { find: "jsh-tool", replacement: fileURLToPath(new URL("../tool/src/index.ts", import.meta.url)) },
+      {
+        find: "jsh-comp/doc/style",
+        replacement: fileURLToPath(new URL("../comp/src/doc/style", import.meta.url)),
+      },
+      {
+        find: "jsh-comp/doc",
+        replacement: fileURLToPath(new URL("../comp/src/doc/index.ts", import.meta.url)),
+      },
+      {
+        find: "jsh-comp/type",
+        replacement: fileURLToPath(new URL("../comp/src/type/index.ts", import.meta.url)),
+      },
+      {
+        find: "jsh-comp",
+        replacement: fileURLToPath(new URL("../comp/src/index.ts", import.meta.url)),
+      },
+      {
+        find: "jsh-tool/doc",
+        replacement: fileURLToPath(new URL("../tool/src/doc/index.ts", import.meta.url)),
+      },
+      {
+        find: "jsh-blog",
+        replacement: fileURLToPath(new URL("../blog/src/index.ts", import.meta.url)),
+      },
+      {
+        find: "jsh-core/style",
+        replacement: fileURLToPath(new URL("../core/src/style", import.meta.url)),
+      },
+      {
+        find: "jsh-core/doc",
+        replacement: fileURLToPath(new URL("../core/src/doc/index.ts", import.meta.url)),
+      },
+      {
+        find: "jsh-core",
+        replacement: fileURLToPath(new URL("../core/src/index.ts", import.meta.url)),
+      },
+      {
+        find: "jsh-tool/color",
+        replacement: fileURLToPath(new URL("../tool/src/color.ts", import.meta.url)),
+      },
+      {
+        find: "jsh-tool/number",
+        replacement: fileURLToPath(new URL("../tool/src/number.ts", import.meta.url)),
+      },
+      {
+        find: "jsh-tool",
+        replacement: fileURLToPath(new URL("../tool/src/index.ts", import.meta.url)),
+      },
     ],
   },
   css: {
@@ -170,12 +237,21 @@ export default defineConfig({
           if (url.startsWith("@/")) {
             const np = prev.replace(/\\/g, "/");
             if (np.includes("packages/blog")) {
-              return { file: resolve(fileURLToPath(new URL("../blog/src", import.meta.url)), url.slice(2)) };
+              return {
+                file: resolve(fileURLToPath(new URL("../blog/src", import.meta.url)), url.slice(2)),
+              };
             }
             if (np.includes("packages/rule")) {
-              return { file: resolve(fileURLToPath(new URL("../rule/src/internal", import.meta.url)), url.slice(2)) };
+              return {
+                file: resolve(
+                  fileURLToPath(new URL("../rule/src/internal", import.meta.url)),
+                  url.slice(2),
+                ),
+              };
             }
-            return { file: resolve(fileURLToPath(new URL("../comp/src", import.meta.url)), url.slice(2)) };
+            return {
+              file: resolve(fileURLToPath(new URL("../comp/src", import.meta.url)), url.slice(2)),
+            };
           }
           return null;
         },

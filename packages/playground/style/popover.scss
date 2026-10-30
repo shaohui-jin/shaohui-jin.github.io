@@ -1,0 +1,310 @@
+// ============================================================
+// 顶栏右上角浮层（主题配置 / 更新日志）
+// ------------------------------------------------------------
+// 三端形态：
+//   ≥769px  → 顶栏右下角的浮层面板（316px 宽）
+//   ≤768px  → 底部抽屉（手机上浮层放不下，也不好点）
+// 两个浮层共用这套壳，内容样式各自写在组件内。
+// ============================================================
+@use "./variables" as *;
+
+// 与首页一致：浮层内的宽度都按 border-box 计算
+.pop-layer,
+.pop-layer *,
+.pop-layer *::before,
+.pop-layer *::after {
+  box-sizing: border-box;
+}
+
+.pop-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+}
+
+.pop-layer__backdrop {
+  position: absolute;
+  inset: 0;
+  background: transparent;
+}
+
+.pop-panel {
+  position: absolute;
+  top: calc(#{$doc-header-h} + #{$doc-sp-2});
+  right: $doc-sp-6;
+  width: 316px;
+  padding: $doc-sp-3;
+  border: 1px solid $doc-border-color;
+  border-radius: $doc-radius-card;
+  background: $doc-bg-card;
+  box-shadow: 0 12px 32px rgb(0 0 0 / 14%);
+}
+
+.pop-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $doc-sp-1 $doc-sp-2 $doc-sp-3;
+}
+
+.pop-panel__title {
+  font-size: $doc-fs-sm;
+  font-weight: 600;
+  color: $doc-text-heading;
+}
+
+.pop-panel__close {
+  display: none;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: $doc-radius-inner;
+  background: transparent;
+  color: $doc-text-secondary;
+  cursor: pointer;
+
+  &:hover {
+    color: $doc-color-primary;
+    background: $doc-bg-muted;
+  }
+}
+
+.pop-group + .pop-group {
+  margin-top: $doc-sp-4;
+}
+
+.pop-group__label {
+  display: block;
+  margin-bottom: $doc-sp-2;
+  padding: 0 $doc-sp-2;
+  font-size: $doc-fs-xs;
+  letter-spacing: 0.04em;
+  color: $doc-text-secondary;
+}
+
+// -- 预设 2×2 --
+.pop-presets {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $doc-sp-1;
+}
+
+.pop-preset {
+  display: flex;
+  align-items: center;
+  gap: $doc-sp-2;
+  padding: 7px $doc-sp-2;
+  border: 1px solid transparent;
+  border-radius: $doc-radius-inner;
+  background: transparent;
+  font-size: $doc-fs-sm;
+  color: $doc-text-regular;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+
+  &:hover {
+    background: $doc-bg-muted;
+  }
+
+  &.is-active {
+    border-color: $doc-color-primary;
+    color: $doc-color-primary;
+    font-weight: 600;
+    background: color-mix(in srgb, #{$doc-color-primary} 8%, transparent);
+  }
+}
+
+.pop-preset__dot {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--swatch);
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 8%);
+}
+
+// -- 主色色板 --
+.pop-swatches {
+  display: flex;
+  gap: $doc-sp-2;
+  padding: 0 $doc-sp-2;
+}
+
+.pop-swatch {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--swatch);
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 8%);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+
+  &:hover {
+    transform: scale(1.08);
+  }
+
+  &.is-active {
+    box-shadow:
+      0 0 0 2px #{$doc-bg-card},
+      0 0 0 4px var(--swatch);
+  }
+}
+
+// -- 圆角分段 --
+.pop-seg {
+  display: flex;
+  gap: 2px;
+  margin: 0 $doc-sp-2;
+  padding: 2px;
+  border-radius: $doc-radius-inner;
+  background: $doc-bg-muted;
+}
+
+.pop-seg__item {
+  flex: 1;
+  padding: 5px 0;
+  border: none;
+  border-radius: calc(#{$doc-radius-inner} - 2px);
+  background: transparent;
+  font-size: $doc-fs-xs;
+  color: $doc-text-regular;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+
+  &.is-active {
+    color: $doc-color-primary;
+    font-weight: 600;
+    background: $doc-bg-card;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 8%);
+  }
+}
+
+// -- 底部链接 --
+.pop-panel__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $doc-sp-2;
+  margin-top: $doc-sp-4;
+  padding: $doc-sp-3 $doc-sp-2 $doc-sp-1;
+  border-top: 1px solid $doc-border-color;
+  font-size: $doc-fs-xs;
+  color: $doc-text-secondary;
+
+  a,
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: $doc-sp-1;
+    padding: 0;
+    border: none;
+    background: transparent;
+    font: inherit;
+    color: $doc-color-primary;
+    text-decoration: none;
+    cursor: pointer;
+  }
+}
+
+// -- 变更记录列表 --
+.pop-logs {
+  display: flex;
+  flex-direction: column;
+  gap: $doc-sp-1;
+}
+
+.pop-log {
+  padding: $doc-sp-2;
+  border: none;
+  border-radius: $doc-radius-inner;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s;
+
+  &:hover {
+    background: $doc-bg-muted;
+  }
+}
+
+.pop-log__head {
+  display: flex;
+  align-items: baseline;
+  gap: $doc-sp-2;
+}
+
+.pop-log__ver {
+  font-size: $doc-fs-sm;
+  font-weight: 600;
+  color: $doc-text-heading;
+  font-variant-numeric: tabular-nums;
+}
+
+.pop-log__date {
+  font-size: $doc-fs-xs;
+  color: $doc-text-secondary;
+  font-variant-numeric: tabular-nums;
+}
+
+.pop-log__body {
+  margin: 2px 0 0;
+  font-size: $doc-fs-xs;
+  line-height: 1.7;
+  color: $doc-text-regular;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+// 摘要里的行内代码，压得比正文还轻，免得在窄浮层里抢视线
+.pop-log__code {
+  font-family: $doc-font-mono;
+  font-size: 0.94em;
+  color: $doc-text-secondary;
+  background: rgba($doc-text-secondary, 0.1);
+  padding: 0 3px;
+  border-radius: $doc-radius-sm;
+}
+
+// -- 进出场 --
+.pop-fade-enter-active,
+.pop-fade-leave-active {
+  transition: opacity 0.16s ease;
+}
+
+.pop-fade-enter-from,
+.pop-fade-leave-to {
+  opacity: 0;
+}
+
+@media (max-width: $doc-bp-tablet) {
+  .pop-panel {
+    right: $doc-sp-4;
+  }
+}
+
+@media (max-width: $doc-bp-mobile) {
+  .pop-layer__backdrop {
+    background: rgb(0 0 0 / 28%);
+  }
+
+  .pop-panel {
+    inset: auto 0 0;
+    width: auto;
+    max-height: 76vh;
+    overflow-y: auto;
+    padding: $doc-sp-4 $doc-sp-4 $doc-sp-6;
+    border-width: 1px 0 0;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .pop-panel__close {
+    display: grid;
+  }
+}

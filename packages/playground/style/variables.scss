@@ -21,6 +21,7 @@ $doc-bg-hover: lib.$lib-bg-subtle;
 // -- 边框色（继承组件库） --
 $doc-border-color: lib.$lib-border-color;
 $doc-border-light: lib.$lib-border-color;
+$doc-border-medium: lib.$lib-border-medium;
 
 // -- 功能色（继承组件库） --
 $doc-color-primary: lib.$lib-color-primary;
@@ -47,11 +48,33 @@ $doc-sp-lg: 16px;
 $doc-sp-xl: 20px;
 $doc-sp-2xl: 24px;
 
+// -- 间距刻度（4 基准，除 4 / 20 外均为 8 的倍数） --
+$doc-sp-1: 4px;
+$doc-sp-2: 8px;
+$doc-sp-3: 12px;
+$doc-sp-4: 16px;
+$doc-sp-5: 20px;
+$doc-sp-6: 24px;
+$doc-sp-7: 32px;
+$doc-sp-8: 48px;
+$doc-sp-9: 64px;
+$doc-sp-10: 80px;
+
+// -- 壳层尺寸 --
+$doc-header-h: 60px;
+$doc-header-h-sm: 56px;
+$doc-tabbar-h: 56px;
+
 // -- 圆角 --
 $doc-radius-sm: 3px;
 $doc-radius-md: 6px;
 $doc-radius-lg: 8px;
 $doc-radius-pill: 10px;
+
+// 主题联动圆角：跟 --comp-radius-* 走，系统页 / 首页浮层调圆角时立即生效
+$doc-radius-card: var(--comp-radius-lg, 8px);
+$doc-radius-inner: var(--comp-radius-md, 6px);
+$doc-radius-tag: var(--comp-radius-sm, 3px);
 
 // -- 阴影 --
 $doc-shadow-sm: 0 1px 4px rgb(0 0 0 / 4%);

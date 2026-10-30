@@ -1,0 +1,1 @@
+function i(t){return t===""}function o(t,n,r){const e={...t};return i(r)?delete e[n]:e[n]=r,e}function c(t){const n={};for(const[r,e]of Object.entries(t))i(e)||(n[r]=e);return n}export{i,c as o,o as p};

@@ -5,11 +5,8 @@
     "lib": ["ES2023"],
     "module": "ESNext",
     "skipLibCheck": true,
-    "moduleResolution": "bundler"
+    "moduleResolution": "bundler",
+    "noEmit": true
   },
-  "include": [
-    "packages/*/vite.config.ts",
-    "packages/*/vite.lib.config.ts",
-    "examples/vite.config.ts"
-  ]
+  "include": ["vite.config.ts"]
 }

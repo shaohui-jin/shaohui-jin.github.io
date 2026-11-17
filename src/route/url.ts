@@ -1,0 +1,71 @@
+/**
+ * URL 与路由状态之间的换算。
+ *
+ * 抽成独立模块而不是塞在 App.vue 里，是因为「首页文章卡」这类地方
+ * 也需要拼出真实 href（右键新窗口打开、中键点击、爬虫抓取都依赖它）。
+ * 两处各拼一套的话，将来改 base 或路径结构必然漏改一处。
+ */
+import { playgroundNavigation, resolveTabMeta } from "./runtimeRoutes";
+
+/** 首页占根路径，不做 /home 这种冗余层级 */
+export const HOME_TAB = playgroundNavigation.initialTabKey;
+
+export interface RouteLocation {
+  tabKey: string;
+  routeKey: string;
+}
+
+/**
+ * 状态 → URL 路径。
+ *
+ * 作品页的 routeKey 带分段（components/tables），斜杠保留，只编码每一段。
+ */
+export function buildPath(tabKey: string, routeKey: string): string {
+  if (tabKey === HOME_TAB) return "/";
+  if (!routeKey || routeKey === tabKey) return `/${tabKey}`;
+  const tail = routeKey
+    .split("/")
+    .filter(Boolean)
+    .map((part) => encodeURIComponent(part))
+    .join("/");
+  return tail ? `/${tabKey}/${tail}` : `/${tabKey}`;
+}
+
+/**
+ * URL 路径 → 状态。识别不了返回 null，由调用方决定回退到哪。
+ *
+ * 读 `import.meta.env.BASE_URL` 而不是写死 `/`：现在部署在根路径，
+ * base 是 `/`，这一步等于空操作；将来若改成 `/<repo>/` 子路径部署，
+ * 不用再回来改这里。
+ */
+export function parsePath(pathname: string): RouteLocation | null {
+  const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+  const path = base && pathname.startsWith(base) ? pathname.slice(base.length) : pathname;
+  const segments = path.split("/").filter(Boolean).map(decodeURIComponent);
+  if (segments.length === 0) return { tabKey: HOME_TAB, routeKey: "" };
+
+  const [head, ...rest] = segments;
+  const legacy = legacyWorksLocation(head, rest);
+  if (legacy) return legacy;
+
+  if (!resolveTabMeta(head)) return null;
+  return { tabKey: head, routeKey: rest.join("/") };
+}
+
+/**
+ * 旧顶栏地址。组件文档、工具函数、画布编排收进作品之后，
+ * 已发出的链接仍要落到原来的那一页。
+ */
+function legacyWorksLocation(head: string, rest: string[]): RouteLocation | null {
+  if (head === "workflow-designer") return { tabKey: "works", routeKey: "workflow" };
+  if (head === "docs") {
+    return { tabKey: "works", routeKey: rest.length ? ["components", ...rest].join("/") : "" };
+  }
+  if (head === "utils") {
+    return {
+      tabKey: "works",
+      routeKey: rest.length ? ["tools", ...rest].join("/") : "tools/rgbaToHex",
+    };
+  }
+  return null;
+}

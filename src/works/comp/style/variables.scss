@@ -1,0 +1,2 @@
+// 转发 @/app/core 公共 SCSS 变量，供组件内 @use "@/works/comp/style/variables" 使用
+@forward "../../../app/core/style/variables";

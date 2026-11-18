@@ -43,7 +43,6 @@ function handleOpen(event: MouseEvent, key: string): void {
     <div class="home-section__head">
       <div>
         <h2 class="home-section__title">最新文章</h2>
-        <p class="home-section__desc">按发布时间倒序</p>
       </div>
       <button class="home-section__more" @click="emit('open-all')">
         全部 {{ homeArticles.length }} 篇

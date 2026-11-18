@@ -15,9 +15,23 @@ export interface DemoBlock {
   lang: string;
 }
 
+export interface CodeFenceBlock {
+  code: string;
+  lang: string;
+  highlightLines: number[];
+}
+
+export interface CalloutBlock {
+  name: string;
+  title: string;
+  html: string;
+}
+
 export interface RenderedMarkdown {
   html: string;
   demos: DemoBlock[];
+  fences: CodeFenceBlock[];
+  callouts: CalloutBlock[];
 }
 
 interface MdNode {
@@ -37,7 +51,12 @@ interface DemoNode {
   demo: DemoBlock;
 }
 
-type Node = MdNode | ContainerNode | DemoNode;
+interface CodeNode {
+  type: "code";
+  index: number;
+}
+
+type Node = MdNode | ContainerNode | DemoNode | CodeNode;
 
 const OPEN_RE = /^:::\s*([A-Za-z][\w-]*)\s*(.*)$/;
 const CLOSE_RE = /^:::\s*$/;
@@ -233,7 +252,60 @@ function extractFence(lines: string[]): {
   return { lang: firstLang, code: firstCode, files, css };
 }
 
-function parseBlocks(lines: string[], demos: DemoBlock[]): Node[] {
+function parseHighlightLines(spec: string): number[] {
+  const lines: number[] = [];
+  for (const part of spec.split(",")) {
+    const piece = part.trim();
+    if (!piece) continue;
+    const range = /^(\d+)\s*-\s*(\d+)$/.exec(piece);
+    if (range) {
+      const from = Math.min(Number(range[1]), Number(range[2]));
+      const to = Math.max(Number(range[1]), Number(range[2]));
+      for (let n = from; n <= to; n += 1) lines.push(n);
+      continue;
+    }
+    if (/^\d+$/.test(piece)) lines.push(Number(piece));
+  }
+  return lines;
+}
+
+/** 按开头反引号数量找到结束行。未闭合时返回 null */
+function readFence(
+  lines: string[],
+  start: number,
+): { code: string; lang: string; highlightLines: number[]; end: number } | null {
+  const open = /^(\s*)(`{3,})([^`]*)$/.exec(lines[start] ?? "");
+  if (!open) return null;
+
+  const marker = open[2];
+  const info = open[3].trim();
+  const closeRe = new RegExp(`^\\s*${marker}\\s*$`);
+  const body: string[] = [];
+
+  for (let j = start + 1; j < lines.length; j += 1) {
+    if (!closeRe.test(lines[j])) {
+      body.push(lines[j]);
+      continue;
+    }
+    const highlightMatched = /\{([^{}]*)\}/.exec(info);
+    const lang = info.split(/\s+/).find((token) => token && !token.startsWith("{")) ?? "";
+    return {
+      code: body.join("\n"),
+      lang,
+      highlightLines: highlightMatched ? parseHighlightLines(highlightMatched[1]) : [],
+      end: j,
+    };
+  }
+
+  return null;
+}
+
+function parseBlocks(
+  lines: string[],
+  demos: DemoBlock[],
+  fences: CodeFenceBlock[],
+  extractFences: boolean,
+): Node[] {
   const nodes: Node[] = [];
   let buffer: string[] = [];
 
@@ -269,6 +341,22 @@ function parseBlocks(lines: string[], demos: DemoBlock[]): Node[] {
         demos.push(demo);
         nodes.push({ type: "demo", demo });
         i = k;
+        continue;
+      }
+    }
+
+    if (extractFences) {
+      const fence = readFence(lines, i);
+      if (fence) {
+        flush();
+        const index = fences.length;
+        fences.push({
+          code: fence.code,
+          lang: fence.lang,
+          highlightLines: fence.highlightLines,
+        });
+        nodes.push({ type: "code", index });
+        i = fence.end;
         continue;
       }
     }
@@ -323,7 +411,7 @@ function parseBlocks(lines: string[], demos: DemoBlock[]): Node[] {
         type: "container",
         name,
         title: openMatched[2]?.trim() ?? "",
-        children: parseBlocks(inner, demos),
+        children: parseBlocks(inner, demos, fences, false),
       });
     }
 
@@ -393,11 +481,14 @@ export function createMarkdownEngine(): MarkdownIt {
 
 const markdownEngine = createMarkdownEngine();
 
-function renderNodes(nodes: Node[]): string {
+function renderNodes(nodes: Node[], callouts: CalloutBlock[]): string {
   return nodes
     .map((node) => {
       if (node.type === "md") {
         return markdownEngine.render(transformInlineText(node.text));
+      }
+      if (node.type === "code") {
+        return `<div class="vp-code-slot" data-code-index="${node.index}"></div>`;
       }
       if (node.type === "demo") {
         // 占位符类名刻意不用 vp-demo，避免和挂载后的组件根节点同名
@@ -406,13 +497,11 @@ function renderNodes(nodes: Node[]): string {
           ` data-demo-index="${node.demo.index}" data-demo-kind="${node.demo.kind}"></div>`
         );
       }
-      const label = node.title || CALLOUT_LABELS[node.name] || node.name;
-      return (
-        `<div class="vp-callout vp-callout--${node.name}">` +
-        `<div class="vp-callout__title">${escapeHtml(label)}</div>` +
-        `<div class="vp-callout__body">${renderNodes(node.children)}</div>` +
-        `</div>`
-      );
+      const title = node.title || CALLOUT_LABELS[node.name] || node.name;
+      const html = renderNodes(node.children, callouts);
+      const index = callouts.length;
+      callouts.push({ name: node.name, title, html });
+      return `<div class="vp-callout-slot" data-callout-index="${index}"></div>`;
     })
     .join("\n");
 }
@@ -431,13 +520,9 @@ function extractFootnotes(source: string): { source: string; defs: Map<string, s
   return { source: kept.join("\n"), defs };
 }
 
-function applyFootnotes(html: string, defs: Map<string, string>): string {
-  if (!defs.size) return html;
-
-  const used: string[] = [];
+function replaceFootnoteRefs(html: string, defs: Map<string, string>, used: string[]): string {
   const segments = html.split(/(<pre[\s\S]*?<\/pre>|<code[\s\S]*?<\/code>)/g);
-
-  const replaced = segments
+  return segments
     .map((segment, index) => {
       if (index % 2 === 1) return segment;
       return segment.replace(/\[\^([^\]]+)\]/g, (all, id: string) => {
@@ -448,6 +533,37 @@ function applyFootnotes(html: string, defs: Map<string, string>): string {
       });
     })
     .join("");
+}
+
+/** 按文档顺序处理正文和提示容器里的脚注，编号保持连续 */
+function applyFootnotesInOrder(
+  html: string,
+  callouts: CalloutBlock[],
+  defs: Map<string, string>,
+  used: string[],
+): string {
+  const slotRe = /<div class="vp-callout-slot" data-callout-index="(\d+)"><\/div>/g;
+  let cursor = 0;
+  let out = "";
+  let matched: RegExpExecArray | null;
+
+  while ((matched = slotRe.exec(html))) {
+    const at = matched.index;
+    out += replaceFootnoteRefs(html.slice(cursor, at), defs, used);
+    const callout = callouts[Number(matched[1])];
+    if (callout) callout.html = applyFootnotesInOrder(callout.html, callouts, defs, used);
+    out += matched[0];
+    cursor = at + matched[0].length;
+  }
+
+  return out + replaceFootnoteRefs(html.slice(cursor), defs, used);
+}
+
+function applyFootnotes(html: string, callouts: CalloutBlock[], defs: Map<string, string>): string {
+  if (!defs.size) return html;
+
+  const used: string[] = [];
+  const replaced = applyFootnotesInOrder(html, callouts, defs, used);
 
   if (!used.length) return replaced;
 
@@ -463,10 +579,17 @@ function applyFootnotes(html: string, defs: Map<string, string>): string {
 
 export function renderMarkdown(source: string): RenderedMarkdown {
   const demos: DemoBlock[] = [];
+  const fences: CodeFenceBlock[] = [];
+  const callouts: CalloutBlock[] = [];
   const { source: body, defs } = extractFootnotes(source);
   const cleaned = body
     .replace(/<!--\s*#?region[^>]*-->/gi, "")
     .replace(/<!--\s*#?endregion[^>]*-->/gi, "");
-  const nodes = parseBlocks(cleaned.split("\n"), demos);
-  return { html: applyFootnotes(renderNodes(nodes), defs), demos };
+  const nodes = parseBlocks(cleaned.split("\n"), demos, fences, true);
+  return {
+    html: applyFootnotes(renderNodes(nodes, callouts), callouts, defs),
+    demos,
+    fences,
+    callouts,
+  };
 }

@@ -104,8 +104,12 @@ export interface ImageLightboxEmits {
 export interface CodeBlockProps {
   /** 需要复制的原始代码文本 */
   code: string;
-  /** 经 highlight 处理后的 HTML（若不传则直接展示 code） */
+  /** 经 highlight 处理后的 HTML。不传则按 lang 着色 */
   highlighted?: string;
+  /** 语法名。未传 highlighted 时用于着色 */
+  lang?: string;
+  /** 从 1 开始的行号，这些行加高亮 */
+  highlightLines?: number[];
 }
 
 // --- WidgetTabs ---

@@ -59,7 +59,7 @@ export const homeProfile: HomeProfile = {
   avatar: "https://shaohui-jin.github.io/picx-images-hosting/blog/Logo/User.73tpi84jwb.gif",
   avatarFallback: "石",
   role: "前端工程师",
-  bio: "把日常踩过的坑、读过的源码、想明白的事，都留在这里。",
+  bio: "笔记、源码和做过的项目，记在这里。",
   repoUrl: "https://github.com/shaohui-jin/shaohui-jin.github.io",
   repoLabel: "源码仓库",
 };

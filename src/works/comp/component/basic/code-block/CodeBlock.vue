@@ -1,15 +1,41 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import { ElButton, ElMessage } from "element-plus";
 import { DocumentCopy } from "@element-plus/icons-vue";
+import hljs from "highlight.js";
+import type { CodeBlockProps } from "@/works/comp/type/basic";
 
 defineOptions({ name: "CodeBlock" });
 
-defineProps<{
-  /** 需要复制的原始代码文本 */
-  code: string;
-  /** 经 highlight 处理后的 HTML（若不传则直接展示 code） */
-  highlighted?: string;
-}>();
+const props = defineProps<CodeBlockProps>();
+
+function escapeHtml(value: string): string {
+  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+const renderedHtml = computed(() => {
+  if (props.highlighted) return props.highlighted;
+  const lang = props.lang ?? "";
+  if (lang && hljs.getLanguage(lang)) {
+    try {
+      return hljs.highlight(props.code, { language: lang, ignoreIllegals: true }).value;
+    } catch {
+      /* 落到转义 */
+    }
+  }
+  return escapeHtml(props.code);
+});
+
+const lines = computed(() => {
+  const marked = new Set(props.highlightLines ?? []);
+  const sourceLines = props.code.split("\n");
+  const htmlLines = renderedHtml.value.split("\n");
+  return sourceLines.map((source, index) => ({
+    number: index + 1,
+    html: htmlLines[index] ?? escapeHtml(source),
+    marked: marked.has(index + 1),
+  }));
+});
 
 async function copyCode(text: string) {
   try {
@@ -32,7 +58,15 @@ async function copyCode(text: string) {
     >
       复制
     </ElButton>
-    <pre class="code-block"><code v-html="highlighted ?? code" /></pre>
+    <pre class="code-block"><code
+      ><span
+        v-for="line in lines"
+        :key="line.number"
+        class="code-block__line"
+        :class="{ 'code-block__line--mark': line.marked }"
+        ><span class="code-block__no">{{ line.number }}</span
+        ><span class="code-block__text" v-html="line.html || '&#8203;'" /></span></code
+    ></pre>
   </div>
 </template>
 
@@ -62,8 +96,29 @@ async function copyCode(text: string) {
   font-size: var(--cb-font-size);
   line-height: 1.7;
   color: var(--cb-text);
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+
+.code-block__line {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 12px;
+}
+
+.code-block__no {
+  user-select: none;
+  text-align: right;
+  color: var(--code-block-comment, var(--comp-text-secondary, #909399));
+}
+
+.code-block__line--mark {
+  background: color-mix(in srgb, var(--el-color-warning, #e6a23c) 16%, transparent);
+}
+
+.code-block__text {
   white-space: pre-wrap;
-  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .code-block__wrap {
@@ -95,7 +150,7 @@ async function copyCode(text: string) {
   font-size: inherit;
   line-height: inherit;
   white-space: pre-wrap;
-  word-break: break-word;
+  overflow-wrap: break-word;
 }
 </style>
 

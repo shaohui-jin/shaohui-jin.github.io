@@ -7,7 +7,7 @@ import { homeProjects } from "../homeData";
     <div class="home-section__head">
       <div>
         <h2 class="home-section__title">个人项目</h2>
-        <p class="home-section__desc">五个自己做着玩的东西，形态多为 Cursor 扩展 / Skill / MCP</p>
+        <p class="home-section__desc">自己做的工具和站点，包括编辑器扩展、Skill 和 MCP。</p>
       </div>
     </div>
 

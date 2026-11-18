@@ -32,7 +32,21 @@ const api: ComponentApi = {
       type: "string",
       default: "—",
       required: false,
-      desc: "经 highlight 处理后的 HTML，不传则直接展示 code",
+      desc: "经 highlight 处理后的 HTML，不传则按 lang 着色",
+    },
+    {
+      name: "lang",
+      type: "string",
+      default: "—",
+      required: false,
+      desc: "语法名，未传 highlighted 时用于着色",
+    },
+    {
+      name: "highlightLines",
+      type: "number[]",
+      default: "—",
+      required: false,
+      desc: "从 1 开始的行号，这些行加高亮",
     },
   ],
 };
@@ -49,7 +63,7 @@ const api: ComponentApi = {
   </DemoWidgetTabs>
 
   <h3 style="margin-top: 32px">纯文本模式</h3>
-  <p>不传 <code>highlighted</code> 时直接展示原始文本：</p>
+  <p>不传 <code>highlighted</code> 和 <code>lang</code> 时展示转义后的原文，仍然带行号：</p>
   <DemoWidgetTabs :code="plainDemoCode">
     <CodeBlock :code="sampleCode" />
   </DemoWidgetTabs>

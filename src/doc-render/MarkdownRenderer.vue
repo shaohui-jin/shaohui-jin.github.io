@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import { computed, createApp, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import type { App } from "vue";
+import ElementPlus from "element-plus";
+import { elementPlusLocale } from "@/app/core";
+import CodeBlock from "@/works/comp/component/basic/code-block/CodeBlock.vue";
 import { renderMarkdown } from "./createMarkdownEngine";
 import DemoPlayground from "./DemoPlayground.vue";
 import DemoHtml from "./DemoHtml.vue";
 import MermaidBlock from "./MermaidBlock.vue";
+import Callout from "./Callout.vue";
 
 const props = withDefaults(
   defineProps<{
@@ -19,7 +23,7 @@ const rendered = computed(() => renderMarkdown(props.source));
 const host = ref<HTMLElement | null>(null);
 const mountedApps: App[] = [];
 
-/** 已挂载的 demo id，避免重复 mount */
+/** 已挂载的占位，避免重复 mount */
 const mountedIds = new Set<string>();
 
 let observer: IntersectionObserver | null = null;
@@ -44,6 +48,46 @@ function mountOne(el: HTMLElement, demoIndex: number): void {
   const app = createApp(pickComponent(demo.kind), { demo });
   app.mount(el);
   mountedApps.push(app);
+}
+
+function mountCallouts(root: HTMLElement): void {
+  let pending = true;
+  while (pending) {
+    pending = false;
+    root.querySelectorAll<HTMLElement>("[data-callout-index]").forEach((el) => {
+      const key = `callout:${el.dataset.calloutIndex ?? ""}`;
+      if (mountedIds.has(key)) return;
+      const callout = rendered.value.callouts[Number(el.dataset.calloutIndex)];
+      if (!callout) return;
+      mountedIds.add(key);
+      const app = createApp(Callout, {
+        name: callout.name,
+        title: callout.title,
+        html: callout.html,
+      });
+      app.mount(el);
+      mountedApps.push(app);
+      pending = true;
+    });
+  }
+}
+
+function mountCodes(root: HTMLElement): void {
+  root.querySelectorAll<HTMLElement>("[data-code-index]").forEach((el) => {
+    const key = `code:${el.dataset.codeIndex ?? ""}`;
+    if (mountedIds.has(key)) return;
+    const fence = rendered.value.fences[Number(el.dataset.codeIndex)];
+    if (!fence) return;
+    mountedIds.add(key);
+    const app = createApp(CodeBlock, {
+      code: fence.code,
+      lang: fence.lang,
+      highlightLines: fence.highlightLines,
+    });
+    app.use(ElementPlus, { locale: elementPlusLocale });
+    app.mount(el);
+    mountedApps.push(app);
+  });
 }
 
 /**
@@ -74,6 +118,9 @@ async function mountDemos(): Promise<void> {
   await nextTick();
   const root = host.value;
   if (!root) return;
+
+  mountCallouts(root);
+  mountCodes(root);
 
   const placeholders = root.querySelectorAll<HTMLElement>("[data-demo-id]");
 
@@ -228,7 +275,7 @@ $md-block-gap: $doc-sp-md;
 }
 
 // ---------- 代码 ----------
-.markdown-body :deep(pre) {
+.markdown-body :deep(pre:not(.code-block)) {
   margin: $md-block-gap 0;
   padding: $doc-sp-md;
   overflow: auto;
@@ -237,9 +284,20 @@ $md-block-gap: $doc-sp-md;
   border-radius: $doc-radius-lg;
 }
 
-.markdown-body :deep(pre code) {
+.markdown-body :deep(pre:not(.code-block) code) {
   padding: 0;
   background: transparent;
+}
+
+.markdown-body :deep(.code-block code) {
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+  font-size: inherit;
+}
+
+.markdown-body :deep(.vp-code-slot) {
+  margin: $md-block-gap 0;
 }
 
 .markdown-body :deep(code) {
@@ -354,40 +412,6 @@ $md-block-gap: $doc-sp-md;
 
 .markdown-body :deep(.vp-footnote-back) {
   margin-left: $doc-sp-xs;
-}
-
-// ---------- 容器（callout） ----------
-.markdown-body :deep(.vp-callout) {
-  margin: $md-block-gap 0;
-  padding: $doc-sp-sm $doc-sp-md;
-  border-left: 3px solid $doc-color-primary;
-  border-radius: 0 $doc-radius-lg $doc-radius-lg 0;
-  background: $doc-bg-subtle;
-}
-
-.markdown-body :deep(.vp-callout__title) {
-  margin-bottom: $doc-sp-xs;
-  font-weight: 500;
-}
-
-.markdown-body :deep(.vp-callout--tip) {
-  border-left-color: $doc-color-success;
-}
-
-.markdown-body :deep(.vp-callout--warning) {
-  border-left-color: $doc-color-warning;
-}
-
-.markdown-body :deep(.vp-callout--danger) {
-  border-left-color: #f56c6c;
-}
-
-.markdown-body :deep(.vp-callout__body > :first-child) {
-  margin-top: 0;
-}
-
-.markdown-body :deep(.vp-callout__body > :last-child) {
-  margin-bottom: 0;
 }
 
 // ---------- 懒挂载前的占位 ----------

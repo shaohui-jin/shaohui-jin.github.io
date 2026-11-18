@@ -13,7 +13,7 @@ const avatarFailed = ref(false);
     <div class="home-section__head">
       <div>
         <h2 class="home-section__title">关于我</h2>
-        <p class="home-section__desc">写代码，也写字</p>
+        <p class="home-section__desc">笔记与项目</p>
       </div>
     </div>
 

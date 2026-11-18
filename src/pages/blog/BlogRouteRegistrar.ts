@@ -31,7 +31,7 @@ export class BlogRouteRegistrar extends BaseRouteRegistrar {
         tabKey: "blog",
         groupKey: doc.groupKey,
         label: doc.label,
-        tag: doc.tag,
+        tag: doc.category,
         order: doc.order,
         renderMode: "markdown" as const,
         markdownSource: doc.source,

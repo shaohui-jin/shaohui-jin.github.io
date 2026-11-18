@@ -1,11 +1,7 @@
 ---
-title: Lambda表达式
-lang: zh-CN
+title: Lambda
 date: 2022-05-16 11:26:43
-permalink: /Java/Lambda/
 category:
-  - Java
-tag:
   - Java
 ---
 

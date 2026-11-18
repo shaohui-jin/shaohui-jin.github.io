@@ -740,6 +740,8 @@ function resolveFirstLevelRandomColor(key: string): string {
 
 .doc-nav__item-name {
   flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .doc-nav__item-name--flat {

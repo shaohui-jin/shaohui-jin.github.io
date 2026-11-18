@@ -1,4 +1,5 @@
 ---
+title: JavaScript
 headerDepth: 3
 ---
 
@@ -236,7 +237,7 @@ for (let i = 0; i < 5; i++) {
 list.appendChild(fragment); // 操作1次dom
 ```
 
-### [浏览器渲染原理](/my-blog/Promotion/JavaScript/BrowserRenderingPrinciples/)
+### [浏览器渲染原理](/blog/blog-browser-rendering)
 
 整个渲染流程分为多个阶段，分别是： `HTML 解析`、`样式计算`、`布局`、`分层`、`绘制`、`分块`、`光栅化`、`画`
 
@@ -266,7 +267,7 @@ list.appendChild(fragment); // 操作1次dom
 >
 > **Object.preventExtensions()**: **阻止`添加新属性`** 同时**防止对象的`原型被重新指定`**。
 
-### [事件循环](/my-blog/Promotion/JavaScript/BrowserProcessModel/)
+### [事件循环](/blog/blog-browser-process)
 
 事件循环又叫做消息循环，是浏览器 **渲染主线程** 的工作方式。
 

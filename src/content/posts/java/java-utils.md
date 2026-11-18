@@ -1,11 +1,7 @@
 ---
-title: Java 工具类
-lang: zh-CN
+title: 工具类
 date: 2023-02-24 15:34:43
-permalink: /Java/Utils/
 category:
-  - Java
-tag:
   - Java
 ---
 

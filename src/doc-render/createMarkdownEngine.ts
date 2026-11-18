@@ -186,11 +186,13 @@ function extractFence(lines: string[]): {
   lang: string;
   code: string;
   files: Record<string, string>;
+  css: string;
 } {
   const files: Record<string, string> = {};
   let pendingName = "";
   let firstLang = "";
   let firstCode = "";
+  let css = "";
 
   for (let i = 0; i < lines.length; i += 1) {
     const line = lines[i];
@@ -200,7 +202,7 @@ function extractFence(lines: string[]): {
       continue;
     }
 
-    const fenceMatched = /^\s*```(\w*)\s*$/.exec(line);
+    const fenceMatched = /^\s*```(\w*)(?:\s*\{[^}]*\})?\s*$/.exec(line);
     if (!fenceMatched) continue;
 
     const lang = fenceMatched[1] || "text";
@@ -216,6 +218,7 @@ function extractFence(lines: string[]): {
       firstLang = lang;
       firstCode = code;
     }
+    if (lang === "css") css = css ? `${css}\n${code}` : code;
 
     if (pendingName) {
       files[pendingName] = code;
@@ -227,7 +230,7 @@ function extractFence(lines: string[]): {
     i = j;
   }
 
-  return { lang: firstLang, code: firstCode, files };
+  return { lang: firstLang, code: firstCode, files, css };
 }
 
 function parseBlocks(lines: string[], demos: DemoBlock[]): Node[] {
@@ -295,19 +298,21 @@ function parseBlocks(lines: string[], demos: DemoBlock[]): Node[] {
     }
 
     if (DEMO_NAMES.has(name)) {
-      const { code, files } = extractFence(inner);
+      const { code, files, css } = extractFence(inner);
       if (!code) {
         buffer.push(line, ...inner, ":::");
       } else {
         const kind: DemoKind =
           name === "normal-demo" ? "html" : name === "vue-playground" ? "playground" : "sfc";
+        const previewCode =
+          name === "normal-demo" && css ? `${code}\n<style>\n${css}\n</style>` : code;
         const resolvedFiles = files["App.vue"] ? files : { "App.vue": code };
         const demo: DemoBlock = {
           id: `demo-${demos.length}`,
           index: demos.length,
           kind,
           files: kind === "html" ? {} : resolvedFiles,
-          code,
+          code: previewCode,
           lang: kind === "html" ? "html" : "vue",
         };
         demos.push(demo);

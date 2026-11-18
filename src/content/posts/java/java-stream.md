@@ -1,11 +1,7 @@
 ---
-title: Stream 流
-lang: zh-CN
+title: Stream
 date: 2022-05-16 11:26:43
-permalink: /Java/Stream/
 category:
-  - Java
-tag:
   - Java
 ---
 

@@ -5,17 +5,23 @@
  * 再由 `parseFrontmatter` 解析出标题、日期、分类等元数据。
  *
  * 路由标识规则（不兼容旧站 permalink）：
- *   posts/tips/tips-css-canvas.md → key = "blog-tips-css-canvas"、groupKey = "tips"
+ *   posts/vue/vue-lifecycle.md → key = "blog-vue-lifecycle"、groupKey = "vue"
+ * 文件名是全局唯一的 `{分组}-{短名}.md`，目录只表示分组。
  */
 
 export type BlogGroupKey =
-  | "promotion"
-  | "tips"
-  | "interview"
-  | "java"
-  | "algorithm"
+  | "vue"
+  | "react"
+  | "javascript"
+  | "browser"
+  | "css"
+  | "engineering"
+  | "practice"
+  | "performance"
   | "design-pattern"
-  | "frontend"
+  | "algorithm"
+  | "java"
+  | "interview"
   | "recommend";
 
 /** A = 纯标准 Markdown；B = 含 `:::` 容器；C = 含 demo 块 */
@@ -27,13 +33,11 @@ export interface BlogDocConfig {
   /** 中文标题，取自 frontmatter.title */
   label: string;
   groupKey: BlogGroupKey;
-  tag: string;
   order: number;
   fileName: string;
   source: string;
   date: string;
-  category: string[];
-  tags: string[];
+  category: string;
   headerDepth?: number;
   tier: BlogDocTier;
 }
@@ -123,19 +127,16 @@ function buildConfigs(): BlogDocConfig[] {
     const slug = matched[2];
     const { data, body } = parseFrontmatter(raw);
     const category = asStringList(data.category);
-    const tags = asStringList(data.tag);
 
     return {
       key: `blog-${slug}`,
       label: asString(data.title) || slug,
       groupKey,
-      tag: category[0] ?? tags[0] ?? groupKey,
       order: 0,
       fileName: `${slug}.md`,
       source: body,
       date: asString(data.date),
-      category,
-      tags,
+      category: category[0] ?? groupKey,
       headerDepth: Number(asString(data.headerDepth)) || undefined,
       tier: detectTier(body),
     } satisfies BlogDocConfig;
@@ -163,12 +164,17 @@ function buildConfigs(): BlogDocConfig[] {
 export const blogDocConfigs: BlogDocConfig[] = buildConfigs();
 
 export const blogGroups: BlogGroupConfig[] = [
-  { key: "promotion", title: "精选文章", accent: "#3f51b5", order: 10 },
-  { key: "tips", title: "代码仓", accent: "#009688", order: 20 },
-  { key: "interview", title: "面试题", accent: "#ff5722", order: 30 },
-  { key: "java", title: "Java", accent: "#e91e63", order: 40 },
-  { key: "algorithm", title: "常用算法", accent: "#9c27b0", order: 50 },
-  { key: "design-pattern", title: "设计模式", accent: "#607d8b", order: 60 },
-  { key: "frontend", title: "性能优化", accent: "#ff9800", order: 70 },
-  { key: "recommend", title: "推荐", accent: "#795548", order: 80 },
+  { key: "vue", title: "Vue", accent: "#3f51b5", order: 10 },
+  { key: "react", title: "React", accent: "#009688", order: 20 },
+  { key: "javascript", title: "JavaScript", accent: "#3949ab", order: 30 },
+  { key: "browser", title: "浏览器", accent: "#0277bd", order: 40 },
+  { key: "css", title: "CSS", accent: "#8e24aa", order: 50 },
+  { key: "engineering", title: "工程化", accent: "#546e7a", order: 60 },
+  { key: "practice", title: "手写题", accent: "#ef6c00", order: 70 },
+  { key: "performance", title: "性能优化", accent: "#ff9800", order: 80 },
+  { key: "design-pattern", title: "设计模式", accent: "#607d8b", order: 90 },
+  { key: "algorithm", title: "算法", accent: "#9c27b0", order: 100 },
+  { key: "java", title: "Java", accent: "#e91e63", order: 110 },
+  { key: "interview", title: "面试题", accent: "#ff5722", order: 120 },
+  { key: "recommend", title: "推荐", accent: "#795548", order: 130 },
 ];

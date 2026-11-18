@@ -1,12 +1,8 @@
 ---
-title: 其他推荐
-lang: zh-CN
+title: 其他
 date: 2023-02-01 16:21:30
 icon: others
-permalink: /Recommend/Other/
 category:
-  - 推荐
-tag:
   - 推荐
 ---
 

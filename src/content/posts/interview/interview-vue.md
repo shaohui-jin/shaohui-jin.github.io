@@ -1,4 +1,5 @@
 ---
+title: Vue
 headerDepth: 3
 ---
 
@@ -30,7 +31,7 @@ headerDepth: 3
 >
 > - extends会比Mixins先执行。执行顺序：extends > Mixins> 组件
 
-### [生命周期](/my-blog/Promotion/Vue/LifeCycle/)
+### [生命周期](/blog/blog-vue-lifecycle)
 
 ![](https://shaohui-jin.github.io/picx-images-hosting/blog/Vue/生命周期.5fkdt6fcci.webp "vueLifecycle" =x800)
 

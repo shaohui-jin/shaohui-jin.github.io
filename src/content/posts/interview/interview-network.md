@@ -1,4 +1,5 @@
 ---
+title: 网络
 headerDepth: 3
 ---
 
@@ -81,6 +82,6 @@ headerDepth: 3
 | ‌多路复用‌ | `不支持`多路复用，请求需要按顺序发送和接收，存在“队头阻塞”问题                                                            | `支持`多路复用，单个TCP连接可以并发处理多个请求和响应，解决了队头阻塞问题，提高了并发处理能力‌                                 |
 | 服务器推送 | `不支持`服务器推送功能，客户端必须主动请求每个资源‌。                                                                     | 服务器可以`主动向客户端推送资源`。                                                                                             |
 
-### [浏览器缓存 与 http缓存](/my-blog/Promotion/JavaScript/BrowserCache/)
+### [浏览器缓存 与 http缓存](/blog/blog-browser-cache)
 
 > `localStorage(5M)`、`sessionStorage(5M)`、`cookie(4k)`

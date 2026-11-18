@@ -1,12 +1,8 @@
 ---
-title: CSS推荐
-lang: zh-CN
+title: CSS
 date: 2023-02-01 11:21:30
 icon: css
-permalink: /Recommend/CSS/
 category:
-  - 推荐
-tag:
   - 推荐
 ---
 

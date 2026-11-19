@@ -64,7 +64,16 @@ const firstLevelColorIndexMap = new Map<string, number>();
 
 const activeTabMeta = computed(() => resolveTabMeta(topTab.value) ?? navTabs[0]);
 const activeMenuGroups = computed(() => playgroundNavigation.tabGroups[topTab.value] ?? []);
+const rootMenuGroups = computed(() => activeMenuGroups.value.filter((group) => !group.parentKey));
 const activeFlatItems = computed(() => playgroundNavigation.tabRoutes[topTab.value] ?? []);
+
+function childMenuGroups(parentKey: string) {
+  return activeMenuGroups.value.filter((group) => group.parentKey === parentKey);
+}
+
+function groupAccent(group: { key: string; accent?: string }) {
+  return group.accent ?? resolveFirstLevelRandomColor(`${topTab.value}-group-${group.key}`);
+}
 const activeRouteKey = computed(
   () =>
     activeRouteByTab.value[topTab.value] ??
@@ -78,10 +87,14 @@ const activeView = computed(() => {
   return fallback ? resolveRouteView(topTab.value, fallback) : undefined;
 });
 const activeOpenGroupKeys = computed(() => {
+  const groups = activeMenuGroups.value;
   const route = resolveRouteView(topTab.value, activeRouteKey.value);
-  if (route?.groupKey) return [route.groupKey];
-  const firstGroup = activeMenuGroups.value[0]?.key;
-  return firstGroup ? [firstGroup] : [];
+  const group = groups.find((item) => item.key === route?.groupKey);
+  if (group) return group.parentKey ? [group.parentKey, group.key] : [group.key];
+  const first = groups.find((item) => !item.parentKey);
+  if (!first) return [];
+  const firstChild = groups.find((item) => item.parentKey === first.key);
+  return firstChild ? [first.key, firstChild.key] : [first.key];
 });
 
 /**
@@ -369,39 +382,51 @@ function resolveFirstLevelRandomColor(key: string): string {
       <template v-if="activeTabMeta?.mode === 'menu'">
         <div v-if="navOpen" class="doc-backdrop" @click="navOpen = false" />
         <el-menu
-          :key="`${topTab}-${activeOpenGroupKeys[0] ?? ''}`"
+          :key="`${topTab}-${activeOpenGroupKeys.join(',')}`"
           :default-active="activeRouteKey"
           class="doc-nav"
           :class="{ 'doc-nav--open': navOpen }"
           :default-openeds="activeOpenGroupKeys"
-          :unique-opened="true"
           @select="selectRoute"
         >
-          <template v-if="activeMenuGroups.length > 0">
-            <el-sub-menu v-for="group in activeMenuGroups" :key="group.key" :index="group.key">
+          <template v-if="rootMenuGroups.length > 0">
+            <el-sub-menu v-for="group in rootMenuGroups" :key="group.key" :index="group.key">
               <template #title>
-                <span
-                  class="doc-nav__group"
-                  :style="{
-                    color:
-                      group.accent ?? resolveFirstLevelRandomColor(`${topTab}-group-${group.key}`),
-                  }"
-                >
+                <span class="doc-nav__group" :style="{ color: groupAccent(group) }">
                   <span
                     class="doc-nav__group-marker"
-                    :style="{
-                      backgroundColor:
-                        group.accent ??
-                        resolveFirstLevelRandomColor(`${topTab}-group-${group.key}`),
-                    }"
+                    :style="{ backgroundColor: groupAccent(group) }"
                   />
                   <span>{{ group.title }}</span>
                 </span>
               </template>
-              <el-menu-item v-for="item in group.items" :key="item.key" :index="item.key">
-                <span class="doc-nav__item-name">{{ item.label }}</span>
-                <span class="doc-nav__item-tag">{{ item.tag }}</span>
-              </el-menu-item>
+              <template v-if="childMenuGroups(group.key).length">
+                <el-sub-menu
+                  v-for="child in childMenuGroups(group.key)"
+                  :key="child.key"
+                  :index="child.key"
+                >
+                  <template #title>
+                    <span class="doc-nav__group" :style="{ color: groupAccent(child) }">
+                      <span
+                        class="doc-nav__group-marker"
+                        :style="{ backgroundColor: groupAccent(child) }"
+                      />
+                      <span>{{ child.title }}</span>
+                    </span>
+                  </template>
+                  <el-menu-item v-for="item in child.items" :key="item.key" :index="item.key">
+                    <span class="doc-nav__item-name">{{ item.label }}</span>
+                    <span class="doc-nav__item-tag">{{ item.tag }}</span>
+                  </el-menu-item>
+                </el-sub-menu>
+              </template>
+              <template v-else>
+                <el-menu-item v-for="item in group.items" :key="item.key" :index="item.key">
+                  <span class="doc-nav__item-name">{{ item.label }}</span>
+                  <span class="doc-nav__item-tag">{{ item.tag }}</span>
+                </el-menu-item>
+              </template>
             </el-sub-menu>
           </template>
           <template v-else>
@@ -480,23 +505,41 @@ function resolveFirstLevelRandomColor(key: string): string {
           <button class="doc-panel__close" @click="listOpen = false">✕</button>
         </div>
         <div class="doc-panel__body">
-          <template v-if="activeMenuGroups.length > 0">
-            <template v-for="group in activeMenuGroups" :key="group.key">
-              <div
-                class="doc-panel__group"
-                :style="{ color: resolveFirstLevelRandomColor(`${topTab}-group-${group.key}`) }"
-              >
+          <template v-if="rootMenuGroups.length > 0">
+            <template v-for="group in rootMenuGroups" :key="group.key">
+              <div class="doc-panel__group" :style="{ color: groupAccent(group) }">
                 {{ group.title }}
               </div>
-              <button
-                v-for="item in group.items"
-                :key="item.key"
-                :class="['doc-panel__item', { active: activeRouteKey === item.key }]"
-                @click="selectRoute(item.key)"
-              >
-                <span>{{ item.label }}</span>
-                <small>{{ item.tag }}</small>
-              </button>
+              <template v-if="childMenuGroups(group.key).length">
+                <template v-for="child in childMenuGroups(group.key)" :key="child.key">
+                  <div
+                    class="doc-panel__group doc-panel__group--sub"
+                    :style="{ color: groupAccent(child) }"
+                  >
+                    {{ child.title }}
+                  </div>
+                  <button
+                    v-for="item in child.items"
+                    :key="item.key"
+                    :class="['doc-panel__item', { active: activeRouteKey === item.key }]"
+                    @click="selectRoute(item.key)"
+                  >
+                    <span>{{ item.label }}</span>
+                    <small>{{ item.tag }}</small>
+                  </button>
+                </template>
+              </template>
+              <template v-else>
+                <button
+                  v-for="item in group.items"
+                  :key="item.key"
+                  :class="['doc-panel__item', { active: activeRouteKey === item.key }]"
+                  @click="selectRoute(item.key)"
+                >
+                  <span>{{ item.label }}</span>
+                  <small>{{ item.tag }}</small>
+                </button>
+              </template>
             </template>
           </template>
           <template v-else>
@@ -923,6 +966,11 @@ function resolveFirstLevelRandomColor(key: string): string {
     padding: 10px 16px 6px;
     font-size: 11px;
     font-weight: 600;
+  }
+
+  .doc-panel__group--sub {
+    padding-left: 28px;
+    font-weight: 500;
   }
 
   .doc-panel__item {

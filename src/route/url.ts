@@ -64,7 +64,7 @@ function legacyWorksLocation(head: string, rest: string[]): RouteLocation | null
   if (head === "utils") {
     return {
       tabKey: "works",
-      routeKey: rest.length ? ["tools", ...rest].join("/") : "tools/rgbaToHex",
+      routeKey: rest.length ? ["tools", ...rest].join("/") : "tools/color",
     };
   }
   return null;

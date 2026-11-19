@@ -27,11 +27,24 @@ export interface CalloutBlock {
   html: string;
 }
 
+export interface ApiTableRow {
+  name: string;
+  type: string;
+  default: string;
+  required: boolean;
+  desc: string;
+}
+
+export interface ApiTableBlock {
+  rows: ApiTableRow[];
+}
+
 export interface RenderedMarkdown {
   html: string;
   demos: DemoBlock[];
   fences: CodeFenceBlock[];
   callouts: CalloutBlock[];
+  apiTables: ApiTableBlock[];
 }
 
 interface MdNode {
@@ -56,7 +69,14 @@ interface CodeNode {
   index: number;
 }
 
-type Node = MdNode | ContainerNode | DemoNode | CodeNode;
+interface ApiNode {
+  type: "api";
+  index: number;
+}
+
+type Node = MdNode | ContainerNode | DemoNode | CodeNode | ApiNode;
+
+const API_TABLE_HEADER = ["名称", "类型", "默认值", "必填", "说明"];
 
 const OPEN_RE = /^:::\s*([A-Za-z][\w-]*)\s*(.*)$/;
 const CLOSE_RE = /^:::\s*$/;
@@ -300,11 +320,70 @@ function readFence(
   return null;
 }
 
+function splitTableCells(line: string): string[] {
+  const body = line.trim().replace(/^\|/, "").replace(/\|$/, "");
+  const cells: string[] = [];
+  let current = "";
+  for (let i = 0; i < body.length; i += 1) {
+    if (body[i] === "\\" && body[i + 1] === "|") {
+      current += "\\|";
+      i += 1;
+      continue;
+    }
+    if (body[i] === "|") {
+      cells.push(current.trim());
+      current = "";
+      continue;
+    }
+    current += body[i];
+  }
+  cells.push(current.trim());
+  return cells;
+}
+
+function plainCell(value: string): string {
+  return value.replace(/`/g, "").replace(/\\\|/g, "|");
+}
+
+/** 表头匹配参数说明时抽成 ApiTable，否则留给 markdown-it */
+function readApiTable(lines: string[], start: number): { rows: ApiTableRow[]; end: number } | null {
+  if (!/^\s*\|/.test(lines[start] ?? "")) return null;
+
+  const block: string[] = [];
+  let end = start;
+  for (; end < lines.length; end += 1) {
+    if (!/^\s*\|/.test(lines[end])) break;
+    block.push(lines[end]);
+  }
+  if (block.length < 2) return null;
+
+  const header = splitTableCells(block[0]).map(plainCell);
+  if (header.join("\0") !== API_TABLE_HEADER.join("\0")) return null;
+
+  let dataStart = 1;
+  const second = splitTableCells(block[1]);
+  if (second.every((cell) => /^:?-+:?$/.test(cell))) dataStart = 2;
+
+  const rows = block.slice(dataStart).map((line) => {
+    const cells = splitTableCells(line).map(plainCell);
+    return {
+      name: cells[0] ?? "",
+      type: cells[1] ?? "",
+      default: cells[2] ?? "—",
+      required: cells[3] === "是",
+      desc: cells[4] ?? "",
+    };
+  });
+
+  return { rows, end: end - 1 };
+}
+
 function parseBlocks(
   lines: string[],
   demos: DemoBlock[],
   fences: CodeFenceBlock[],
   extractFences: boolean,
+  apiTables?: ApiTableBlock[],
 ): Node[] {
   const nodes: Node[] = [];
   let buffer: string[] = [];
@@ -357,6 +436,18 @@ function parseBlocks(
         });
         nodes.push({ type: "code", index });
         i = fence.end;
+        continue;
+      }
+    }
+
+    if (apiTables) {
+      const table = readApiTable(lines, i);
+      if (table) {
+        flush();
+        const index = apiTables.length;
+        apiTables.push({ rows: table.rows });
+        nodes.push({ type: "api", index });
+        i = table.end;
         continue;
       }
     }
@@ -490,6 +581,9 @@ function renderNodes(nodes: Node[], callouts: CalloutBlock[]): string {
       if (node.type === "code") {
         return `<div class="vp-code-slot" data-code-index="${node.index}"></div>`;
       }
+      if (node.type === "api") {
+        return `<div class="vp-api-slot" data-api-index="${node.index}"></div>`;
+      }
       if (node.type === "demo") {
         // 占位符类名刻意不用 vp-demo，避免和挂载后的组件根节点同名
         return (
@@ -577,19 +671,27 @@ function applyFootnotes(html: string, callouts: CalloutBlock[], defs: Map<string
   return `${replaced}<section class="vp-footnotes"><ol>${items}</ol></section>`;
 }
 
-export function renderMarkdown(source: string): RenderedMarkdown {
+export function renderMarkdown(source: string, options?: { apiTable?: boolean }): RenderedMarkdown {
   const demos: DemoBlock[] = [];
   const fences: CodeFenceBlock[] = [];
   const callouts: CalloutBlock[] = [];
+  const apiTables: ApiTableBlock[] = [];
   const { source: body, defs } = extractFootnotes(source);
   const cleaned = body
     .replace(/<!--\s*#?region[^>]*-->/gi, "")
     .replace(/<!--\s*#?endregion[^>]*-->/gi, "");
-  const nodes = parseBlocks(cleaned.split("\n"), demos, fences, true);
+  const nodes = parseBlocks(
+    cleaned.split("\n"),
+    demos,
+    fences,
+    true,
+    options?.apiTable ? apiTables : undefined,
+  );
   return {
     html: applyFootnotes(renderNodes(nodes, callouts), callouts, defs),
     demos,
     fences,
     callouts,
+    apiTables,
   };
 }

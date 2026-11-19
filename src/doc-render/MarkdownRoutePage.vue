@@ -4,13 +4,14 @@ import MarkdownRenderer from "./MarkdownRenderer.vue";
 defineProps<{
   source: string;
   fileName?: string;
+  apiTable?: boolean;
 }>();
 </script>
 
 <template>
   <section class="markdown-route-page">
     <div v-if="fileName" class="markdown-route-page__meta">来源：{{ fileName }}</div>
-    <MarkdownRenderer :source="source" />
+    <MarkdownRenderer :source="source" :api-table="apiTable" />
   </section>
 </template>
 

@@ -67,7 +67,11 @@ for (const tab of snapshot.topTabs) {
         .map((item) => viewMap.get(item.key))
         .filter((item): item is RouteViewItem => Boolean(item)),
     }))
-    .filter((group) => group.items.length > 0);
+    .filter(
+      (group, _index, all) =>
+        group.items.length > 0 ||
+        all.some((child) => child.parentKey === group.key && child.items.length > 0),
+    );
 
   tabGroups[tab.key] = groups;
   initialRouteByTab[tab.key] = groups[0]?.items[0]?.key ?? views[0]?.key ?? "";

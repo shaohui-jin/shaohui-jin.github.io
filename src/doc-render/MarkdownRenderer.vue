@@ -4,6 +4,7 @@ import type { App } from "vue";
 import ElementPlus from "element-plus";
 import { elementPlusLocale } from "@/app/core";
 import CodeBlock from "@/works/comp/component/basic/code-block/CodeBlock.vue";
+import DocApiTable from "@/works/comp/doc/demo/ApiTable.vue";
 import { renderMarkdown } from "./createMarkdownEngine";
 import DemoPlayground from "./DemoPlayground.vue";
 import DemoHtml from "./DemoHtml.vue";
@@ -13,13 +14,15 @@ import Callout from "./Callout.vue";
 const props = withDefaults(
   defineProps<{
     source: string;
+    apiTable?: boolean;
   }>(),
   {
     source: "",
+    apiTable: false,
   },
 );
 
-const rendered = computed(() => renderMarkdown(props.source));
+const rendered = computed(() => renderMarkdown(props.source, { apiTable: props.apiTable }));
 const host = ref<HTMLElement | null>(null);
 const mountedApps: App[] = [];
 
@@ -90,6 +93,23 @@ function mountCodes(root: HTMLElement): void {
   });
 }
 
+function mountApiTables(root: HTMLElement): void {
+  root.querySelectorAll<HTMLElement>("[data-api-index]").forEach((el) => {
+    const key = `api:${el.dataset.apiIndex ?? ""}`;
+    if (mountedIds.has(key)) return;
+    const table = rendered.value.apiTables[Number(el.dataset.apiIndex)];
+    if (!table) return;
+    mountedIds.add(key);
+    const app = createApp(DocApiTable, {
+      type: "props",
+      rows: table.rows,
+    });
+    app.use(ElementPlus, { locale: elementPlusLocale });
+    app.mount(el);
+    mountedApps.push(app);
+  });
+}
+
 /**
  * 懒挂载：一篇 42 个 demo 的文章会创建 42 个 iframe，每个都要拉 Vue 运行时，
  * 一次性全挂会把首屏拖到十几秒。这里用 IntersectionObserver 提前 600px 挂载，
@@ -121,6 +141,7 @@ async function mountDemos(): Promise<void> {
 
   mountCallouts(root);
   mountCodes(root);
+  mountApiTables(root);
 
   const placeholders = root.querySelectorAll<HTMLElement>("[data-demo-id]");
 
@@ -296,7 +317,8 @@ $md-block-gap: $doc-sp-md;
   font-size: inherit;
 }
 
-.markdown-body :deep(.vp-code-slot) {
+.markdown-body :deep(.vp-code-slot),
+.markdown-body :deep(.vp-api-slot) {
   margin: $md-block-gap 0;
 }
 

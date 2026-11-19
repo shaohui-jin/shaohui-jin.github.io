@@ -1,27 +1,6 @@
 import { BaseRouteRegistrar } from "@/app/core";
-import type { RouteComponentLoader, RouteGroupMeta, RouteRecord } from "@/app/core";
-import { WORKS_TAB } from "@/route/worksTab";
-
-const docGroups: RouteGroupMeta[] = [
-  { tabKey: WORKS_TAB.key, key: "crud", title: "组件 · CRUD", accent: "#e6a23c", order: 10 },
-  { tabKey: WORKS_TAB.key, key: "status", title: "组件 · 状态标记", accent: "#909399", order: 20 },
-  { tabKey: WORKS_TAB.key, key: "image", title: "组件 · 图片", accent: "#409eff", order: 30 },
-  { tabKey: WORKS_TAB.key, key: "doc", title: "组件 · 文档", accent: "#626aef", order: 40 },
-  { tabKey: WORKS_TAB.key, key: "canvas", title: "组件 · Canvas", accent: "#f56c6c", order: 50 },
-  { tabKey: WORKS_TAB.key, key: "layout", title: "组件 · 布局", accent: "#00bcd4", order: 60 },
-  { tabKey: WORKS_TAB.key, key: "list-op", title: "组件 · 列表操作", accent: "#ff9800", order: 70 },
-  { tabKey: WORKS_TAB.key, key: "select", title: "组件 · 选择", accent: "#9c27b0", order: 80 },
-  { tabKey: WORKS_TAB.key, key: "flow", title: "组件 · 流程", accent: "#3f51b5", order: 90 },
-  { tabKey: WORKS_TAB.key, key: "menu", title: "组件 · 菜单", accent: "#795548", order: 100 },
-  { tabKey: WORKS_TAB.key, key: "viz", title: "组件 · 数据可视化", accent: "#009688", order: 110 },
-  {
-    tabKey: WORKS_TAB.key,
-    key: "interaction-preview",
-    title: "组件 · 交互预览",
-    accent: "#607d8b",
-    order: 120,
-  },
-];
+import type { RouteComponentLoader, RouteRecord } from "@/app/core";
+import { childGroups, WORKS_TAB } from "@/route/worksTab";
 
 const docLoaders: Record<string, RouteComponentLoader> = {
   tables: () => import("./demo/base-table/DemoBaseTable.vue"),
@@ -51,7 +30,14 @@ const docLoaders: Record<string, RouteComponentLoader> = {
 };
 
 const docRouteMeta: Omit<RouteRecord, "tabKey" | "loader">[] = [
-  { key: "tables", label: "BaseTable", groupKey: "crud", tag: "表格", order: 10 },
+  {
+    key: "tables",
+    label: "BaseTable",
+    groupKey: "crud",
+    groupTitle: "CRUD",
+    tag: "表格",
+    order: 10,
+  },
   { key: "base-search", label: "BaseSearch", groupKey: "crud", tag: "搜索", order: 20 },
   { key: "base-search-field", label: "BaseSearchField", groupKey: "crud", tag: "字段", order: 30 },
   {
@@ -69,21 +55,57 @@ const docRouteMeta: Omit<RouteRecord, "tabKey" | "loader">[] = [
     order: 50,
   },
   { key: "base-crud", label: "BaseCrud", groupKey: "crud", tag: "联动", order: 60 },
-  { key: "tag", label: "Tag", groupKey: "status", tag: "状态标记", order: 70 },
+  {
+    key: "tag",
+    label: "Tag",
+    groupKey: "status",
+    groupTitle: "状态标记",
+    tag: "状态标记",
+    order: 70,
+  },
   { key: "dot", label: "Dot", groupKey: "status", tag: "状态标记", order: 80 },
-  { key: "image-3d", label: "Image3D", groupKey: "image", tag: "图片", order: 90 },
+  {
+    key: "image-3d",
+    label: "Image3D",
+    groupKey: "image",
+    groupTitle: "图片",
+    tag: "图片",
+    order: 90,
+  },
   { key: "image-carousel", label: "ImageCarousel", groupKey: "image", tag: "图片", order: 100 },
   { key: "image-pointer", label: "ImagePointer", groupKey: "image", tag: "图片", order: 110 },
   { key: "image-lightbox", label: "ImageLightbox", groupKey: "image", tag: "图片", order: 120 },
-  { key: "code-block", label: "CodeBlock", groupKey: "doc", tag: "文档", order: 130 },
+  {
+    key: "code-block",
+    label: "CodeBlock",
+    groupKey: "doc",
+    groupTitle: "文档",
+    tag: "文档",
+    order: 130,
+  },
   { key: "widget-tabs", label: "WidgetTabs", groupKey: "doc", tag: "文档", order: 140 },
-  { key: "canvas-time", label: "CanvasTime", groupKey: "canvas", tag: "Canvas", order: 150 },
+  {
+    key: "canvas-time",
+    label: "CanvasTime",
+    groupKey: "canvas",
+    groupTitle: "Canvas",
+    tag: "Canvas",
+    order: 150,
+  },
   { key: "canvas-count-up", label: "CanvasCountUp", groupKey: "canvas", tag: "Canvas", order: 160 },
-  { key: "split-pane", label: "SplitPane", groupKey: "layout", tag: "布局", order: 170 },
+  {
+    key: "split-pane",
+    label: "SplitPane",
+    groupKey: "layout",
+    groupTitle: "布局",
+    tag: "布局",
+    order: 170,
+  },
   {
     key: "drag-sort-list",
     label: "DragSortList",
     groupKey: "list-op",
+    groupTitle: "列表操作",
     tag: "列表操作",
     order: 180,
   },
@@ -94,13 +116,35 @@ const docRouteMeta: Omit<RouteRecord, "tabKey" | "loader">[] = [
     tag: "列表操作",
     order: 190,
   },
-  { key: "tree-transfer", label: "TreeTransfer", groupKey: "select", tag: "选择", order: 200 },
-  { key: "step-wizard", label: "StepWizard", groupKey: "flow", tag: "流程", order: 210 },
-  { key: "context-menu", label: "ContextMenu", groupKey: "menu", tag: "菜单", order: 220 },
+  {
+    key: "tree-transfer",
+    label: "TreeTransfer",
+    groupKey: "select",
+    groupTitle: "选择",
+    tag: "选择",
+    order: 200,
+  },
+  {
+    key: "step-wizard",
+    label: "StepWizard",
+    groupKey: "flow",
+    groupTitle: "流程",
+    tag: "流程",
+    order: 210,
+  },
+  {
+    key: "context-menu",
+    label: "ContextMenu",
+    groupKey: "menu",
+    groupTitle: "菜单",
+    tag: "菜单",
+    order: 220,
+  },
   {
     key: "heatmap-calendar",
     label: "HeatmapCalendar",
     groupKey: "viz",
+    groupTitle: "数据可视化",
     tag: "数据可视化",
     order: 230,
   },
@@ -108,6 +152,7 @@ const docRouteMeta: Omit<RouteRecord, "tabKey" | "loader">[] = [
     key: "interaction-preview",
     label: "InteractionPreview",
     groupKey: "interaction-preview",
+    groupTitle: "交互预览",
     tag: "预览",
     order: 240,
   },
@@ -118,7 +163,10 @@ export class CompDocRegistrar extends BaseRouteRegistrar {
 
   register(registry: import("@/app/core").RouteRegistry): void {
     this.registerTopTabs(registry, [WORKS_TAB]);
-    this.registerGroups(registry, docGroups);
+    this.registerGroups(registry, [
+      { tabKey: WORKS_TAB.key, key: "components", title: "组件", accent: "#409eff", order: 10 },
+      ...childGroups(docRouteMeta, "components"),
+    ]);
     this.registerRoutes(
       registry,
       docRouteMeta.map((item) => ({

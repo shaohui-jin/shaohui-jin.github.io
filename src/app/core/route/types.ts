@@ -23,6 +23,8 @@ export interface RouteGroupMeta {
   title: string;
   accent?: string;
   order?: number;
+  /** 有值时挂到该分组下面，侧栏再套一层 */
+  parentKey?: string;
 }
 
 export interface RouteRecord {
@@ -35,6 +37,8 @@ export interface RouteRecord {
   markdownFileName?: string;
   props?: Record<string, unknown>;
   groupKey?: string;
+  /** 同一 groupKey 只在第一条写，注册时用来生成分组标题 */
+  groupTitle?: string;
   tag?: string;
   order?: number;
   description?: string;

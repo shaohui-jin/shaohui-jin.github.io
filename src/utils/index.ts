@@ -7,3 +7,4 @@ export * from "./debounce";
 export * from "./optimize";
 export * from "./permission";
 export * from "./typescript";
+export * from "./highlight";

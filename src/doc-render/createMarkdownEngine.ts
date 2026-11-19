@@ -1,5 +1,5 @@
 import MarkdownIt from "markdown-it";
-import hljs from "highlight.js";
+import { hljs } from "@/utils/highlight";
 
 export type DemoKind = "playground" | "sfc" | "html" | "mermaid";
 

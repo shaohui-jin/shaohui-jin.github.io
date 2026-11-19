@@ -2,7 +2,7 @@
 import { computed } from "vue";
 import { ElButton, ElMessage } from "element-plus";
 import { DocumentCopy } from "@element-plus/icons-vue";
-import hljs from "highlight.js";
+import { hljs } from "@/utils/highlight";
 import type { CodeBlockProps } from "@/works/comp/type/basic";
 
 defineOptions({ name: "CodeBlock" });

@@ -28,18 +28,18 @@ const handleClick = debounce(fn, 500, true);
 declare const debounce: (
   fn: (...args: any[]) => any,
   delay?: number,
-  immediate?: boolean
+  immediate?: boolean,
 ) => (...args: any[]) => void;
 ```
 
 ### 参数说明
 
-| 名称 | 类型 | 默认值 | 必填 | 说明 |
-| --- | --- | --- | --- | --- |
-| fn | `(...args: any[]) => any` | — | 是 | 需要防抖的函数 |
-| delay | `number` | `300` | 否 | 延迟时间（ms） |
-| immediate | `boolean` | `false` | 否 | 是否首次立即执行 |
-| 返回值 | `(...args: any[]) => void` | — | 是 | 防抖后的函数 |
+| 名称      | 类型                       | 默认值  | 必填 | 说明             |
+| --------- | -------------------------- | ------- | ---- | ---------------- |
+| fn        | `(...args: any[]) => any`  | —       | 是   | 需要防抖的函数   |
+| delay     | `number`                   | `300`   | 否   | 延迟时间（ms）   |
+| immediate | `boolean`                  | `false` | 否   | 是否首次立即执行 |
+| 返回值    | `(...args: any[]) => void` | —       | 是   | 防抖后的函数     |
 
 ### 代码实现
 
@@ -92,11 +92,11 @@ declare const useDebounceRef: <T>(value: T, delay?: number) => Ref<T>;
 
 ### 参数说明
 
-| 名称 | 类型 | 默认值 | 必填 | 说明 |
-| --- | --- | --- | --- | --- |
-| value | `T` | — | 是 | 初始值 |
-| delay | `number` | `300` | 否 | 延迟时间（ms） |
-| 返回值 | `Ref<T>` | — | 是 | 防抖 ref |
+| 名称   | 类型     | 默认值 | 必填 | 说明           |
+| ------ | -------- | ------ | ---- | -------------- |
+| value  | `T`      | —      | 是   | 初始值         |
+| delay  | `number` | `300`  | 否   | 延迟时间（ms） |
+| 返回值 | `Ref<T>` | —      | 是   | 防抖 ref       |
 
 ### 代码实现
 

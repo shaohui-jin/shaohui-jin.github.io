@@ -35,8 +35,27 @@ export interface ApiTableRow {
   desc: string;
 }
 
+export interface ApiEventRow {
+  name: string;
+  payload: string;
+  desc: string;
+}
+
+export interface ApiSlotRow {
+  name: string;
+  desc: string;
+}
+
+export type ApiTableKind = "props" | "events" | "slots";
+
 export interface ApiTableBlock {
-  rows: ApiTableRow[];
+  kind: ApiTableKind;
+  rows: ApiTableRow[] | ApiEventRow[] | ApiSlotRow[];
+}
+
+export interface CompPreviewBlock {
+  key: string;
+  code: string;
 }
 
 export interface RenderedMarkdown {
@@ -45,6 +64,7 @@ export interface RenderedMarkdown {
   fences: CodeFenceBlock[];
   callouts: CalloutBlock[];
   apiTables: ApiTableBlock[];
+  previews: CompPreviewBlock[];
 }
 
 interface MdNode {
@@ -74,9 +94,18 @@ interface ApiNode {
   index: number;
 }
 
-type Node = MdNode | ContainerNode | DemoNode | CodeNode | ApiNode;
+interface PreviewNode {
+  type: "preview";
+  index: number;
+}
 
-const API_TABLE_HEADER = ["名称", "类型", "默认值", "必填", "说明"];
+type Node = MdNode | ContainerNode | DemoNode | CodeNode | ApiNode | PreviewNode;
+
+const API_TABLE_HEADERS: Record<ApiTableKind, string[]> = {
+  props: ["名称", "类型", "默认值", "必填", "说明"],
+  events: ["名称", "参数", "说明"],
+  slots: ["名称", "说明"],
+};
 
 const OPEN_RE = /^:::\s*([A-Za-z][\w-]*)\s*(.*)$/;
 const CLOSE_RE = /^:::\s*$/;
@@ -345,8 +374,18 @@ function plainCell(value: string): string {
   return value.replace(/`/g, "").replace(/\\\|/g, "|");
 }
 
+function tableKind(header: string[]): ApiTableKind | undefined {
+  const joined = header.join("\0");
+  return (Object.entries(API_TABLE_HEADERS) as [ApiTableKind, string[]][]).find(
+    ([, cells]) => cells.join("\0") === joined,
+  )?.[0];
+}
+
 /** 表头匹配参数说明时抽成 ApiTable，否则留给 markdown-it */
-function readApiTable(lines: string[], start: number): { rows: ApiTableRow[]; end: number } | null {
+function readApiTable(
+  lines: string[],
+  start: number,
+): { kind: ApiTableKind; rows: ApiTableBlock["rows"]; end: number } | null {
   if (!/^\s*\|/.test(lines[start] ?? "")) return null;
 
   const block: string[] = [];
@@ -357,8 +396,8 @@ function readApiTable(lines: string[], start: number): { rows: ApiTableRow[]; en
   }
   if (block.length < 2) return null;
 
-  const header = splitTableCells(block[0]).map(plainCell);
-  if (header.join("\0") !== API_TABLE_HEADER.join("\0")) return null;
+  const kind = tableKind(splitTableCells(block[0]).map(plainCell));
+  if (!kind) return null;
 
   let dataStart = 1;
   const second = splitTableCells(block[1]);
@@ -366,6 +405,12 @@ function readApiTable(lines: string[], start: number): { rows: ApiTableRow[]; en
 
   const rows = block.slice(dataStart).map((line) => {
     const cells = splitTableCells(line).map(plainCell);
+    if (kind === "events") {
+      return { name: cells[0] ?? "", payload: cells[1] ?? "", desc: cells[2] ?? "" };
+    }
+    if (kind === "slots") {
+      return { name: cells[0] ?? "", desc: cells[1] ?? "" };
+    }
     return {
       name: cells[0] ?? "",
       type: cells[1] ?? "",
@@ -375,7 +420,41 @@ function readApiTable(lines: string[], start: number): { rows: ApiTableRow[]; en
     };
   });
 
-  return { rows, end: end - 1 };
+  return { kind, rows, end: end - 1 };
+}
+
+/** 预览容器要先于普通围栏抽走，避免里面的代码围栏被拆成独立代码块 */
+function readCompPreview(
+  lines: string[],
+  start: number,
+): { key: string; code: string; end: number } | null {
+  const open = /^:::\s*comp-preview\s+(\S+)\s*$/.exec(lines[start]?.trim() ?? "");
+  if (!open) return null;
+
+  let depth = 1;
+  const inner: string[] = [];
+  let end = start + 1;
+  for (; end < lines.length; end += 1) {
+    const current = lines[end].trim();
+    if (/^:::\s*comp-preview\b/.test(current) || OPEN_RE.test(current)) depth += 1;
+    if (CLOSE_RE.test(current)) {
+      depth -= 1;
+      if (depth === 0) break;
+      continue;
+    }
+    inner.push(lines[end]);
+  }
+  if (end >= lines.length) return null;
+
+  let code = "";
+  for (let i = 0; i < inner.length; i += 1) {
+    const fence = readFence(inner, i);
+    if (!fence) continue;
+    code = fence.code;
+    break;
+  }
+
+  return { key: open[1], code, end };
 }
 
 function parseBlocks(
@@ -384,6 +463,7 @@ function parseBlocks(
   fences: CodeFenceBlock[],
   extractFences: boolean,
   apiTables?: ApiTableBlock[],
+  previews?: CompPreviewBlock[],
 ): Node[] {
   const nodes: Node[] = [];
   let buffer: string[] = [];
@@ -424,6 +504,18 @@ function parseBlocks(
       }
     }
 
+    if (previews) {
+      const preview = readCompPreview(lines, i);
+      if (preview) {
+        flush();
+        const index = previews.length;
+        previews.push({ key: preview.key, code: preview.code });
+        nodes.push({ type: "preview", index });
+        i = preview.end;
+        continue;
+      }
+    }
+
     if (extractFences) {
       const fence = readFence(lines, i);
       if (fence) {
@@ -445,7 +537,7 @@ function parseBlocks(
       if (table) {
         flush();
         const index = apiTables.length;
-        apiTables.push({ rows: table.rows });
+        apiTables.push({ kind: table.kind, rows: table.rows });
         nodes.push({ type: "api", index });
         i = table.end;
         continue;
@@ -584,6 +676,9 @@ function renderNodes(nodes: Node[], callouts: CalloutBlock[]): string {
       if (node.type === "api") {
         return `<div class="vp-api-slot" data-api-index="${node.index}"></div>`;
       }
+      if (node.type === "preview") {
+        return `<div class="vp-preview-slot" data-preview-index="${node.index}"></div>`;
+      }
       if (node.type === "demo") {
         // 占位符类名刻意不用 vp-demo，避免和挂载后的组件根节点同名
         return (
@@ -676,6 +771,7 @@ export function renderMarkdown(source: string, options?: { apiTable?: boolean })
   const fences: CodeFenceBlock[] = [];
   const callouts: CalloutBlock[] = [];
   const apiTables: ApiTableBlock[] = [];
+  const previews: CompPreviewBlock[] = [];
   const { source: body, defs } = extractFootnotes(source);
   const cleaned = body
     .replace(/<!--\s*#?region[^>]*-->/gi, "")
@@ -686,6 +782,7 @@ export function renderMarkdown(source: string, options?: { apiTable?: boolean })
     fences,
     true,
     options?.apiTable ? apiTables : undefined,
+    previews,
   );
   return {
     html: applyFootnotes(renderNodes(nodes, callouts), callouts, defs),
@@ -693,5 +790,6 @@ export function renderMarkdown(source: string, options?: { apiTable?: boolean })
     fences,
     callouts,
     apiTables,
+    previews,
   };
 }

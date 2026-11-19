@@ -29,11 +29,11 @@ declare const flattenObj: (obj: Record<string, any>, prefix?: string) => Record<
 
 ### 参数说明
 
-| 名称 | 类型 | 默认值 | 必填 | 说明 |
-| --- | --- | --- | --- | --- |
-| obj | `Record<string, any>` | — | 是 | 需要扁平化的对象 |
-| prefix | `string` | `""` | 否 | 键名前缀 |
-| 返回值 | `Record<string, any>` | — | 是 | 扁平化后的单层对象 |
+| 名称   | 类型                  | 默认值 | 必填 | 说明               |
+| ------ | --------------------- | ------ | ---- | ------------------ |
+| obj    | `Record<string, any>` | —      | 是   | 需要扁平化的对象   |
+| prefix | `string`              | `""`   | 否   | 键名前缀           |
+| 返回值 | `Record<string, any>` | —      | 是   | 扁平化后的单层对象 |
 
 ### 代码实现
 
@@ -78,10 +78,10 @@ declare const unFlatten: (obj: Record<string, any>) => Record<string, any>;
 
 ### 参数说明
 
-| 名称 | 类型 | 默认值 | 必填 | 说明 |
-| --- | --- | --- | --- | --- |
-| obj | `Record<string, any>` | — | 是 | 扁平化的对象 |
-| 返回值 | `Record<string, any>` | — | 是 | 还原后的嵌套对象 |
+| 名称   | 类型                  | 默认值 | 必填 | 说明             |
+| ------ | --------------------- | ------ | ---- | ---------------- |
+| obj    | `Record<string, any>` | —      | 是   | 扁平化的对象     |
+| 返回值 | `Record<string, any>` | —      | 是   | 还原后的嵌套对象 |
 
 ### 代码实现
 
@@ -118,8 +118,8 @@ export const unFlatten = (obj: ObjectType): ObjectType => {
 ```typescript
 import { isObjEqual } from "@/utils/object";
 
-isObjEqual({ a: 1, b: { c: 2 } }, { a: 1, b: { c: 2 } });  // true
-isObjEqual({ a: 1 }, { a: 2 });                              // false
+isObjEqual({ a: 1, b: { c: 2 } }, { a: 1, b: { c: 2 } }); // true
+isObjEqual({ a: 1 }, { a: 2 }); // false
 ```
 
 ### 配置参数
@@ -130,11 +130,11 @@ declare function isObjEqual(obj1: Record<string, any>, obj2: Record<string, any>
 
 ### 参数说明
 
-| 名称 | 类型 | 默认值 | 必填 | 说明 |
-| --- | --- | --- | --- | --- |
-| obj1 | `Record<string, any>` | — | 是 | 对象一 |
-| obj2 | `Record<string, any>` | — | 是 | 对象二 |
-| 返回值 | `boolean` | — | 是 | 是否相同 |
+| 名称   | 类型                  | 默认值 | 必填 | 说明     |
+| ------ | --------------------- | ------ | ---- | -------- |
+| obj1   | `Record<string, any>` | —      | 是   | 对象一   |
+| obj2   | `Record<string, any>` | —      | 是   | 对象二   |
+| 返回值 | `boolean`             | —      | 是   | 是否相同 |
 
 ### 代码实现
 
@@ -173,7 +173,7 @@ export function isObjEqual(obj1: ObjectType, obj2: ObjectType): boolean {
 ```typescript
 import { isObjEmpty } from "@/utils/object";
 
-isObjEmpty({});        // true
+isObjEmpty({}); // true
 isObjEmpty({ a: 1 }); // false
 ```
 
@@ -185,10 +185,10 @@ declare const isObjEmpty: (obj: Record<string, any>) => boolean;
 
 ### 参数说明
 
-| 名称 | 类型 | 默认值 | 必填 | 说明 |
-| --- | --- | --- | --- | --- |
-| obj | `Record<string, any>` | — | 是 | 需要判断的对象 |
-| 返回值 | `boolean` | — | 是 | 是否为空 |
+| 名称   | 类型                  | 默认值 | 必填 | 说明           |
+| ------ | --------------------- | ------ | ---- | -------------- |
+| obj    | `Record<string, any>` | —      | 是   | 需要判断的对象 |
+| 返回值 | `boolean`             | —      | 是   | 是否为空       |
 
 ### 代码实现
 

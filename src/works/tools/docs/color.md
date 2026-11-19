@@ -14,8 +14,8 @@ order: 10
 ```typescript
 import { rgbaToHex } from "@/utils/color";
 
-rgbaToHex("rgba(255, 0, 0, 1)");   // "#ff0000"
-rgbaToHex("rgb(0, 128, 255)");     // "#0080ff"
+rgbaToHex("rgba(255, 0, 0, 1)"); // "#ff0000"
+rgbaToHex("rgb(0, 128, 255)"); // "#0080ff"
 ```
 
 ### 配置参数
@@ -26,10 +26,10 @@ declare const rgbaToHex: (color: string) => string;
 
 ### 参数说明
 
-| 名称 | 类型 | 默认值 | 必填 | 说明 |
-| --- | --- | --- | --- | --- |
-| color | `string` | — | 是 | rgba 或 rgb 颜色字符串 |
-| 返回值 | `string` | — | 是 | 十六进制颜色字符串，如 #ff0000 |
+| 名称   | 类型     | 默认值 | 必填 | 说明                           |
+| ------ | -------- | ------ | ---- | ------------------------------ |
+| color  | `string` | —      | 是   | rgba 或 rgb 颜色字符串         |
+| 返回值 | `string` | —      | 是   | 十六进制颜色字符串，如 #ff0000 |
 
 ### 代码实现
 
@@ -65,8 +65,8 @@ export const rgbaToHex = (color: string): string => {
 ```typescript
 import { hexToRGBA } from "@/utils/color";
 
-hexToRGBA("#ff0000", 1);    // "rgba(255, 0, 0, 1)"
-hexToRGBA("#ff0000");       // "rgb(255, 0, 0)"
+hexToRGBA("#ff0000", 1); // "rgba(255, 0, 0, 1)"
+hexToRGBA("#ff0000"); // "rgb(255, 0, 0)"
 ```
 
 ### 配置参数
@@ -77,11 +77,11 @@ declare const hexToRGBA: (hex: string, alpha?: number) => string;
 
 ### 参数说明
 
-| 名称 | 类型 | 默认值 | 必填 | 说明 |
-| --- | --- | --- | --- | --- |
-| hex | `string` | — | 是 | 十六进制颜色字符串 #RRGGBB |
-| alpha | `number` | — | 否 | 可选，透明度 0~1 |
-| 返回值 | `string` | — | 是 | rgba 或 rgb 字符串 |
+| 名称   | 类型     | 默认值 | 必填 | 说明                       |
+| ------ | -------- | ------ | ---- | -------------------------- |
+| hex    | `string` | —      | 是   | 十六进制颜色字符串 #RRGGBB |
+| alpha  | `number` | —      | 否   | 可选，透明度 0~1           |
+| 返回值 | `string` | —      | 是   | rgba 或 rgb 字符串         |
 
 ### 代码实现
 
@@ -109,7 +109,7 @@ export const hexToRGBA = (hex: string, alpha?: number): string => {
 ```typescript
 import { colorToRGBA } from "@/utils/color";
 
-colorToRGBA("#ff5733");  // { r: 255, g: 87, b: 51 }
+colorToRGBA("#ff5733"); // { r: 255, g: 87, b: 51 }
 ```
 
 ### 配置参数
@@ -120,10 +120,10 @@ declare const colorToRGBA: (hex: string) => { r: number; g: number; b: number };
 
 ### 参数说明
 
-| 名称 | 类型 | 默认值 | 必填 | 说明 |
-| --- | --- | --- | --- | --- |
-| hex | `string` | — | 是 | 十六进制颜色字符串 |
-| 返回值 | `{ r: number; g: number; b: number }` | — | 是 | RGB 对象 |
+| 名称   | 类型                                  | 默认值 | 必填 | 说明               |
+| ------ | ------------------------------------- | ------ | ---- | ------------------ |
+| hex    | `string`                              | —      | 是   | 十六进制颜色字符串 |
+| 返回值 | `{ r: number; g: number; b: number }` | —      | 是   | RGB 对象           |
 
 ### 代码实现
 

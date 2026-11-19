@@ -49,7 +49,43 @@ export function parsePath(pathname: string): RouteLocation | null {
   if (legacy) return legacy;
 
   if (!resolveTabMeta(head)) return null;
-  return { tabKey: head, routeKey: rest.join("/") };
+  return { tabKey: head, routeKey: aliasComponentRoute(rest.join("/")) };
+}
+
+/** 已收成分组页的组件。旧地址仍打开原来那一组。 */
+const COMPONENT_GROUP_ALIAS: Record<string, string> = {
+  tables: "crud",
+  "base-search": "crud",
+  "base-search-field": "crud",
+  "base-search-drawer": "crud",
+  "base-column-setting": "crud",
+  "base-crud": "crud",
+  tag: "status",
+  dot: "status",
+  "image-3d": "image",
+  "image-carousel": "image",
+  "image-pointer": "image",
+  "image-lightbox": "image",
+  "code-block": "doc",
+  "widget-tabs": "doc",
+  "canvas-time": "canvas",
+  "canvas-count-up": "canvas",
+  "split-pane": "layout",
+  "drag-sort-list": "list-op",
+  "floating-toolbar": "list-op",
+  "tree-transfer": "select",
+  "step-wizard": "flow",
+  "context-menu": "menu",
+  "heatmap-calendar": "viz",
+};
+
+function aliasComponentRoute(routeKey: string): string {
+  const parts = routeKey.split("/");
+  if (parts[0] !== "components" || !parts[1]) return routeKey;
+  const group = COMPONENT_GROUP_ALIAS[parts[1]];
+  if (!group) return routeKey;
+  parts[1] = group;
+  return parts.join("/");
 }
 
 /**
@@ -59,7 +95,10 @@ export function parsePath(pathname: string): RouteLocation | null {
 function legacyWorksLocation(head: string, rest: string[]): RouteLocation | null {
   if (head === "workflow-designer") return { tabKey: "works", routeKey: "workflow" };
   if (head === "docs") {
-    return { tabKey: "works", routeKey: rest.length ? ["components", ...rest].join("/") : "" };
+    return {
+      tabKey: "works",
+      routeKey: aliasComponentRoute(rest.length ? ["components", ...rest].join("/") : ""),
+    };
   }
   if (head === "utils") {
     return {

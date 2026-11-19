@@ -26,10 +26,10 @@ declare const copyToClipboard: (text: string) => Promise<boolean>;
 
 ### 参数说明
 
-| 名称 | 类型 | 默认值 | 必填 | 说明 |
-| --- | --- | --- | --- | --- |
-| text | `string` | — | 是 | 要复制的文本 |
-| 返回值 | `Promise<boolean>` | — | 是 | 是否成功 |
+| 名称   | 类型               | 默认值 | 必填 | 说明         |
+| ------ | ------------------ | ------ | ---- | ------------ |
+| text   | `string`           | —      | 是   | 要复制的文本 |
+| 返回值 | `Promise<boolean>` | —      | 是   | 是否成功     |
 
 ### 代码实现
 

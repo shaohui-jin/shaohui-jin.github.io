@@ -1,11 +1,10 @@
 ﻿<script setup lang="ts">
 /**
- * Demo 站包装：复用组件库的 WidgetTabs，
- * 注入 Demo 站主题 + 本地 highlight 逻辑。
+ * Demo 站包装：复用组件库的 WidgetTabs，注入 Demo 站主题。
+ * 代码 Tab 按 vue 交给 CodeBlock 着色。
  */
-import { computed, useSlots } from "vue";
+import { useSlots } from "vue";
 import { WidgetTabs } from "@/works/comp";
-import { highlightDemoCode } from "./demoCodeHighlight";
 
 const props = withDefaults(
   defineProps<{
@@ -16,11 +15,10 @@ const props = withDefaults(
 );
 
 const slots = useSlots() as Readonly<Record<string, (() => unknown[]) | undefined>>;
-const highlightedCode = computed(() => highlightDemoCode(props.code));
 </script>
 
 <template>
-  <WidgetTabs :code="props.code" :highlighted="highlightedCode" :flush="flush">
+  <WidgetTabs :code="props.code" lang="vue" :flush="flush">
     <slot />
     <template v-if="slots.footer" #footer>
       <slot name="footer" />

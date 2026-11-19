@@ -14,14 +14,18 @@ order: 70
 ```typescript
 import { performChunk } from "@/utils/optimize";
 
-performChunk(100000, (item, i) => {
-  // 每项任务处理
-}, (task) => {
-  requestAnimationFrame(() => {
-    const start = performance.now();
-    task(() => performance.now() - start < 16);
-  });
-});
+performChunk(
+  100000,
+  (item, i) => {
+    // 每项任务处理
+  },
+  (task) => {
+    requestAnimationFrame(() => {
+      const start = performance.now();
+      task(() => performance.now() - start < 16);
+    });
+  },
+);
 ```
 
 ### 配置参数
@@ -30,17 +34,17 @@ performChunk(100000, (item, i) => {
 declare const performChunk: (
   data: number | any[],
   taskHandler: (item: any, index: number) => void,
-  scheduler: (run: (goOn: () => boolean) => void) => void
+  scheduler: (run: (goOn: () => boolean) => void) => void,
 ) => void;
 ```
 
 ### 参数说明
 
-| 名称 | 类型 | 默认值 | 必填 | 说明 |
-| --- | --- | --- | --- | --- |
-| data | `number \| any[]` | — | 是 | 任务数据（数字=执行次数，数组=遍历） |
-| taskHandler | `(item, index) => void` | — | 是 | 每项任务的处理函数 |
-| scheduler | `(run) => void` | — | 是 | 调度器，控制执行时机 |
+| 名称        | 类型                    | 默认值 | 必填 | 说明                                 |
+| ----------- | ----------------------- | ------ | ---- | ------------------------------------ |
+| data        | `number \| any[]`       | —      | 是   | 任务数据（数字=执行次数，数组=遍历） |
+| taskHandler | `(item, index) => void` | —      | 是   | 每项任务的处理函数                   |
+| scheduler   | `(run) => void`         | —      | 是   | 调度器，控制执行时机                 |
 
 ### 代码实现
 
@@ -83,12 +87,7 @@ export const performChunk = (
 ```typescript
 import { concurRequest } from "@/utils/optimize";
 
-const results = await concurRequest([
-  "/api/data1",
-  "/api/data2",
-  "/api/data3",
-  "/api/data4",
-], 2);  // 最大2个并发
+const results = await concurRequest(["/api/data1", "/api/data2", "/api/data3", "/api/data4"], 2); // 最大2个并发
 ```
 
 ### 配置参数
@@ -99,11 +98,11 @@ declare const concurRequest: (urls?: string[], maxNum?: number) => Promise<Respo
 
 ### 参数说明
 
-| 名称 | 类型 | 默认值 | 必填 | 说明 |
-| --- | --- | --- | --- | --- |
-| urls | `string[]` | `[]` | 否 | 请求 URL 列表 |
-| maxNum | `number` | `3` | 否 | 最大并发数 |
-| 返回值 | `Promise<Response[]>` | — | 是 | 所有响应结果 |
+| 名称   | 类型                  | 默认值 | 必填 | 说明          |
+| ------ | --------------------- | ------ | ---- | ------------- |
+| urls   | `string[]`            | `[]`   | 否   | 请求 URL 列表 |
+| maxNum | `number`              | `3`    | 否   | 最大并发数    |
+| 返回值 | `Promise<Response[]>` | —      | 是   | 所有响应结果  |
 
 ### 代码实现
 

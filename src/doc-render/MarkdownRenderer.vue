@@ -5,6 +5,7 @@ import ElementPlus from "element-plus";
 import { elementPlusLocale } from "@/app/core";
 import CodeBlock from "@/works/comp/component/basic/code-block/CodeBlock.vue";
 import DocApiTable from "@/works/comp/doc/demo/ApiTable.vue";
+import CompDocPreview from "./CompDocPreview.vue";
 import { renderMarkdown } from "./createMarkdownEngine";
 import DemoPlayground from "./DemoPlayground.vue";
 import DemoHtml from "./DemoHtml.vue";
@@ -101,8 +102,25 @@ function mountApiTables(root: HTMLElement): void {
     if (!table) return;
     mountedIds.add(key);
     const app = createApp(DocApiTable, {
-      type: "props",
+      type: table.kind,
       rows: table.rows,
+    });
+    app.use(ElementPlus, { locale: elementPlusLocale });
+    app.mount(el);
+    mountedApps.push(app);
+  });
+}
+
+function mountPreviews(root: HTMLElement): void {
+  root.querySelectorAll<HTMLElement>("[data-preview-index]").forEach((el) => {
+    const key = `preview:${el.dataset.previewIndex ?? ""}`;
+    if (mountedIds.has(key)) return;
+    const preview = rendered.value.previews[Number(el.dataset.previewIndex)];
+    if (!preview) return;
+    mountedIds.add(key);
+    const app = createApp(CompDocPreview, {
+      previewKey: preview.key,
+      code: preview.code,
     });
     app.use(ElementPlus, { locale: elementPlusLocale });
     app.mount(el);
@@ -142,6 +160,7 @@ async function mountDemos(): Promise<void> {
   mountCallouts(root);
   mountCodes(root);
   mountApiTables(root);
+  mountPreviews(root);
 
   const placeholders = root.querySelectorAll<HTMLElement>("[data-demo-id]");
 
@@ -318,7 +337,8 @@ $md-block-gap: $doc-sp-md;
 }
 
 .markdown-body :deep(.vp-code-slot),
-.markdown-body :deep(.vp-api-slot) {
+.markdown-body :deep(.vp-api-slot),
+.markdown-body :deep(.vp-preview-slot) {
   margin: $md-block-gap 0;
 }
 

@@ -58,15 +58,17 @@ async function copyCode(text: string) {
     >
       复制
     </ElButton>
-    <pre class="code-block"><code
-      ><span
+    <pre class="code-block">
+      <code>
+        <span
         v-for="line in lines"
         :key="line.number"
         class="code-block__line"
         :class="{ 'code-block__line--mark': line.marked }"
         ><span class="code-block__no">{{ line.number }}</span
-        ><span class="code-block__text" v-html="line.html || '&#8203;'" /></span></code
-    ></pre>
+        ><span class="code-block__text" v-html="line.html || '&#8203;'" /></span>
+      </code>
+    </pre>
   </div>
 </template>
 
@@ -149,7 +151,7 @@ async function copyCode(text: string) {
   font-family: inherit;
   font-size: inherit;
   line-height: inherit;
-  white-space: pre-wrap;
+  white-space: normal;
   overflow-wrap: break-word;
 }
 </style>

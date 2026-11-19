@@ -17,16 +17,18 @@ import { usePermission } from "@/utils/permission";
 const perms = ["add", "edit", "delete", "view"] as const;
 const { getPermission, hasPermission, switchPermission } = usePermission(perms);
 
-let v = getPermission(["add", "edit"]);  // 3
-hasPermission(v, "add");                 // true
-v = switchPermission(v, "add");          // 2
-hasPermission(v, "add");                 // false
+let v = getPermission(["add", "edit"]); // 3
+hasPermission(v, "add"); // true
+v = switchPermission(v, "add"); // 2
+hasPermission(v, "add"); // false
 ```
 
 ### 配置参数
 
 ```typescript
-declare const usePermission: <T extends readonly string[]>(permissions: T) => {
+declare const usePermission: <T extends readonly string[]>(
+  permissions: T,
+) => {
   getPermission: (p: Array<T[number]>) => number;
   hasPermission: (v: number, p: T[number]) => boolean;
   switchPermission: (v: number, p: T[number]) => number;
@@ -35,12 +37,12 @@ declare const usePermission: <T extends readonly string[]>(permissions: T) => {
 
 ### 参数说明
 
-| 名称 | 类型 | 默认值 | 必填 | 说明 |
-| --- | --- | --- | --- | --- |
-| permissions | `readonly string[]` | — | 是 | 权限字段列表 |
-| 返回值.getPermission | `(p: string[]) => number` | — | 是 | 根据字段列表获取权限值 |
-| 返回值.hasPermission | `(v, p) => boolean` | — | 是 | 判断是否拥有某权限 |
-| 返回值.switchPermission | `(v, p) => number` | — | 是 | 切换某权限（异或） |
+| 名称                    | 类型                      | 默认值 | 必填 | 说明                   |
+| ----------------------- | ------------------------- | ------ | ---- | ---------------------- |
+| permissions             | `readonly string[]`       | —      | 是   | 权限字段列表           |
+| 返回值.getPermission    | `(p: string[]) => number` | —      | 是   | 根据字段列表获取权限值 |
+| 返回值.hasPermission    | `(v, p) => boolean`       | —      | 是   | 判断是否拥有某权限     |
+| 返回值.switchPermission | `(v, p) => number`        | —      | 是   | 切换某权限（异或）     |
 
 ### 代码实现
 

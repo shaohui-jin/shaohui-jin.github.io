@@ -10,11 +10,13 @@ const props = withDefaults(
     /** 代码 Tab 展示的源代码文本 */
     code: string;
     /** 经 highlight 处理后的代码 HTML */
-    highlighted: string;
+    highlighted?: string;
+    /** 未传 highlighted 时交给 CodeBlock 的语法名 */
+    lang?: string;
     /** 预览区是否贴边 */
     flush?: boolean;
   }>(),
-  { flush: true },
+  { highlighted: "", lang: "", flush: true },
 );
 
 const slots: ReturnType<typeof useSlots> = useSlots();
@@ -34,7 +36,7 @@ const tab = ref<"preview" | "code">("preview");
 
     <ElTabPane label="代码" name="code" lazy>
       <div class="widget-tabs__body widget-tabs__body--code">
-        <CodeBlock :code="props.code" :highlighted="highlighted" />
+        <CodeBlock :code="props.code" :highlighted="highlighted" :lang="lang" />
       </div>
     </ElTabPane>
   </ElTabs>

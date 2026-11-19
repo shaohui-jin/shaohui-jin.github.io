@@ -117,7 +117,9 @@ export interface WidgetTabsProps {
   /** 代码 Tab 展示的源代码文本 */
   code: string;
   /** 经 highlight 处理后的代码 HTML */
-  highlighted: string;
+  highlighted?: string;
+  /** 未传 highlighted 时交给 CodeBlock 的语法名 */
+  lang?: string;
   /** 预览区是否贴边（默认 true） */
   flush?: boolean;
 }

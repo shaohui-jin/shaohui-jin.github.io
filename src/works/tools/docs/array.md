@@ -29,11 +29,11 @@ declare const flattenTree: (arr: any[], childrenKey?: string) => any[];
 
 ### 参数说明
 
-| 名称 | 类型 | 默认值 | 必填 | 说明 |
-| --- | --- | --- | --- | --- |
-| arr | `any[]` | — | 是 | 树形数组 |
-| childrenKey | `string` | `"children"` | 否 | 子节点字段名 |
-| 返回值 | `any[]` | — | 是 | 扁平化后的数组 |
+| 名称        | 类型     | 默认值       | 必填 | 说明           |
+| ----------- | -------- | ------------ | ---- | -------------- |
+| arr         | `any[]`  | —            | 是   | 树形数组       |
+| childrenKey | `string` | `"children"` | 否   | 子节点字段名   |
+| 返回值      | `any[]`  | —            | 是   | 扁平化后的数组 |
 
 ### 代码实现
 
@@ -63,8 +63,8 @@ export const flattenTree = (arr: any[], childrenKey = "children"): any[] => {
 ```typescript
 import { isArrEqual } from "@/utils/array";
 
-isArrEqual([1, 2, 3], [3, 2, 1]);  // true
-isArrEqual([1, 2], [1, 3]);        // false
+isArrEqual([1, 2, 3], [3, 2, 1]); // true
+isArrEqual([1, 2], [1, 3]); // false
 ```
 
 ### 配置参数
@@ -75,11 +75,11 @@ declare function isArrEqual(arr1: Array<string | number>, arr2: Array<string | n
 
 ### 参数说明
 
-| 名称 | 类型 | 默认值 | 必填 | 说明 |
-| --- | --- | --- | --- | --- |
-| arr1 | `Array<string \| number>` | — | 是 | 数组一 |
-| arr2 | `Array<string \| number>` | — | 是 | 数组二 |
-| 返回值 | `boolean` | — | 是 | 是否相同 |
+| 名称   | 类型                      | 默认值 | 必填 | 说明     |
+| ------ | ------------------------- | ------ | ---- | -------- |
+| arr1   | `Array<string \| number>` | —      | 是   | 数组一   |
+| arr2   | `Array<string \| number>` | —      | 是   | 数组二   |
+| 返回值 | `boolean`                 | —      | 是   | 是否相同 |
 
 ### 代码实现
 

@@ -1,6 +1,6 @@
 import { BaseRouteRegistrar } from "@/app/core";
 import type { TopTabMeta } from "@/app/core";
-import { blogDocConfigs, blogGroups } from "../../content";
+import { blogDocConfigs, blogGroups, loadBlogSource } from "../../content";
 
 const blogTopTab: TopTabMeta = {
   key: "blog",
@@ -34,7 +34,7 @@ export class BlogRouteRegistrar extends BaseRouteRegistrar {
         tag: doc.category,
         order: doc.order,
         renderMode: "markdown" as const,
-        markdownSource: doc.source,
+        markdownLoader: () => loadBlogSource(doc.file),
         markdownFileName: doc.fileName,
       })),
     ]);

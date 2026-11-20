@@ -217,7 +217,7 @@ const heatmapLog = ref("—");
 </template>
 
 <style scoped lang="scss">
-@use "../style/variables" as *;
+@use "@/styles/site/variables" as *;
 @use "../style/demo";
 
 .split-pane-demo {

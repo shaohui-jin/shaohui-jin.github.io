@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, inject } from "vue";
-import type { ResolvedLibConfig } from "@/app/core";
+import { computed } from "vue";
+import { useLibPlugin } from "@/app/core";
 import { homeHero } from "../homeData";
 
 interface HeroStats {
@@ -12,7 +12,7 @@ interface HeroStats {
 const props = defineProps<{ stats: HeroStats }>();
 const emit = defineEmits<{ (e: "scroll-next"): void }>();
 
-const lib = inject<{ config: ResolvedLibConfig }>("compLib");
+const lib = useLibPlugin();
 
 /** 相对亮度（0~1），用来判断当前主题是不是暗色 */
 function luminance(hex: string): number {

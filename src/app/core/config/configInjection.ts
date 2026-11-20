@@ -6,6 +6,14 @@ import { defaultLibConfig } from "./configDefaults";
 /** provide/inject 用的 key */
 export const LIB_CONFIG_KEY: InjectionKey<ResolvedLibConfig> = Symbol("comp-lib-config");
 
+/** 主题配置句柄：读取当前配置 + 保存 */
+export interface LibPluginHandle {
+  config: ResolvedLibConfig;
+  saveConfig(config: LibConfig): void;
+}
+
+export const LIB_PLUGIN_KEY: InjectionKey<LibPluginHandle> = Symbol("comp-lib-plugin");
+
 /** 持久化选项 */
 export interface PersistOptions {
   /** localStorage key，默认 "comp-lib-config" */
@@ -130,9 +138,23 @@ export function createCompLib(userConfig?: LibConfig, persist?: PersistOptions) 
 
   const resolved = reactive(initial) as ResolvedLibConfig;
 
+  /** 保存配置：同步更新内存 + localStorage + CSS 变量，切换页面即可见 */
+  function saveConfig(newConfig: LibConfig): void {
+    if (newConfig.theme) Object.assign(resolved.theme, newConfig.theme);
+
+    if (typeof document !== "undefined") {
+      applyCssVars(resolved);
+    }
+
+    if (persist?.enabled) {
+      writeToStorage({ theme: { ...resolved.theme } }, storageKey);
+    }
+  }
+
   return {
     install(app: App) {
       app.provide(LIB_CONFIG_KEY, resolved);
+      app.provide(LIB_PLUGIN_KEY, { config: resolved, saveConfig });
 
       if (typeof document !== "undefined") {
         applyCssVars(resolved);
@@ -141,18 +163,7 @@ export function createCompLib(userConfig?: LibConfig, persist?: PersistOptions) 
       app.config.globalProperties.$compLibConfig = resolved;
     },
 
-    /** 保存配置：同步更新内存 + localStorage + CSS 变量，切换页面即可见 */
-    saveConfig(newConfig: LibConfig) {
-      if (newConfig.theme) Object.assign(resolved.theme, newConfig.theme);
-
-      if (typeof document !== "undefined") {
-        applyCssVars(resolved);
-      }
-
-      if (persist?.enabled) {
-        writeToStorage({ theme: { ...resolved.theme } }, storageKey);
-      }
-    },
+    saveConfig,
 
     /** 当前已解析的完整配置（响应式） */
     config: resolved,

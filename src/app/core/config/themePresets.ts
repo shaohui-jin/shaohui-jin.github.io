@@ -84,6 +84,17 @@ export const themePresetSwatches: Record<ThemePresetKey, string> = {
   dark: "#7aa2f7",
 };
 
+/** 由「中圆角」推导小/中/大三档圆角，主题浮层滑块与预设共用同一套比例 */
+export function radiusTiers(
+  radius: number,
+): Pick<LibThemeConfig, "radiusSm" | "radiusMd" | "radiusLg"> {
+  return {
+    radiusSm: Math.max(2, Math.round(radius / 2)),
+    radiusMd: radius,
+    radiusLg: radius + 2,
+  };
+}
+
 /** 主色快调色板 */
 export const primarySwatches = [
   "#409eff",

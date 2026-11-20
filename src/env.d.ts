@@ -10,3 +10,17 @@ declare module "*.md?raw" {
   const content: string;
   export default content;
 }
+
+declare module "virtual:blog-meta" {
+  interface BlogMetaEntry {
+    file: string;
+    key: string;
+    label: string;
+    groupKey: string;
+    date: string;
+    category: string;
+    headerDepth?: number;
+    excerpt: string;
+  }
+  export const blogMeta: BlogMetaEntry[];
+}

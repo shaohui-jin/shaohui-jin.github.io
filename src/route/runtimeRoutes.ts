@@ -40,7 +40,8 @@ const initialRouteByTab: Record<string, string> = {};
 for (const tab of snapshot.topTabs) {
   const routes = snapshot.tabRoutes[tab.key] ?? [];
   const views = routes.map<RouteViewItem>((route) => {
-    const isMarkdownRoute = route.renderMode === "markdown" || Boolean(route.markdownSource);
+    const isMarkdownRoute =
+      route.renderMode === "markdown" || Boolean(route.markdownSource || route.markdownLoader);
     return {
       key: route.key,
       label: route.label,
@@ -50,6 +51,7 @@ for (const tab of snapshot.topTabs) {
       props: isMarkdownRoute
         ? {
             source: route.markdownSource,
+            sourceLoader: route.markdownLoader,
             fileName: route.markdownFileName,
             ...route.props,
           }

@@ -1,8 +1,16 @@
 <script setup lang="ts">
-import { computed, createApp, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import type { App } from "vue";
-import ElementPlus from "element-plus";
-import { elementPlusLocale } from "@/app/core";
+import {
+  computed,
+  createVNode,
+  getCurrentInstance,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  render,
+  watch,
+} from "vue";
+import type { Component } from "vue";
 import CodeBlock from "@/works/comp/component/basic/code-block/CodeBlock.vue";
 import DocApiTable from "@/works/comp/doc/demo/ApiTable.vue";
 import CompDocPreview from "./CompDocPreview.vue";
@@ -25,7 +33,8 @@ const props = withDefaults(
 
 const rendered = computed(() => renderMarkdown(props.source, { apiTable: props.apiTable }));
 const host = ref<HTMLElement | null>(null);
-const mountedApps: App[] = [];
+const instance = getCurrentInstance();
+const mountedTargets: HTMLElement[] = [];
 
 /** 已挂载的占位，避免重复 mount */
 const mountedIds = new Set<string>();
@@ -33,10 +42,23 @@ const mountedIds = new Set<string>();
 let observer: IntersectionObserver | null = null;
 
 function unmountDemos(): void {
-  while (mountedApps.length) {
-    mountedApps.pop()?.unmount();
+  while (mountedTargets.length) {
+    const el = mountedTargets.pop();
+    if (el) render(null, el);
   }
   mountedIds.clear();
+}
+
+/** 复用当前应用上下文挂载，el-* 与 globalProperties 无需重复安装 */
+function mountVNode(
+  component: Component,
+  vnodeProps: Record<string, unknown>,
+  el: HTMLElement,
+): void {
+  const vnode = createVNode(component, vnodeProps);
+  vnode.appContext = instance?.appContext ?? null;
+  render(vnode, el);
+  mountedTargets.push(el);
 }
 
 function pickComponent(kind: string) {
@@ -49,9 +71,7 @@ function mountOne(el: HTMLElement, demoIndex: number): void {
   const demo = rendered.value.demos[demoIndex];
   if (!demo || mountedIds.has(demo.id)) return;
   mountedIds.add(demo.id);
-  const app = createApp(pickComponent(demo.kind), { demo });
-  app.mount(el);
-  mountedApps.push(app);
+  mountVNode(pickComponent(demo.kind), { demo }, el);
 }
 
 function mountCallouts(root: HTMLElement): void {
@@ -64,13 +84,7 @@ function mountCallouts(root: HTMLElement): void {
       const callout = rendered.value.callouts[Number(el.dataset.calloutIndex)];
       if (!callout) return;
       mountedIds.add(key);
-      const app = createApp(Callout, {
-        name: callout.name,
-        title: callout.title,
-        html: callout.html,
-      });
-      app.mount(el);
-      mountedApps.push(app);
+      mountVNode(Callout, { name: callout.name, title: callout.title, html: callout.html }, el);
       pending = true;
     });
   }
@@ -83,14 +97,15 @@ function mountCodes(root: HTMLElement): void {
     const fence = rendered.value.fences[Number(el.dataset.codeIndex)];
     if (!fence) return;
     mountedIds.add(key);
-    const app = createApp(CodeBlock, {
-      code: fence.code,
-      lang: fence.lang,
-      highlightLines: fence.highlightLines,
-    });
-    app.use(ElementPlus, { locale: elementPlusLocale });
-    app.mount(el);
-    mountedApps.push(app);
+    mountVNode(
+      CodeBlock,
+      {
+        code: fence.code,
+        lang: fence.lang,
+        highlightLines: fence.highlightLines,
+      },
+      el,
+    );
   });
 }
 
@@ -101,13 +116,7 @@ function mountApiTables(root: HTMLElement): void {
     const table = rendered.value.apiTables[Number(el.dataset.apiIndex)];
     if (!table) return;
     mountedIds.add(key);
-    const app = createApp(DocApiTable, {
-      type: table.kind,
-      rows: table.rows,
-    });
-    app.use(ElementPlus, { locale: elementPlusLocale });
-    app.mount(el);
-    mountedApps.push(app);
+    mountVNode(DocApiTable, { type: table.kind, rows: table.rows }, el);
   });
 }
 
@@ -118,13 +127,7 @@ function mountPreviews(root: HTMLElement): void {
     const preview = rendered.value.previews[Number(el.dataset.previewIndex)];
     if (!preview) return;
     mountedIds.add(key);
-    const app = createApp(CompDocPreview, {
-      previewKey: preview.key,
-      code: preview.code,
-    });
-    app.use(ElementPlus, { locale: elementPlusLocale });
-    app.mount(el);
-    mountedApps.push(app);
+    mountVNode(CompDocPreview, { previewKey: preview.key, code: preview.code }, el);
   });
 }
 

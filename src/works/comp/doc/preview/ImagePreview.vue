@@ -82,7 +82,7 @@ const lightboxEvent = ref("—");
 </template>
 
 <style scoped lang="scss">
-@use "../style/variables" as *;
+@use "@/styles/site/variables" as *;
 @use "../style/demo";
 
 .image-preview__center,

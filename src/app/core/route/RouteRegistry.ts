@@ -28,6 +28,9 @@ export class RouteRegistry {
 
   private tabRoutes = new Map<string, Map<string, RegisteredRouteRecord>>();
 
+  /** 已提示过「缺 tab 元数据」的 tabKey，避免每个路由重复打印 */
+  private warnedTabs = new Set<string>();
+
   registerTopTab(tab: TopTabMeta): this {
     const prev = this.topTabs.get(tab.key);
     this.topTabs.set(tab.key, prev ? { ...prev, ...tab } : tab);
@@ -47,9 +50,9 @@ export class RouteRegistry {
     if (renderMode === "component" && !route.loader) {
       throw new Error(`[RouteRegistry] route "${route.key}" must provide loader in component mode`);
     }
-    if (renderMode === "markdown" && !route.markdownSource) {
+    if (renderMode === "markdown" && !route.markdownSource && !route.markdownLoader) {
       throw new Error(
-        `[RouteRegistry] route "${route.key}" must provide markdownSource in markdown mode`,
+        `[RouteRegistry] route "${route.key}" must provide markdownSource or markdownLoader in markdown mode`,
       );
     }
 
@@ -66,6 +69,13 @@ export class RouteRegistry {
     this.tabRoutes.set(route.tabKey, map);
 
     if (!this.topTabs.has(route.tabKey)) {
+      if (!this.warnedTabs.has(route.tabKey)) {
+        this.warnedTabs.add(route.tabKey);
+        console.warn(
+          `[RouteRegistry] route "${route.key}" from "${source}" 使用了未注册的 tab ` +
+            `"${route.tabKey}"，已按 tabKey 生成兜底 tab，请补注册 tab 元数据`,
+        );
+      }
       this.registerTopTab({
         key: route.tabKey,
         label: route.tabKey,

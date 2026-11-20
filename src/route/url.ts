@@ -41,7 +41,13 @@ export function buildPath(tabKey: string, routeKey: string): string {
 export function parsePath(pathname: string): RouteLocation | null {
   const base = import.meta.env.BASE_URL.replace(/\/$/, "");
   const path = base && pathname.startsWith(base) ? pathname.slice(base.length) : pathname;
-  const segments = path.split("/").filter(Boolean).map(decodeURIComponent);
+  let segments: string[];
+  try {
+    segments = path.split("/").filter(Boolean).map(decodeURIComponent);
+  } catch {
+    // 非法百分号编码等异常：按无法解析处理，由调用方回落首页
+    return null;
+  }
   if (segments.length === 0) return { tabKey: HOME_TAB, routeKey: "" };
 
   const [head, ...rest] = segments;

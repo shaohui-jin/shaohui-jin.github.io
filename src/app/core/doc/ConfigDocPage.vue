@@ -1,11 +1,12 @@
-﻿<script setup lang="ts">
-import { ref, computed, reactive, inject } from "vue";
+<script setup lang="ts">
+import { ref, computed, reactive } from "vue";
 import ConfigProvider from "../config/ConfigProvider.vue";
-import type { LibConfig, ResolvedLibConfig } from "../config/configTypes";
 import { themePresets } from "../config/themePresets";
 import type { ThemePresetKey } from "../config/themePresets";
+import { useLibPlugin } from "../config/useLibConfig";
+import { BaseTable } from "@/works/comp";
 
-const lib = inject<{ saveConfig: (c: LibConfig) => void; config: ResolvedLibConfig }>("compLib")!;
+const lib = useLibPlugin()!;
 
 // --- Theme 配置 ---
 const themeForm = reactive({
@@ -29,7 +30,7 @@ const themeForm = reactive({
   radiusLg: lib.config.theme.radiusLg,
 });
 
-const baseTableComponent = "BaseTable";
+const baseTableComponent = BaseTable;
 
 // --- 配置 JSON 预览 ---
 const configJson = computed(() => JSON.stringify({ theme: { ...themeForm } }, null, 2));
@@ -417,7 +418,7 @@ const showJson = ref(false);
 </template>
 
 <style scoped lang="scss">
-@use "./style/variables" as *;
+@use "@/styles/site/variables" as *;
 @use "./style/configLayout";
 
 .demo-config__header {

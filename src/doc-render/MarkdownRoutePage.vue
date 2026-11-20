@@ -1,17 +1,35 @@
 <script setup lang="ts">
+import { ref, watchEffect } from "vue";
 import MarkdownRenderer from "./MarkdownRenderer.vue";
 
-defineProps<{
-  source: string;
+const props = defineProps<{
+  source?: string;
+  sourceLoader?: () => Promise<string>;
   fileName?: string;
   apiTable?: boolean;
 }>();
+
+const content = ref(props.source ?? "");
+
+watchEffect(() => {
+  if (!props.sourceLoader) {
+    content.value = props.source ?? "";
+    return;
+  }
+  let cancelled = false;
+  props.sourceLoader().then((text) => {
+    if (!cancelled) content.value = text;
+  });
+  return () => {
+    cancelled = true;
+  };
+});
 </script>
 
 <template>
   <section class="markdown-route-page">
     <div v-if="fileName" class="markdown-route-page__meta">来源：{{ fileName }}</div>
-    <MarkdownRenderer :source="source" :api-table="apiTable" />
+    <MarkdownRenderer :source="content" :api-table="apiTable" />
   </section>
 </template>
 

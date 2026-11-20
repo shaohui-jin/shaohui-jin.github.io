@@ -1,16 +1,19 @@
 <script setup lang="ts">
 import { inject, ref } from "vue";
-import type { LibConfig, ResolvedLibConfig, ThemePresetKey } from "@/app/core";
-import { primarySwatches, themePresetSwatches, themePresets } from "@/app/core";
+import type { ThemePresetKey } from "@/app/core";
+import {
+  primarySwatches,
+  radiusTiers,
+  themePresetSwatches,
+  themePresets,
+  useLibPlugin,
+} from "@/app/core";
 import { PLAYGROUND_NAV_KEY } from "../../route/navigation";
 
 const emit = defineEmits<{ (e: "close"): void }>();
 const nav = inject(PLAYGROUND_NAV_KEY, null);
 
-const lib = inject<{
-  saveConfig: (config: LibConfig) => void;
-  config: ResolvedLibConfig;
-}>("compLib");
+const lib = useLibPlugin();
 
 const presetKeys: ThemePresetKey[] = ["default", "light", "purple", "dark"];
 const presetLabels: Record<ThemePresetKey, string> = {
@@ -62,13 +65,7 @@ function applyPrimary(color: string) {
 
 function applyRadius(radius: number) {
   if (!lib) return;
-  lib.saveConfig({
-    theme: {
-      radiusSm: Math.max(2, Math.round(radius / 2)),
-      radiusMd: radius,
-      radiusLg: radius + 2,
-    },
-  });
+  lib.saveConfig({ theme: radiusTiers(radius) });
   activeRadius.value = radius;
 }
 

@@ -1,9 +1,9 @@
 ﻿<script setup lang="ts">
-import { provide, reactive, watch, ref, onMounted, inject } from "vue";
+import { provide, reactive, watch, ref, inject } from "vue";
 import { ElConfigProvider } from "element-plus";
 import type { LibConfig, ResolvedLibConfig } from "./configTypes";
 import { defaultLibConfig } from "./configDefaults";
-import { LIB_CONFIG_KEY, configToCssVars } from "./configInjection";
+import { LIB_CONFIG_KEY, useCssVarsSync } from "./configInjection";
 import { elementPlusLocale } from "./elementPlusLocale";
 
 defineOptions({ name: "ConfigProvider" });
@@ -30,19 +30,8 @@ provide(LIB_CONFIG_KEY, merged);
 
 const root = ref<HTMLElement | null>(null);
 
-onMounted(() => {
-  syncCssVars();
-});
-
-watch(merged, syncCssVars, { deep: true });
-
-function syncCssVars() {
-  if (!root.value) return;
-  const vars = configToCssVars(merged);
-  Object.entries(vars).forEach(([key, value]) => {
-    root.value!.style.setProperty(key, value);
-  });
-}
+// 子树内的局部覆盖通过 watchEffect 同步成 CSS 变量，等 root 挂载后自动补一次
+useCssVarsSync(merged, () => root.value);
 </script>
 
 <template>

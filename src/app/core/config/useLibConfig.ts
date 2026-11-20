@@ -1,7 +1,12 @@
 import { inject, computed, type Ref } from "vue";
 import type { LibConfig, ResolvedLibConfig } from "./configTypes";
 import { defaultLibConfig } from "./configDefaults";
-import { LIB_CONFIG_KEY } from "./configInjection";
+import { LIB_CONFIG_KEY, LIB_PLUGIN_KEY } from "./configInjection";
+
+/** 读写主题配置的句柄；未安装插件时返回 null */
+export function useLibPlugin() {
+  return inject(LIB_PLUGIN_KEY, null);
+}
 
 /**
  * 组件内消费配置的 composable

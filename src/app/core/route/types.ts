@@ -34,6 +34,7 @@ export interface RouteRecord {
   loader?: RouteComponentLoader;
   renderMode?: RouteRenderMode;
   markdownSource?: string;
+  markdownLoader?: () => Promise<string>;
   markdownFileName?: string;
   props?: Record<string, unknown>;
   groupKey?: string;

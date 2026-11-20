@@ -4,7 +4,7 @@ import { fileURLToPath, URL } from "node:url";
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import monacoEditorPluginModule from "vite-plugin-monaco-editor";
-import { viteStaticCopy } from "vite-plugin-static-copy";
+import { blogMetaPlugin } from "./build/blog-meta";
 
 const monacoEditorPlugin =
   (monacoEditorPluginModule as { default?: typeof monacoEditorPluginModule }).default ??
@@ -58,18 +58,11 @@ export default defineConfig({
   },
   plugins: [
     vue(),
+    blogMetaPlugin(),
     copySkiaAssets(),
     copyIndexTo404(),
     monacoEditorPlugin({
       languageWorkers: ["editorWorkerService", "json", "typescript", "html", "css"],
-    }),
-    viteStaticCopy({
-      targets: [
-        {
-          src: "node_modules/monaco-editor/min/vs/**/*",
-          dest: "vs",
-        },
-      ],
     }),
   ],
   resolve: {

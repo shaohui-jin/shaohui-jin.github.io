@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, inject, nextTick, onBeforeUnmount, onMounted, provide, ref } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, provide, ref } from "vue";
+import { useLibPlugin } from "@/app/core";
 import { playgroundNavigation, resolveRouteView, resolveTabMeta } from "./route/runtimeRoutes";
 import { PLAYGROUND_NAV_KEY } from "./route/navigation";
 import { buildPath, parsePath } from "./route/url";
@@ -51,15 +52,7 @@ const listOpen = ref(false);
 const activePop = ref<"theme" | "log" | null>(null);
 const contentRef = ref<HTMLElement | null>(null);
 
-const compLib = inject<{
-  config: {
-    theme: {
-      colorPrimary: string;
-      colorSuccess: string;
-      colorWarning: string;
-    };
-  };
-}>("compLib");
+const compLib = useLibPlugin();
 const firstLevelColorIndexMap = new Map<string, number>();
 
 const activeTabMeta = computed(() => resolveTabMeta(topTab.value) ?? navTabs[0]);

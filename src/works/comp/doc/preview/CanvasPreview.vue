@@ -38,7 +38,7 @@ function replay() {
 </template>
 
 <style scoped lang="scss">
-@use "../style/variables" as *;
+@use "@/styles/site/variables" as *;
 @use "../style/demo";
 
 .canvas-time-wrapper {

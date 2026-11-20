@@ -27,7 +27,7 @@ const slots = useSlots() as Readonly<Record<string, (() => unknown[]) | undefine
 </template>
 
 <style scoped lang="scss">
-@use "../style/variables" as *;
+@use "@/styles/site/variables" as *;
 @use "../style/el-overrides" as ep;
 
 :deep(.widget-tabs) {

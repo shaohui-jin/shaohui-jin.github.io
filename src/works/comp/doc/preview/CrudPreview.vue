@@ -383,7 +383,7 @@ function onCrudSearch(filters: Record<string, unknown>) {
 </template>
 
 <style scoped lang="scss">
-@use "../style/variables" as *;
+@use "@/styles/site/variables" as *;
 @use "../style/el-overrides" as *;
 @use "../style/demo";
 

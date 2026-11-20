@@ -55,7 +55,7 @@ function toggleVersion(idx: number) {
 </template>
 
 <style scoped lang="scss">
-@use "./style/variables" as *;
+@use "@/styles/site/variables" as *;
 
 .cl {
   max-width: 720px;

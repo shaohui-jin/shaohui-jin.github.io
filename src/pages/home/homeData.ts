@@ -179,59 +179,9 @@ export interface HomeArticleGroup {
 }
 
 /**
- * 生成文章摘要。
- *
- * 逐行扫描而不是整篇压平：整篇压平会把代码块、列表、表格串成一句话，
- * 读起来像乱码。策略是：
- *   1. 先剔除代码块，再逐行分类，只收散文与引用块；
- *   2. 行内代码（反引号）视为标识符直接去掉，避免摘要里出现半截代码；
- *   3. 有些笔记本身就是纯代码，这时退化成「小标题串联」，
- *      像「路由懒加载 · 组件懒加载」也比空着强。
+ * 生成文章摘要的职责已上移到构建期（build/blog-meta.ts），
+ * 首页直接使用内容索引里的 excerpt，避免启动时扫描全部正文。
  */
-function toExcerpt(source: string, limit = 60): string {
-  const lines = source
-    .replace(/```[\s\S]*?```/g, "\n")
-    .replace(/~~~[\s\S]*?~~~/g, "\n")
-    .split(/\r?\n/);
-
-  const prose: string[] = [];
-  const headings: string[] = [];
-
-  for (const raw of lines) {
-    const line = raw.trim();
-    if (!line) continue;
-    if (/^(:::|\||!\[|<|\d+\.\s|[-*+]\s)/.test(line)) continue;
-
-    const isHeading = /^#{1,6}\s/.test(line);
-    const clean = line
-      .replace(/^#{1,6}\s+/, "")
-      .replace(/^>\s?/, "")
-      .replace(/!\[[^\]]*\]\([^)]*\)/g, "")
-      .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
-      .replace(/`[^`]*`/g, "")
-      .replace(/<[^>]+>/g, "")
-      .replace(/[*_~]/g, "")
-      .replace(/\s+([，。；：、])/g, "$1")
-      .replace(/\s+/g, " ")
-      .trim();
-    if (!clean) continue;
-
-    if (isHeading) {
-      headings.push(clean);
-      continue;
-    }
-
-    const cjk = (clean.match(/[\u4e00-\u9fa5]/g) ?? []).length;
-    if (cjk >= 4) prose.push(clean);
-  }
-
-  const joined = prose.join(" ").trim();
-  const cjkCount = (joined.match(/[\u4e00-\u9fa5]/g) ?? []).length;
-  const text = cjkCount >= 8 || headings.length === 0 ? joined : headings.join(" · ");
-
-  if (!text) return "";
-  return text.length > limit ? `${text.slice(0, limit)}…` : text;
-}
 
 const groupMeta = new Map(blogGroups.map((group) => [group.key, group]));
 
@@ -248,7 +198,7 @@ export const homeArticles: HomeArticle[] = [...blogDocConfigs]
     return {
       key: doc.key,
       title: doc.label,
-      excerpt: toExcerpt(doc.source),
+      excerpt: doc.excerpt,
       date: toDay(doc.date),
       groupKey: doc.groupKey,
       groupTitle: group?.title ?? doc.groupKey,

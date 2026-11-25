@@ -14,7 +14,8 @@
     "lint:style": "stylelint \"**/*.{css,scss,vue}\"",
     "lint:style:fix": "stylelint \"**/*.{css,scss,vue}\" --fix",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "prepare": "husky"
   },
   "dependencies": {
     "@antv/x6": "^3.0.0",
@@ -42,6 +43,7 @@
     "@vue/eslint-config-prettier": "^10.1.0",
     "@vue/tsconfig": "^0.7.0",
     "eslint": "^9.15.0",
+    "husky": "^9.1.7",
     "eslint-plugin-vue": "^9.31.0",
     "postcss-html": "^1.7.0",
     "prettier": "^3.3.3",

@@ -1,5 +1,5 @@
 import type { App, InjectionKey } from "vue";
-import { reactive, watchEffect } from "vue";
+import { reactive } from "vue";
 import type { LibConfig, ResolvedLibConfig } from "./configTypes";
 import { defaultLibConfig } from "./configDefaults";
 
@@ -171,15 +171,3 @@ export function createCompLib(userConfig?: LibConfig, persist?: PersistOptions) 
 }
 
 export { resolveConfig, applyCssVars, configToCssVars };
-
-/** watchEffect 辅助：当 config 变化时自动同步 CSS 变量到目标元素 */
-export function useCssVarsSync(config: ResolvedLibConfig, el?: () => HTMLElement | null) {
-  watchEffect(() => {
-    const target = el?.() ?? (typeof document !== "undefined" ? document.documentElement : null);
-    if (!target) return;
-    const vars = configToCssVars(config);
-    Object.entries(vars).forEach(([key, value]) => {
-      target.style.setProperty(key, value);
-    });
-  });
-}

@@ -6,7 +6,6 @@ const props = defineProps<{
   source?: string;
   sourceLoader?: () => Promise<string>;
   fileName?: string;
-  apiTable?: boolean;
 }>();
 
 const content = ref(props.source ?? "");
@@ -29,7 +28,7 @@ watchEffect(() => {
 <template>
   <section class="markdown-route-page">
     <div v-if="fileName" class="markdown-route-page__meta">来源：{{ fileName }}</div>
-    <MarkdownRenderer :source="content" :api-table="apiTable" />
+    <MarkdownRenderer :source="content" />
   </section>
 </template>
 

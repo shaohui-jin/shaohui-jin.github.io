@@ -27,44 +27,11 @@ export interface CalloutBlock {
   html: string;
 }
 
-export interface ApiTableRow {
-  name: string;
-  type: string;
-  default: string;
-  required: boolean;
-  desc: string;
-}
-
-export interface ApiEventRow {
-  name: string;
-  payload: string;
-  desc: string;
-}
-
-export interface ApiSlotRow {
-  name: string;
-  desc: string;
-}
-
-export type ApiTableKind = "props" | "events" | "slots";
-
-export interface ApiTableBlock {
-  kind: ApiTableKind;
-  rows: ApiTableRow[] | ApiEventRow[] | ApiSlotRow[];
-}
-
-export interface CompPreviewBlock {
-  key: string;
-  code: string;
-}
-
 export interface RenderedMarkdown {
   html: string;
   demos: DemoBlock[];
   fences: CodeFenceBlock[];
   callouts: CalloutBlock[];
-  apiTables: ApiTableBlock[];
-  previews: CompPreviewBlock[];
 }
 
 interface MdNode {
@@ -89,23 +56,7 @@ interface CodeNode {
   index: number;
 }
 
-interface ApiNode {
-  type: "api";
-  index: number;
-}
-
-interface PreviewNode {
-  type: "preview";
-  index: number;
-}
-
-type Node = MdNode | ContainerNode | DemoNode | CodeNode | ApiNode | PreviewNode;
-
-const API_TABLE_HEADERS: Record<ApiTableKind, string[]> = {
-  props: ["名称", "类型", "默认值", "必填", "说明"],
-  events: ["名称", "参数", "说明"],
-  slots: ["名称", "说明"],
-};
+type Node = MdNode | ContainerNode | DemoNode | CodeNode;
 
 const OPEN_RE = /^:::\s*([A-Za-z][\w-]*)\s*(.*)$/;
 const CLOSE_RE = /^:::\s*$/;
@@ -349,121 +300,12 @@ function readFence(
   return null;
 }
 
-function splitTableCells(line: string): string[] {
-  const body = line.trim().replace(/^\|/, "").replace(/\|$/, "");
-  const cells: string[] = [];
-  let current = "";
-  for (let i = 0; i < body.length; i += 1) {
-    if (body[i] === "\\" && body[i + 1] === "|") {
-      current += "\\|";
-      i += 1;
-      continue;
-    }
-    if (body[i] === "|") {
-      cells.push(current.trim());
-      current = "";
-      continue;
-    }
-    current += body[i];
-  }
-  cells.push(current.trim());
-  return cells;
-}
-
-function plainCell(value: string): string {
-  return value.replace(/`/g, "").replace(/\\\|/g, "|");
-}
-
-function tableKind(header: string[]): ApiTableKind | undefined {
-  const joined = header.join("\0");
-  return (Object.entries(API_TABLE_HEADERS) as [ApiTableKind, string[]][]).find(
-    ([, cells]) => cells.join("\0") === joined,
-  )?.[0];
-}
-
-/** 表头匹配参数说明时抽成 ApiTable，否则留给 markdown-it */
-function readApiTable(
-  lines: string[],
-  start: number,
-): { kind: ApiTableKind; rows: ApiTableBlock["rows"]; end: number } | null {
-  if (!/^\s*\|/.test(lines[start] ?? "")) return null;
-
-  const block: string[] = [];
-  let end = start;
-  for (; end < lines.length; end += 1) {
-    if (!/^\s*\|/.test(lines[end])) break;
-    block.push(lines[end]);
-  }
-  if (block.length < 2) return null;
-
-  const kind = tableKind(splitTableCells(block[0]).map(plainCell));
-  if (!kind) return null;
-
-  let dataStart = 1;
-  const second = splitTableCells(block[1]);
-  if (second.every((cell) => /^:?-+:?$/.test(cell))) dataStart = 2;
-
-  const rows = block.slice(dataStart).map((line) => {
-    const cells = splitTableCells(line).map(plainCell);
-    if (kind === "events") {
-      return { name: cells[0] ?? "", payload: cells[1] ?? "", desc: cells[2] ?? "" };
-    }
-    if (kind === "slots") {
-      return { name: cells[0] ?? "", desc: cells[1] ?? "" };
-    }
-    return {
-      name: cells[0] ?? "",
-      type: cells[1] ?? "",
-      default: cells[2] ?? "—",
-      required: cells[3] === "是",
-      desc: cells[4] ?? "",
-    };
-  });
-
-  return { kind, rows, end: end - 1 };
-}
-
-/** 预览容器要先于普通围栏抽走，避免里面的代码围栏被拆成独立代码块 */
-function readCompPreview(
-  lines: string[],
-  start: number,
-): { key: string; code: string; end: number } | null {
-  const open = /^:::\s*comp-preview\s+(\S+)\s*$/.exec(lines[start]?.trim() ?? "");
-  if (!open) return null;
-
-  let depth = 1;
-  const inner: string[] = [];
-  let end = start + 1;
-  for (; end < lines.length; end += 1) {
-    const current = lines[end].trim();
-    if (/^:::\s*comp-preview\b/.test(current) || OPEN_RE.test(current)) depth += 1;
-    if (CLOSE_RE.test(current)) {
-      depth -= 1;
-      if (depth === 0) break;
-      continue;
-    }
-    inner.push(lines[end]);
-  }
-  if (end >= lines.length) return null;
-
-  let code = "";
-  for (let i = 0; i < inner.length; i += 1) {
-    const fence = readFence(inner, i);
-    if (!fence) continue;
-    code = fence.code;
-    break;
-  }
-
-  return { key: open[1], code, end };
-}
-
 function parseBlocks(
   lines: string[],
   demos: DemoBlock[],
   fences: CodeFenceBlock[],
   extractFences: boolean,
-  apiTables?: ApiTableBlock[],
-  previews?: CompPreviewBlock[],
+  plain: boolean,
 ): Node[] {
   const nodes: Node[] = [];
   let buffer: string[] = [];
@@ -504,18 +346,6 @@ function parseBlocks(
       }
     }
 
-    if (previews) {
-      const preview = readCompPreview(lines, i);
-      if (preview) {
-        flush();
-        const index = previews.length;
-        previews.push({ key: preview.key, code: preview.code });
-        nodes.push({ type: "preview", index });
-        i = preview.end;
-        continue;
-      }
-    }
-
     if (extractFences) {
       const fence = readFence(lines, i);
       if (fence) {
@@ -532,22 +362,11 @@ function parseBlocks(
       }
     }
 
-    if (apiTables) {
-      const table = readApiTable(lines, i);
-      if (table) {
-        flush();
-        const index = apiTables.length;
-        apiTables.push({ kind: table.kind, rows: table.rows });
-        nodes.push({ type: "api", index });
-        i = table.end;
-        continue;
-      }
-    }
-
     const openMatched = OPEN_RE.exec(line.trim());
     const name = openMatched?.[1] ?? "";
 
-    if (!openMatched || (!DEMO_NAMES.has(name) && !CALLOUT_NAMES.has(name))) {
+    // plain 模式（仓库 README）只渲染标准 Markdown，不解释 blog 自定义容器
+    if (plain || !openMatched || (!DEMO_NAMES.has(name) && !CALLOUT_NAMES.has(name))) {
       buffer.push(line);
       continue;
     }
@@ -594,7 +413,7 @@ function parseBlocks(
         type: "container",
         name,
         title: openMatched[2]?.trim() ?? "",
-        children: parseBlocks(inner, demos, fences, false),
+        children: parseBlocks(inner, demos, fences, false, plain),
       });
     }
 
@@ -664,20 +483,14 @@ export function createMarkdownEngine(): MarkdownIt {
 
 const markdownEngine = createMarkdownEngine();
 
-function renderNodes(nodes: Node[], callouts: CalloutBlock[]): string {
+function renderNodes(nodes: Node[], callouts: CalloutBlock[], plain: boolean): string {
   return nodes
     .map((node) => {
       if (node.type === "md") {
-        return markdownEngine.render(transformInlineText(node.text));
+        return markdownEngine.render(plain ? node.text : transformInlineText(node.text));
       }
       if (node.type === "code") {
         return `<div class="vp-code-slot" data-code-index="${node.index}"></div>`;
-      }
-      if (node.type === "api") {
-        return `<div class="vp-api-slot" data-api-index="${node.index}"></div>`;
-      }
-      if (node.type === "preview") {
-        return `<div class="vp-preview-slot" data-preview-index="${node.index}"></div>`;
       }
       if (node.type === "demo") {
         // 占位符类名刻意不用 vp-demo，避免和挂载后的组件根节点同名
@@ -687,7 +500,7 @@ function renderNodes(nodes: Node[], callouts: CalloutBlock[]): string {
         );
       }
       const title = node.title || CALLOUT_LABELS[node.name] || node.name;
-      const html = renderNodes(node.children, callouts);
+      const html = renderNodes(node.children, callouts, plain);
       const index = callouts.length;
       callouts.push({ name: node.name, title, html });
       return `<div class="vp-callout-slot" data-callout-index="${index}"></div>`;
@@ -766,30 +579,20 @@ function applyFootnotes(html: string, callouts: CalloutBlock[], defs: Map<string
   return `${replaced}<section class="vp-footnotes"><ol>${items}</ol></section>`;
 }
 
-export function renderMarkdown(source: string, options?: { apiTable?: boolean }): RenderedMarkdown {
+export function renderMarkdown(source: string, options?: { plain?: boolean }): RenderedMarkdown {
   const demos: DemoBlock[] = [];
   const fences: CodeFenceBlock[] = [];
   const callouts: CalloutBlock[] = [];
-  const apiTables: ApiTableBlock[] = [];
-  const previews: CompPreviewBlock[] = [];
+  const plain = options?.plain ?? false;
   const { source: body, defs } = extractFootnotes(source);
   const cleaned = body
     .replace(/<!--\s*#?region[^>]*-->/gi, "")
     .replace(/<!--\s*#?endregion[^>]*-->/gi, "");
-  const nodes = parseBlocks(
-    cleaned.split("\n"),
-    demos,
-    fences,
-    true,
-    options?.apiTable ? apiTables : undefined,
-    previews,
-  );
+  const nodes = parseBlocks(cleaned.split("\n"), demos, fences, true, plain);
   return {
-    html: applyFootnotes(renderNodes(nodes, callouts), callouts, defs),
+    html: applyFootnotes(renderNodes(nodes, callouts, plain), callouts, defs),
     demos,
     fences,
     callouts,
-    apiTables,
-    previews,
   };
 }

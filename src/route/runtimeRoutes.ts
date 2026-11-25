@@ -82,8 +82,8 @@ for (const tab of snapshot.topTabs) {
 /**
  * 顶部导航实际渲染的模块。
  *
- * `system` 这类 hidden tab 只是从导航里藏起来，路由本身仍然可用，
- * 由首页右上角的主题 / 日志入口或「打开完整配置」进入。
+ * 组件文档、工具函数、画布编排、系统页都已移出本仓库，
+ * 现在只剩首页、作品、博客三个模块，没有 hidden 项。
  */
 const navTabs = snapshot.topTabs.filter((tab) => !tab.hidden);
 

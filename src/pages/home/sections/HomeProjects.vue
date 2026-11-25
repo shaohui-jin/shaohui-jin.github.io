@@ -1,5 +1,21 @@
 <script setup lang="ts">
-import { homeProjects } from "../homeData";
+import { computed, inject } from "vue";
+import { PLAYGROUND_NAV_KEY } from "../../../route/navigation";
+import { homeProjects, HOME_PROJECT_LIMIT } from "../homeData";
+import { setPendingProject } from "../../works/worksSelection";
+
+const emit = defineEmits<{ (e: "open-all"): void }>();
+
+const nav = inject(PLAYGROUND_NAV_KEY, null);
+
+/** 首页只铺前几张，完整列表在作品页 */
+const previewProjects = computed(() => homeProjects.slice(0, HOME_PROJECT_LIMIT));
+
+/** 点卡片进作品页并直接展开该项目的 README */
+function openProject(name: string) {
+  setPendingProject(name);
+  nav?.to("works", "works");
+}
 </script>
 
 <template>
@@ -9,20 +25,19 @@ import { homeProjects } from "../homeData";
         <h2 class="home-section__title">个人项目</h2>
         <p class="home-section__desc">自己做的工具和站点，包括编辑器扩展、Skill 和 MCP。</p>
       </div>
+      <button class="home-section__more" @click="emit('open-all')">全部项目 →</button>
     </div>
 
     <div class="home-projects">
-      <a
-        v-for="project in homeProjects"
+      <button
+        v-for="project in previewProjects"
         :key="project.name"
         class="home-card home-project"
         :class="{ 'home-project--more': project.placeholder }"
         :style="{ '--accent': project.accent }"
-        :href="project.href"
-        target="_blank"
-        rel="noreferrer"
+        @click="openProject(project.name)"
       >
-        <div class="home-project__top">
+        <span class="home-project__top">
           <span class="home-project__icon">
             <!-- 图标路径写死在 homeData.ts 里，不涉及用户输入 -->
             <!-- eslint-disable vue/no-v-html -->
@@ -40,15 +55,13 @@ import { homeProjects } from "../homeData";
             <!-- eslint-enable vue/no-v-html -->
           </span>
           <span class="home-project__name">{{ project.name }}</span>
-        </div>
-        <p class="home-project__desc">{{ project.desc }}</p>
-        <div class="home-project__foot">
+        </span>
+        <span class="home-project__desc">{{ project.desc }}</span>
+        <span class="home-project__foot">
           <span class="home-project__host">{{ project.host }}</span>
-          <span class="home-project__go">
-            {{ project.action ?? (project.placeholder ? "前往" : "访问") }} ↗
-          </span>
-        </div>
-      </a>
+          <span class="home-project__go">查看 ↗</span>
+        </span>
+      </button>
     </div>
   </section>
 </template>

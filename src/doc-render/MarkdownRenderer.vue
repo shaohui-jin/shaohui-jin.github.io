@@ -11,9 +11,7 @@ import {
   watch,
 } from "vue";
 import type { Component } from "vue";
-import CodeBlock from "@/works/comp/component/basic/code-block/CodeBlock.vue";
-import DocApiTable from "@/works/comp/doc/demo/ApiTable.vue";
-import CompDocPreview from "./CompDocPreview.vue";
+import CodeBlock from "./code-block/CodeBlock.vue";
 import { renderMarkdown } from "./createMarkdownEngine";
 import DemoPlayground from "./DemoPlayground.vue";
 import DemoHtml from "./DemoHtml.vue";
@@ -23,15 +21,16 @@ import Callout from "./Callout.vue";
 const props = withDefaults(
   defineProps<{
     source: string;
-    apiTable?: boolean;
+    /** 只按标准 Markdown 渲染，不解释 blog 自定义容器（用于仓库 README） */
+    plain?: boolean;
   }>(),
   {
     source: "",
-    apiTable: false,
+    plain: false,
   },
 );
 
-const rendered = computed(() => renderMarkdown(props.source, { apiTable: props.apiTable }));
+const rendered = computed(() => renderMarkdown(props.source, { plain: props.plain }));
 const host = ref<HTMLElement | null>(null);
 const instance = getCurrentInstance();
 const mountedTargets: HTMLElement[] = [];
@@ -109,28 +108,6 @@ function mountCodes(root: HTMLElement): void {
   });
 }
 
-function mountApiTables(root: HTMLElement): void {
-  root.querySelectorAll<HTMLElement>("[data-api-index]").forEach((el) => {
-    const key = `api:${el.dataset.apiIndex ?? ""}`;
-    if (mountedIds.has(key)) return;
-    const table = rendered.value.apiTables[Number(el.dataset.apiIndex)];
-    if (!table) return;
-    mountedIds.add(key);
-    mountVNode(DocApiTable, { type: table.kind, rows: table.rows }, el);
-  });
-}
-
-function mountPreviews(root: HTMLElement): void {
-  root.querySelectorAll<HTMLElement>("[data-preview-index]").forEach((el) => {
-    const key = `preview:${el.dataset.previewIndex ?? ""}`;
-    if (mountedIds.has(key)) return;
-    const preview = rendered.value.previews[Number(el.dataset.previewIndex)];
-    if (!preview) return;
-    mountedIds.add(key);
-    mountVNode(CompDocPreview, { previewKey: preview.key, code: preview.code }, el);
-  });
-}
-
 /**
  * 懒挂载：一篇 42 个 demo 的文章会创建 42 个 iframe，每个都要拉 Vue 运行时，
  * 一次性全挂会把首屏拖到十几秒。这里用 IntersectionObserver 提前 600px 挂载，
@@ -162,8 +139,6 @@ async function mountDemos(): Promise<void> {
 
   mountCallouts(root);
   mountCodes(root);
-  mountApiTables(root);
-  mountPreviews(root);
 
   const placeholders = root.querySelectorAll<HTMLElement>("[data-demo-id]");
 
@@ -339,9 +314,7 @@ $md-block-gap: $doc-sp-md;
   font-size: inherit;
 }
 
-.markdown-body :deep(.vp-code-slot),
-.markdown-body :deep(.vp-api-slot),
-.markdown-body :deep(.vp-preview-slot) {
+.markdown-body :deep(.vp-code-slot) {
   margin: $md-block-gap 0;
 }
 

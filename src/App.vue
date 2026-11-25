@@ -5,8 +5,6 @@ import { playgroundNavigation, resolveRouteView, resolveTabMeta } from "./route/
 import { PLAYGROUND_NAV_KEY } from "./route/navigation";
 import { buildPath, parsePath } from "./route/url";
 import { getNavVisual } from "./route/navIcons";
-import HeaderThemePopover from "./pages/home/HeaderThemePopover.vue";
-import HeaderChangelogPopover from "./pages/home/HeaderChangelogPopover.vue";
 
 // navTabs 已过滤掉 hidden 模块（如 system），topTabs 保留全量用于解析路由
 const navTabs = playgroundNavigation.navTabs;
@@ -49,7 +47,6 @@ if (
 
 const navOpen = ref(false);
 const listOpen = ref(false);
-const activePop = ref<"theme" | "log" | null>(null);
 const contentRef = ref<HTMLElement | null>(null);
 
 const compLib = useLibPlugin();
@@ -129,7 +126,6 @@ function switchTopTab(tabKey: string, routeKey?: string): void {
   }
   navOpen.value = false;
   listOpen.value = false;
-  activePop.value = null;
   syncUrl();
   void resetScroll();
 }
@@ -159,15 +155,7 @@ function goHome(): void {
   switchTopTab(navTabs[0]?.key ?? "home");
 }
 
-function togglePop(name: "theme" | "log"): void {
-  activePop.value = activePop.value === name ? null : name;
-}
-
-function closePop(): void {
-  activePop.value = null;
-}
-
-// 首页文章卡、浮层里的「打开完整配置」都通过这个口子跨模块跳转。
+// 首页文章卡通过这个口子跨模块跳转。
 // routeKey 一次性带进去，只写一条历史记录，后退不会退回中间态
 provide(PLAYGROUND_NAV_KEY, {
   to(tabKey: string, routeKey?: string) {
@@ -177,7 +165,6 @@ provide(PLAYGROUND_NAV_KEY, {
 
 function handleKeydown(event: KeyboardEvent): void {
   if (event.key !== "Escape") return;
-  activePop.value = null;
   navOpen.value = false;
   listOpen.value = false;
 }
@@ -195,7 +182,6 @@ function handlePopState(): void {
   if (parsed.routeKey) {
     activeRouteByTab.value = { ...activeRouteByTab.value, [parsed.tabKey]: parsed.routeKey };
   }
-  activePop.value = null;
   navOpen.value = false;
   listOpen.value = false;
   void resetScroll();
@@ -297,54 +283,6 @@ function resolveFirstLevelRandomColor(key: string): string {
       </nav>
 
       <div class="header-actions">
-        <!-- 主题配置：替代原 system/config 的导航入口 -->
-        <button
-          class="icon-btn"
-          :class="{ 'is-active': activePop === 'theme' }"
-          aria-label="主题配置"
-          title="主题配置"
-          @click="togglePop('theme')"
-        >
-          <svg
-            width="17"
-            height="17"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <circle cx="12" cy="12" r="9" />
-            <circle cx="9" cy="9.5" r="1.2" fill="currentColor" stroke="none" />
-            <circle cx="15" cy="9.5" r="1.2" fill="currentColor" stroke="none" />
-            <circle cx="9.5" cy="15" r="1.2" fill="currentColor" stroke="none" />
-          </svg>
-        </button>
-
-        <!-- 更新日志：替代原 system/changelog 的导航入口 -->
-        <button
-          class="icon-btn"
-          :class="{ 'is-active': activePop === 'log' }"
-          aria-label="更新日志"
-          title="更新日志"
-          @click="togglePop('log')"
-        >
-          <svg
-            width="17"
-            height="17"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <circle cx="12" cy="12" r="9" />
-            <polyline points="12 7.5 12 12 15.5 13.8" />
-          </svg>
-        </button>
-
         <a
           class="icon-btn"
           href="https://github.com/shaohui-jin"
@@ -440,11 +378,7 @@ function resolveFirstLevelRandomColor(key: string): string {
             </el-menu-item>
           </template>
         </el-menu>
-        <section
-          ref="contentRef"
-          class="doc-content"
-          :class="{ 'doc-content--canvas-full': activeRouteKey === 'workflow' }"
-        >
+        <section ref="contentRef" class="doc-content">
           <component :is="activeView.component" v-if="activeView" v-bind="activeView.props" />
         </section>
       </template>
@@ -456,7 +390,6 @@ function resolveFirstLevelRandomColor(key: string): string {
             'doc-content',
             'doc-content--full',
             {
-              'doc-content--canvas-full': activeRouteKey === 'workflow',
               'doc-content--home': topTab === 'home',
             },
           ]"
@@ -559,15 +492,6 @@ function resolveFirstLevelRandomColor(key: string): string {
       class="doc-panel-backdrop"
       @click="listOpen = false"
     />
-
-    <!-- 右上角浮层：主题配置 / 更新日志 -->
-    <Transition name="pop-fade">
-      <div v-if="activePop" class="pop-layer">
-        <div class="pop-layer__backdrop" @click="closePop" />
-        <HeaderThemePopover v-if="activePop === 'theme'" @close="closePop" />
-        <HeaderChangelogPopover v-else @close="closePop" />
-      </div>
-    </Transition>
   </div>
 </template>
 
@@ -805,11 +729,6 @@ function resolveFirstLevelRandomColor(key: string): string {
   padding: 20px;
 }
 
-.doc-content--canvas-full {
-  padding: 0;
-  overflow: hidden;
-}
-
 // 首页自己管留白（hero 需要顶到边缘），必须排在 --full 之后覆盖
 .doc-content--home {
   padding: 0;
@@ -1001,9 +920,4 @@ function resolveFirstLevelRandomColor(key: string): string {
     transform: translateY(100%);
   }
 }
-</style>
-
-<!-- 浮层是全局定位元素，样式不能带 scoped，单独走一份全局表 -->
-<style lang="scss">
-@use "./styles/site/popover";
 </style>

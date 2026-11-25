@@ -32,12 +32,9 @@ test("没有尾注时原样返回", () => {
 });
 
 test("保留真人的 Co-authored-by", () => {
-  const input = [
-    "feat: 结对完成",
-    "",
-    "Co-authored-by: 张三 <zhangsan@example.com>",
-    "",
-  ].join("\n");
+  const input = ["feat: 结对完成", "", "Co-authored-by: 张三 <zhangsan@example.com>", ""].join(
+    "\n",
+  );
 
   const { message, removed } = stripAiTrailers(input);
   assert.deepEqual(removed, []);
@@ -76,7 +73,7 @@ test("正文中间提到 Co-authored-by 不被误删", () => {
 test("正文本身以 Key: value 结尾也不误伤", () => {
   const input = ["fix: 修配置", "", "注意: 这一行不是尾注，是正文的一部分。", ""].join("\n");
 
-  const { message, removed } = stripAiTrailers(input);
+  const { removed } = stripAiTrailers(input);
   assert.deepEqual(removed, []);
 });
 

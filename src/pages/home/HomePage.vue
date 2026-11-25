@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { computed, inject } from "vue";
+import { inject } from "vue";
 import { PLAYGROUND_NAV_KEY } from "../../route/navigation";
-import { playgroundNavigation } from "../../route/runtimeRoutes";
 import { homeArticles, homeFooter, homeLatestDate } from "./homeData";
 import HomeHero from "./sections/HomeHero.vue";
 import HomeProfile from "./sections/HomeProfile.vue";
@@ -9,16 +8,6 @@ import HomeProjects from "./sections/HomeProjects.vue";
 import HomeArticles from "./sections/HomeArticles.vue";
 
 const nav = inject(PLAYGROUND_NAV_KEY, null);
-
-/**
- * 首屏 meta 里的数字取自路由快照，组件 / 工具加一个就自动 +1，
- * 不需要回首页改文案。
- */
-const stats = computed(() => ({
-  articles: homeArticles.length,
-  components: (playgroundNavigation.tabRoutes.docs ?? []).length,
-  tools: (playgroundNavigation.tabRoutes.utils ?? []).length,
-}));
 
 function scrollToAbout() {
   document.getElementById("home-about")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -31,6 +20,10 @@ function openArticle(key: string) {
 function openAllArticles() {
   nav?.to("blog");
 }
+
+function openAllProjects() {
+  nav?.to("works", "works");
+}
 </script>
 
 <!--
@@ -39,11 +32,11 @@ function openAllArticles() {
   中间多一层容器（尤其是 flex 容器）会让百分比高度退化，首屏就不再是全屏了。
 -->
 <template>
-  <HomeHero :stats="stats" @scroll-next="scrollToAbout" />
+  <HomeHero :stats="{ articles: homeArticles.length }" @scroll-next="scrollToAbout" />
 
   <div class="home-body">
     <HomeProfile :updated-at="homeLatestDate" />
-    <HomeProjects />
+    <HomeProjects @open-all="openAllProjects" />
     <HomeArticles @open="openArticle" @open-all="openAllArticles" />
   </div>
 

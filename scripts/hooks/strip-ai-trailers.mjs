@@ -87,9 +87,7 @@ function main() {
   if (removed.length === 0) process.exit(0);
 
   writeFileSync(file, message, "utf8");
-  process.stderr.write(
-    `[commit-msg] 已移除 ${removed.length} 条协作尾注（约定：不加工具署名）\n`,
-  );
+  process.stderr.write(`[commit-msg] 已移除 ${removed.length} 条协作尾注（约定：不加工具署名）\n`);
   for (const line of removed) process.stderr.write(`[commit-msg]   - ${line.trim()}\n`);
 }
 

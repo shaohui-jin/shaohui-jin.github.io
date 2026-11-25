@@ -39,6 +39,10 @@ export interface HomeProject {
   action?: string;
   /** 占位卡：虚线边框 + 置灰 */
   placeholder?: boolean;
+  /** GitHub owner/repo，作品页用它取 README 与仓库链接 */
+  repo?: string;
+  /** 仓库根目录没有 README 时，右侧只展示描述 */
+  hasReadme?: boolean;
 }
 
 /** 首屏文案与底图 */
@@ -93,6 +97,8 @@ export const homeProjects: HomeProject[] = [
     host: REPO_HOST,
     accent: "#409eff",
     action: "源码",
+    repo: "git-cockpit",
+    hasReadme: true,
     icon:
       '<circle cx="12" cy="12" r="9"/>' +
       '<path d="M12 12l4.5-4.5"/><circle cx="12" cy="12" r="1.6"/>',
@@ -104,10 +110,38 @@ export const homeProjects: HomeProject[] = [
     host: REPO_HOST,
     accent: "#67c23a",
     action: "源码",
+    repo: "git-insight",
+    hasReadme: true,
     icon:
       '<line x1="6" y1="4" x2="6" y2="15"/>' +
       '<circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/>' +
       '<path d="M18 9a9 9 0 0 1-9 9"/>',
+  },
+  {
+    name: "tool-box",
+    desc: "杂七杂八的组件库、工具库",
+    href: `${REPO}/tool-box`,
+    host: REPO_HOST,
+    accent: "#13a8a8",
+    action: "源码",
+    repo: "tool-box",
+    hasReadme: true,
+    icon:
+      '<rect x="3" y="7" width="18" height="12" rx="2"/>' +
+      '<path d="M3 11h18"/><path d="M9 7a3 3 0 0 1 6 0"/>',
+  },
+  {
+    name: "china-history",
+    desc: "中国历史",
+    href: `${REPO}/china-history`,
+    host: REPO_HOST,
+    accent: "#8d6e63",
+    action: "源码",
+    repo: "china-history",
+    hasReadme: false,
+    icon:
+      '<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H19v18H6.5A2.5 2.5 0 0 1 4 18.5z"/>' +
+      '<path d="M7 8h9M7 12h9M7 16h6"/>',
   },
   {
     name: "game-demo",
@@ -116,6 +150,8 @@ export const homeProjects: HomeProject[] = [
     host: REPO_HOST,
     accent: "#f56c6c",
     action: "源码",
+    repo: "game-demo",
+    hasReadme: false,
     icon:
       '<rect x="2" y="6" width="20" height="12" rx="4"/>' +
       '<line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/>' +
@@ -128,6 +164,8 @@ export const homeProjects: HomeProject[] = [
     host: REPO_HOST,
     accent: "#9c27b0",
     action: "源码",
+    repo: "comp-insight",
+    hasReadme: true,
     icon:
       '<circle cx="12" cy="5" r="2.5"/><circle cx="5" cy="19" r="2.5"/><circle cx="19" cy="19" r="2.5"/>' +
       '<path d="M12 7.5v3.5M10.6 12.6 6.6 16.8M13.4 12.6l4 4.2"/>',
@@ -139,6 +177,8 @@ export const homeProjects: HomeProject[] = [
     host: REPO_HOST,
     accent: "#e6a23c",
     action: "源码",
+    repo: "why-css-insight",
+    hasReadme: true,
     icon: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/><path d="M11 8v3.2"/>',
   },
   {
@@ -156,6 +196,9 @@ export const homeFooter = {
   wish: "愿新的一年顺风顺水顺财神",
   copyright: "© 2026 石怜安",
 };
+
+/** 首页项目区块只铺 3 张卡，完整列表在作品页 */
+export const HOME_PROJECT_LIMIT = 3;
 
 // ============================================================
 // 文章数据 —— 全部从 @/blog 的内容索引实时推导

@@ -1,4 +1,5 @@
 import { blogMeta } from "virtual:blog-meta";
+import { parseFrontmatter } from "@/doc-render/parseFrontmatter";
 
 /**
  * 博客内容索引。
@@ -63,11 +64,12 @@ const rawModules = import.meta.glob("./posts/**/*.md", {
   import: "default",
 }) as Record<string, () => Promise<string>>;
 
-/** 正文按需加载；file 形如 `vue/vue-lifecycle.md` */
+/** 正文按需加载；file 形如 `vue/vue-lifecycle.md`。frontmatter 只给构建期用，正文不渲染 */
 export async function loadBlogSource(file: string): Promise<string> {
   const loader = rawModules[`./posts/${file}`];
   if (!loader) throw new Error(`[@/blog] 找不到内容文件：${file}`);
-  return loader();
+  const raw = await loader();
+  return parseFrontmatter(raw).body;
 }
 
 function resolveGroupKey(raw: string, file: string): BlogGroupKey {

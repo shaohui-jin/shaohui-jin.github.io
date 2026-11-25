@@ -1,25 +1,8 @@
 export { createCompLib, LIB_PLUGIN_KEY } from "./config/configInjection";
-export { default as ConfigProvider } from "./config/ConfigProvider.vue";
 export { elementPlusLocale } from "./config/elementPlusLocale";
-export { useLibConfig, useLibPlugin } from "./config/useLibConfig";
+export { useLibPlugin } from "./config/useLibConfig";
 export { defaultLibConfig } from "./config/configDefaults";
-export {
-  primarySwatches,
-  radiusTiers,
-  themePresetSwatches,
-  themePresets,
-} from "./config/themePresets";
-export type { ThemePresetKey } from "./config/themePresets";
 export { BaseRouteRegistrar, RouteRegistry } from "./route";
-export { CoreDocRegistrar } from "./doc";
-export { getGroupColor, parseChangelog, splitInlineCode, summarizeVersion } from "./doc/changelog";
-export type {
-  ChangeGroup,
-  ChangeItem,
-  ChangeModule,
-  TextSegment,
-  VersionBlock,
-} from "./doc/changelog";
 export type { LibConfig, LibThemeConfig, ResolvedLibConfig } from "./config/configTypes";
 export type { PersistOptions, LibPluginHandle } from "./config/configInjection";
 export type {
@@ -33,4 +16,3 @@ export type {
   RegisteredRouteRecord,
   TopTabMeta,
 } from "./route";
-export { libColorDefaults } from "./style/colorDefaults";

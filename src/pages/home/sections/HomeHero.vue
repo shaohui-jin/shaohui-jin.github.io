@@ -5,8 +5,6 @@ import { homeHero } from "../homeData";
 
 interface HeroStats {
   articles: number;
-  components: number;
-  tools: number;
 }
 
 const props = defineProps<{ stats: HeroStats }>();
@@ -56,8 +54,7 @@ const subtitleParts = homeHero.subtitles;
         </template>
       </p>
       <p class="home-hero__meta">
-        <b>{{ props.stats.articles }}</b> 篇文章<i>·</i>
-        <b>{{ props.stats.components }}</b> 个组件<i>·</i> <b>{{ props.stats.tools }}</b> 个工具函数
+        <b>{{ props.stats.articles }}</b> 篇文章
       </p>
     </div>
 

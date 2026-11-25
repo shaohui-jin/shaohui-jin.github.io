@@ -16,5 +16,17 @@ export default tseslint.config(
       },
     },
   },
+  // Node 脚本（构建期与 git 钩子）需要 node 全局变量
+  {
+    files: ["scripts/**/*.{js,mjs}", "build/**/*.ts"],
+    languageOptions: {
+      globals: {
+        process: "readonly",
+        console: "readonly",
+        URL: "readonly",
+        Buffer: "readonly",
+      },
+    },
+  },
   skipFormatting,
 );

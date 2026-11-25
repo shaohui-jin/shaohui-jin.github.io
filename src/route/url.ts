@@ -18,7 +18,7 @@ export interface RouteLocation {
 /**
  * 状态 → URL 路径。
  *
- * 作品页的 routeKey 带分段（components/tables），斜杠保留，只编码每一段。
+ * 博客文章 key 带分级时保留斜杠，只编码每一段。
  */
 export function buildPath(tabKey: string, routeKey: string): string {
   if (tabKey === HOME_TAB) return "/";
@@ -51,66 +51,22 @@ export function parsePath(pathname: string): RouteLocation | null {
   if (segments.length === 0) return { tabKey: HOME_TAB, routeKey: "" };
 
   const [head, ...rest] = segments;
-  const legacy = legacyWorksLocation(head, rest);
+  const legacy = legacyWorksLocation(head);
   if (legacy) return legacy;
 
   if (!resolveTabMeta(head)) return null;
-  return { tabKey: head, routeKey: aliasComponentRoute(rest.join("/")) };
-}
-
-/** 已收成分组页的组件。旧地址仍打开原来那一组。 */
-const COMPONENT_GROUP_ALIAS: Record<string, string> = {
-  tables: "crud",
-  "base-search": "crud",
-  "base-search-field": "crud",
-  "base-search-drawer": "crud",
-  "base-column-setting": "crud",
-  "base-crud": "crud",
-  tag: "status",
-  dot: "status",
-  "image-3d": "image",
-  "image-carousel": "image",
-  "image-pointer": "image",
-  "image-lightbox": "image",
-  "code-block": "doc",
-  "widget-tabs": "doc",
-  "canvas-time": "canvas",
-  "canvas-count-up": "canvas",
-  "split-pane": "layout",
-  "drag-sort-list": "list-op",
-  "floating-toolbar": "list-op",
-  "tree-transfer": "select",
-  "step-wizard": "flow",
-  "context-menu": "menu",
-  "heatmap-calendar": "viz",
-};
-
-function aliasComponentRoute(routeKey: string): string {
-  const parts = routeKey.split("/");
-  if (parts[0] !== "components" || !parts[1]) return routeKey;
-  const group = COMPONENT_GROUP_ALIAS[parts[1]];
-  if (!group) return routeKey;
-  parts[1] = group;
-  return parts.join("/");
+  return { tabKey: head, routeKey: rest.join("/") };
 }
 
 /**
- * 旧顶栏地址。组件文档、工具函数、画布编排收进作品之后，
- * 已发出的链接仍要落到原来的那一页。
+ * 旧顶栏地址。
+ *
+ * 组件文档、工具函数、画布编排、系统页都已迁出本仓库，
+ * 已发出的链接统一落到作品页，不再渲染站内文档。
  */
-function legacyWorksLocation(head: string, rest: string[]): RouteLocation | null {
-  if (head === "workflow-designer") return { tabKey: "works", routeKey: "workflow" };
-  if (head === "docs") {
-    return {
-      tabKey: "works",
-      routeKey: aliasComponentRoute(rest.length ? ["components", ...rest].join("/") : ""),
-    };
-  }
-  if (head === "utils") {
-    return {
-      tabKey: "works",
-      routeKey: rest.length ? ["tools", ...rest].join("/") : "tools/color",
-    };
+function legacyWorksLocation(head: string): RouteLocation | null {
+  if (head === "docs" || head === "utils" || head === "workflow-designer" || head === "system") {
+    return { tabKey: "works", routeKey: "" };
   }
   return null;
 }

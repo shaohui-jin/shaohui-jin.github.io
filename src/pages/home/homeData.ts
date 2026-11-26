@@ -20,6 +20,13 @@ export interface HomeProfile {
   bio: string;
   repoUrl: string;
   repoLabel: string;
+  /**
+   * 关注方向与技术栈。
+   * Hero 的终端窗口会把它们拼进 profile.json 展示，
+   * 所以这里是「对外展示用」的短标签，不是完整的技能清单。
+   */
+  focus?: string[];
+  stack?: string[];
 }
 
 export interface HomeSocialLink {
@@ -68,6 +75,8 @@ export const homeProfile: HomeProfile = {
   bio: "笔记、源码和做过的项目，记在这里。",
   repoUrl: "https://github.com/shaohui-jin/shaohui-jin.github.io",
   repoLabel: "源码仓库",
+  focus: ["组件设计", "工程化", "性能优化"],
+  stack: ["Vue", "TypeScript", "Node"],
 };
 
 export const homeSocials: HomeSocialLink[] = [

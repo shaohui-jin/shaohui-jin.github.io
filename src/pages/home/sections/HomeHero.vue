@@ -2,6 +2,7 @@
 import { computed } from "vue";
 import { useLibPlugin } from "@/app/core";
 import { homeHero } from "../homeData";
+import HomeTerminal from "./HomeTerminal.vue";
 
 interface HeroStats {
   articles: number;
@@ -45,17 +46,22 @@ const subtitleParts = homeHero.subtitles;
 <template>
   <section class="home-hero" :style="heroStyle">
     <div class="home-hero__inner">
-      <img class="home-hero__logo" :src="homeHero.logo" alt="雾起" width="104" height="104" />
-      <h1 class="home-hero__title">{{ homeHero.title }}</h1>
-      <p class="home-hero__subtitle">
-        <template v-for="(line, index) in subtitleParts" :key="line">
-          <i v-if="index > 0">|</i>
-          <span>{{ line }}</span>
-        </template>
-      </p>
-      <p class="home-hero__meta">
-        <b>{{ props.stats.articles }}</b> 篇文章
-      </p>
+      <div class="home-hero__text">
+        <img class="home-hero__logo" :src="homeHero.logo" alt="雾起" width="104" height="104" />
+        <h1 class="home-hero__title">{{ homeHero.title }}</h1>
+        <p class="home-hero__subtitle">
+          <template v-for="(line, index) in subtitleParts" :key="line">
+            <i v-if="index > 0">|</i>
+            <span>{{ line }}</span>
+          </template>
+        </p>
+        <p class="home-hero__meta">
+          <b>{{ props.stats.articles }}</b> 篇文章
+        </p>
+      </div>
+
+      <!-- 终端窗口：展示 profile.json 与项目列表，内容全部来自数据 -->
+      <HomeTerminal class="home-hero__term" :articles="props.stats.articles" />
     </div>
 
     <button class="home-hero__scroll" aria-label="向下浏览" @click="emit('scroll-next')">

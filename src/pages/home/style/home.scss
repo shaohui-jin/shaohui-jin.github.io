@@ -67,35 +67,53 @@
   background-repeat: no-repeat;
 }
 
-// 双层遮罩 —— 文案底部对齐后，压暗下半部而不是左半边：
-// · 照片主体在上半部，保持原样不压暗
-// · 下半部从 22% 处开始加深，到 100% 时 78%，给文字扎实的底色
-// · 左侧再补一层轻度横向渐变，避免文字左缘压在过亮的天光上
-// 注意：这张照片左侧与下半部本身接近纯白，遮罩一旦过重会把细节
-// 压成一片平灰（看起来像图片没铺满），所以强度要克制。
+// 双层遮罩 —— 现在 Hero 是两栏，文字在左、终端在右：
+// · 横向：左侧压得比原来更重，因为文字上方也有人像，需要整片给底
+// · 纵向：仍只压下半部，照片主体（中上部）尽量保留
+// 注意：这张照片左侧与下半部本身接近纯白，遮罩过重会把细节压成一片平灰。
 .home-hero::before {
   content: "";
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(90deg, rgb(15 23 42 / 46%) 0%, rgb(15 23 42 / 20%) 32%, rgb(15 23 42 / 0%) 54%),
+    linear-gradient(
+      90deg,
+      rgb(15 23 42 / 62%) 0%,
+      rgb(15 23 42 / 40%) 34%,
+      rgb(15 23 42 / 12%) 60%,
+      rgb(15 23 42 / 0%) 100%
+    ),
     linear-gradient(
       180deg,
-      rgb(15 23 42 / 8%) 0%,
-      rgb(15 23 42 / 0%) 22%,
-      rgb(15 23 42 / 58%) 68%,
-      rgb(15 23 42 / 78%) 100%
+      rgb(15 23 42 / 14%) 0%,
+      rgb(15 23 42 / 0%) 24%,
+      rgb(15 23 42 / 54%) 66%,
+      rgb(15 23 42 / 80%) 100%
     );
 }
 
 .home-hero__inner {
   position: relative;
   z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 500px);
+  align-items: end;
+  gap: var(--sp-8);
   width: 100%;
   max-width: var(--home-max);
   margin: 0 auto;
   // 留出 14vh 让文案不贴视口下沿
   padding: 0 var(--home-pad-x) clamp(48px, 14vh, 160px);
+}
+
+.home-hero__text {
+  min-width: 0;
+}
+
+// 终端与文案底对齐，不要顶到标题上方
+.home-hero__term {
+  align-self: end;
+  margin-bottom: 2px;
 }
 
 .home-hero__logo {
@@ -729,6 +747,19 @@ button.home-card {
   .home-articles {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  // Hero 收成单列：终端堆到文案下方。
+  // 平板宽度下（768~1024）仍有空间，堆叠后终端可读性比隐藏更好。
+  .home-hero__inner {
+    grid-template-columns: 1fr;
+    gap: var(--sp-6);
+    align-items: stretch;
+  }
+
+  .home-hero__term {
+    max-width: 520px;
+    margin-bottom: 0;
+  }
 }
 
 @media (max-width: $doc-bp-mobile) {
@@ -783,6 +814,14 @@ button.home-card {
   .home-hero__meta {
     margin-top: var(--sp-4);
   }
+
+// 手机端不显示终端：首屏高度有限，堆叠后会把文案挤出视口，
+// 而人像在小屏占比又更大，终端挤在下面只会更难读。
+// 注意：组件根元素自带 scoped 的 .term 类，其 display: flex 带 data-v 属性选择器，
+// 优先级高于这里的单类选择器，所以必须提高选择器权重才压得住。
+.home-hero .home-hero__term {
+  display: none;
+}
 
   .home-hero__scroll {
     display: none;

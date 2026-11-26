@@ -94,7 +94,7 @@ const REPO_HOST = "github.com/shaohui-jin";
 export const homeProjects: HomeProject[] = [
   {
     name: "git-cockpit",
-    desc: "Git 工作台：Service、权限、备份、日志、Capability",
+    desc: "用 MCP 让 Agent 安全操作 Git：合并预演、分支矩阵、写操作先 dry-run",
     href: `${REPO}/git-cockpit`,
     host: REPO_HOST,
     accent: "#409eff",
@@ -107,7 +107,7 @@ export const homeProjects: HomeProject[] = [
   },
   {
     name: "git-insight",
-    desc: "分支图、合并冲突预合并矩阵、一键解决并推送，以及创建 MR/PR",
+    desc: "用 git merge-tree 在对象库里试合并：分支图、冲突预演、合入顺序、一键 MR",
     href: `${REPO}/git-insight`,
     host: REPO_HOST,
     accent: "#67c23a",
@@ -135,13 +135,13 @@ export const homeProjects: HomeProject[] = [
   },
   {
     name: "china-history",
-    desc: "中国历史",
+    desc: "中国历史可视化百科：事件、人物、政权与史料，串成可漫游的时间轴",
     href: `${REPO}/china-history`,
     host: REPO_HOST,
     accent: "#8d6e63",
     action: "源码",
     repo: "china-history",
-    hasReadme: false,
+    hasReadme: true,
     demo: "https://shaohui-jin.github.io/china-history/",
     icon:
       '<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H19v18H6.5A2.5 2.5 0 0 1 4 18.5z"/>' +

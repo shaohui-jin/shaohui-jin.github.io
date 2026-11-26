@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import { homeProjects } from "../home/homeData";
-import READMEView from "./READMEView.vue";
+import ProjectDetailView from "./ProjectDetailView.vue";
 import { takePendingProject } from "./worksSelection";
 
 /** 「更多项目」是外链占位，不进左列 */
@@ -181,7 +181,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
       <!-- 右侧 README -->
       <Transition name="works-panel">
         <div v-if="activeProject" class="works-detail">
-          <READMEView :key="activeProject.name" :project="activeProject" />
+          <ProjectDetailView :key="activeProject.name" :project="activeProject" />
         </div>
       </Transition>
     </div>
@@ -221,6 +221,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
     flex-direction: column;
     gap: $doc-sp-4;
     height: auto;
+    min-height: auto;
   }
 }
 
@@ -395,8 +396,10 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
 
   @media (max-width: $doc-bp-mobile) {
     flex-direction: row;
-    overflow-x: auto;
+    overflow: auto hidden;
     padding-bottom: $doc-sp-2;
+    padding-right: $doc-sp-3;
+    scroll-snap-type: x proximity;
   }
 }
 
@@ -429,6 +432,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
   @media (max-width: $doc-bp-mobile) {
     flex: none;
     width: 220px;
+    scroll-snap-align: start;
   }
 }
 
@@ -483,6 +487,8 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
   min-height: 0;
 
   @media (max-width: $doc-bp-mobile) {
+    /* 手机端纵向布局：退出 flex 分配，改用确定高度让 README 内部滚动 */
+    flex: none;
     height: 70vh;
   }
 }

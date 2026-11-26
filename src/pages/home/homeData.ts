@@ -43,6 +43,8 @@ export interface HomeProject {
   repo?: string;
   /** 仓库根目录没有 README 时，右侧只展示描述 */
   hasReadme?: boolean;
+  /** 已部署的线上地址；没有就不显示预览 Tab */
+  demo?: string;
 }
 
 /** 首屏文案与底图 */
@@ -126,6 +128,7 @@ export const homeProjects: HomeProject[] = [
     action: "源码",
     repo: "tool-box",
     hasReadme: true,
+    demo: "https://shaohui-jin.github.io/tool-box/",
     icon:
       '<rect x="3" y="7" width="18" height="12" rx="2"/>' +
       '<path d="M3 11h18"/><path d="M9 7a3 3 0 0 1 6 0"/>',
@@ -139,6 +142,7 @@ export const homeProjects: HomeProject[] = [
     action: "源码",
     repo: "china-history",
     hasReadme: false,
+    demo: "https://shaohui-jin.github.io/china-history/",
     icon:
       '<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H19v18H6.5A2.5 2.5 0 0 1 4 18.5z"/>' +
       '<path d="M7 8h9M7 12h9M7 16h6"/>',
@@ -152,6 +156,7 @@ export const homeProjects: HomeProject[] = [
     action: "源码",
     repo: "game-demo",
     hasReadme: false,
+    demo: "https://shaohui-jin.github.io/game-demo/",
     icon:
       '<rect x="2" y="6" width="20" height="12" rx="4"/>' +
       '<line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/>' +

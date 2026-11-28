@@ -196,6 +196,19 @@ export const homeProjects: HomeProject[] = [
     icon: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/><path d="M11 8v3.2"/>',
   },
   {
+    name: "agent-lib",
+    desc: "零依赖 TypeScript Agent 内核：手写 SSE、流式 tool_calls 聚合，事件日志即事实源",
+    href: `${REPO}/agent-lib`,
+    host: REPO_HOST,
+    accent: "#d97757",
+    action: "源码",
+    repo: "agent-lib",
+    hasReadme: true,
+    icon:
+      '<path d="M12 3v3M12 18v3M5 12H3M21 12h-3"/>' +
+      '<circle cx="12" cy="12" r="6"/><path d="M9 12h1.5M13.5 12H15"/>',
+  },
+  {
     name: "更多项目",
     desc: "还没整理成卡片，先去 GitHub 翻一翻",
     href: `${REPO}?tab=repositories`,
